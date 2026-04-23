@@ -1,1 +1,1 @@
-# payment-tracker---auto-sync
+# salary-tracker
