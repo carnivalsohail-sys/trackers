@@ -1,0 +1,3017 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!-- baba: begin -->
+<script type="text/javascript" src="//zipper.spock.platform.replit.com/adlock/injections/script.js?t=9077522&amp;p=1059519"></script>
+<!-- baba: end -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Carnival Payments">
+<meta name="application-name" content="Carnival Payments">
+<meta name="theme-color" content="#0a0f1e">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMTBiOTgxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNjM2NmYxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0idXJsKCNnKSIvPjx0ZXh0IHg9IjkwIiB5PSIxMjAiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwMCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JjgzNzc7PC90ZXh0Pjwvc3ZnPg==">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMTBiOTgxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNjM2NmYxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0idXJsKCNnKSIvPjx0ZXh0IHg9IjkwIiB5PSIxMjAiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwMCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JjgzNzc7PC90ZXh0Pjwvc3ZnPg==">
+
+<title>Carnival Payment Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+:root,[data-theme="dark"]{
+  --bg-start:#0a0f1e;--bg-end:#0f172a;
+  --surface:#1a2540;--surface-2:#22304f;--surface-3:#2c3e5e;
+  --border:#2e4070;--border-light:#3a5080;
+  --text:#f0f4ff;--text-muted:#c8d5f0;--text-dim:#8fa8cc;--text-faint:#5a7aaa;
+  --primary:#6366f1;--primary-dark:#4f52d4;--primary-light:#a5b4fc;--primary-glow:rgba(99,102,241,0.2);
+  --accent:#f59e0b;--accent-light:#fcd34d;--accent-glow:rgba(245,158,11,0.15);
+  --danger:#ef4444;--danger-dark:#dc2626;--danger-light:#fca5a5;--danger-glow:rgba(239,68,68,0.15);
+  --success:#10b981;--success-dark:#059669;--success-light:#6ee7b7;--success-glow:rgba(16,185,129,0.15);
+  --warning:#f97316;--warning-light:#fdba74;
+  --badge-mca:#a78bfa;
+  --shadow:rgba(0,0,0,0.5);
+  --toggle-bg:#1a2540;
+}
+
+[data-theme="light"]{
+  --bg-start:#eef2ff;--bg-end:#f0f4ff;
+  --surface:#ffffff;--surface-2:#f5f7ff;--surface-3:#eef0fa;
+  --border:#cbd5f8;--border-light:#b4c0f2;
+  --text:#0f172a;--text-muted:#1e3060;--text-dim:#374080;--text-faint:#6080b8;
+  --primary:#4f52d4;--primary-dark:#3b3eb8;--primary-light:#4f52d4;--primary-glow:rgba(79,82,212,0.12);
+  --accent:#d97706;--accent-light:#92400e;--accent-glow:rgba(217,119,6,0.1);
+  --danger:#dc2626;--danger-dark:#b91c1c;--danger-light:#991b1b;--danger-glow:rgba(220,38,38,0.1);
+  --success:#059669;--success-dark:#047857;--success-light:#065f46;--success-glow:rgba(5,150,105,0.1);
+  --warning:#ea580c;--warning-light:#9a3412;
+  --badge-mca:#7c3aed;
+  --shadow:rgba(79,82,212,0.12);
+  --toggle-bg:#4f52d4;
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:linear-gradient(160deg,var(--bg-start) 0%,var(--bg-end) 100%);
+  min-height:100vh;padding:10px;color:var(--text);overflow-x:hidden;
+  transition:background 0.3s,color 0.3s;
+  padding-bottom:70px;
+}
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse at 15% 30%,rgba(99,102,241,0.07) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 70%,rgba(16,185,129,0.05) 0%,transparent 55%);
+  z-index:0;pointer-events:none;
+}
+.container{max-width:1700px;margin:0 auto;position:relative;z-index:1}
+
+/* ─── THEME TOGGLE ─── */
+.theme-toggle{
+  background:var(--toggle-bg);border:2px solid var(--border);
+  border-radius:50px;width:52px;height:26px;cursor:pointer;
+  position:relative;transition:all 0.3s;flex-shrink:0;
+}
+.theme-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;
+  border-radius:50%;background:var(--text);transition:all 0.3s;
+}
+[data-theme="light"] .theme-toggle::after{transform:translateX(26px)}
+.theme-toggle-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.toggle-label{font-size:0.72em;color:var(--text-dim);font-weight:600}
+
+/* ─── STICKY MOBILE HEADER ─── */
+.mobile-top-bar{
+  display:none;position:sticky;top:0;z-index:200;
+  background:var(--surface);backdrop-filter:blur(20px);
+  padding:10px 14px;margin-bottom:10px;
+  align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 12px var(--shadow);
+}
+.mobile-app-title{font-weight:800;font-size:0.9em;color:var(--text)}
+.mobile-app-sub{font-size:0.65em;color:var(--text-dim);margin-top:1px}
+
+/* ─── BOTTOM NAV (mobile) ─── */
+.bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:6px 0 env(safe-area-inset-bottom,6px);
+  box-shadow:0 -4px 20px var(--shadow);
+}
+.bottom-nav-inner{display:flex;justify-content:space-around;align-items:center}
+.bnav-btn{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:none;cursor:pointer;padding:6px 10px;
+  color:var(--text-faint);transition:color 0.2s;min-width:56px;
+  -webkit-tap-highlight-color:transparent;
+}
+.bnav-btn.active{color:var(--primary)}
+.bnav-icon{font-size:1.2em}
+.bnav-label{font-size:0.55em;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+
+/* ─── ALERT BANNER ─── */
+.alert-banner{
+  background:linear-gradient(135deg,#b91c1c,#991b1b);
+  color:#fff;padding:12px 16px;border-radius:14px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+  box-shadow:0 8px 28px rgba(220,38,38,0.35);
+  border:1px solid rgba(239,68,68,0.4);
+}
+.alert-icon{font-size:1.6em;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.alert-text{font-size:0.9em;font-weight:700;color:#fff}
+.alert-count{background:rgba(255,255,255,0.25);padding:2px 10px;border-radius:10px;font-weight:800;margin-left:6px;color:#fff}
+.alert-btn{background:#fff;color:#b91c1c;border:none;padding:7px 16px;border-radius:9px;font-weight:800;cursor:pointer;transition:all 0.2s;font-size:0.82em}
+.alert-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.25)}
+
+/* ─── HEADER ─── */
+header{
+  background:var(--surface);padding:20px;border-radius:18px;margin-bottom:12px;
+  position:relative;overflow:hidden;border:1px solid var(--border);
+  box-shadow:0 4px 24px var(--shadow);
+}
+header::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--primary),var(--accent),var(--success),var(--danger));
+}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+h1{color:var(--text);font-size:1.4em;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;letter-spacing:-0.5px}
+.company-badge{display:inline-block;padding:2px 9px;border-radius:18px;font-size:0.36em;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.badge-ce{background:rgba(99,102,241,0.15);color:var(--primary-light);border:1px solid rgba(99,102,241,0.3)}
+.badge-cf{background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3)}
+.badge-rk{background:rgba(16,185,129,0.15);color:var(--success-light);border:1px solid rgba(16,185,129,0.3)}
+.subtitle{color:var(--text-muted);font-size:0.85em;margin-top:4px;font-weight:500}
+.last-updated{color:var(--text-dim);font-size:0.72em;margin-top:3px}
+
+/* ─── STATS ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
+.stat-card{background:var(--surface-2);padding:14px;border-radius:13px;transition:all 0.3s;position:relative;overflow:hidden;border:1px solid var(--border);cursor:default}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px var(--shadow)}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:0 4px 4px 0}
+.stat-card.s-total::after{background:var(--primary)}
+.stat-card.s-paid::after{background:var(--success)}
+.stat-card.s-danger::after{background:var(--danger)}
+.stat-card.s-warn::after{background:var(--accent)}
+.stat-card.s-mca::after{background:var(--badge-mca)}
+.stat-label{font-size:0.64em;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.stat-value{font-size:1.25em;font-weight:800;margin-top:4px;letter-spacing:-0.5px}
+.stat-value.v-primary{color:var(--primary-light)}
+.stat-value.v-success{color:var(--success-light)}
+.stat-value.v-danger{color:var(--danger-light)}
+.stat-value.v-accent{color:var(--accent-light)}
+.stat-value.v-mca{color:var(--badge-mca)}
+.stat-subtitle{font-size:0.66em;color:var(--text-faint);margin-top:2px;font-weight:500}
+.stat-icon{position:absolute;top:12px;right:12px;font-size:1.4em;opacity:0.5}
+
+/* ─── QUICK ACTIONS ─── */
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.quick-card{background:var(--surface);padding:12px 8px;border-radius:13px;cursor:pointer;transition:all 0.25s;text-align:center;border:1px solid var(--border)}
+.quick-card:hover,.quick-card:active{transform:translateY(-3px);border-color:var(--primary);box-shadow:0 8px 24px var(--primary-glow)}
+.quick-icon{font-size:1.5em;margin-bottom:4px}
+.quick-title{font-weight:700;color:var(--text);font-size:0.78em}
+.quick-subtitle{font-size:0.66em;color:var(--text-dim);margin-top:2px}
+
+/* ─── FILTER SELECTOR ─── */
+.filter-selector{background:var(--surface);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid var(--border);box-shadow:0 2px 12px var(--shadow)}
+.filter-selector-label{font-size:0.62em;color:var(--text-faint);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.filter-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.filter-card{border:2px solid var(--border);border-radius:11px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface-2);position:relative;-webkit-tap-highlight-color:transparent}
+.filter-card:hover,.filter-card:active{border-color:var(--border-light);background:var(--surface-3)}
+.filter-card.active{border-color:var(--primary);background:var(--primary-glow);box-shadow:0 0 18px var(--primary-glow)}
+.fc-dot{width:6px;height:6px;border-radius:50%;margin:0 auto 5px;transform:scale(0);transition:transform 0.2s}
+.filter-card.active .fc-dot{transform:scale(1)}
+.fc-icon{font-size:1.2em;margin-bottom:2px}
+.fc-label{font-size:0.68em;font-weight:700;color:var(--text-muted);transition:color 0.2s}
+.filter-card.active .fc-label{color:var(--primary-light)}
+.fc-count{font-size:0.6em;color:var(--text-faint);margin-top:2px}
+.fc-label.lc-red{color:var(--danger-light)}
+.fc-label.lc-orange{color:var(--warning-light)}
+.fc-label.lc-yellow{color:var(--accent-light)}
+.fc-label.lc-green{color:var(--success-light)}
+[data-theme="light"] .fc-label.lc-red{color:#991b1b}
+[data-theme="light"] .fc-label.lc-orange{color:#9a3412}
+[data-theme="light"] .fc-label.lc-yellow{color:#92400e}
+[data-theme="light"] .fc-label.lc-green{color:#065f46}
+
+/* ─── RED FLAG SECTION ─── */
+.red-flag-section{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:12px;border-left:4px solid var(--danger);border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);box-shadow:0 2px 12px var(--shadow)}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px}
+.section-title{font-size:1em;color:var(--text);display:flex;align-items:center;gap:8px;font-weight:800}
+.red-badge{background:var(--danger);color:#fff;padding:2px 10px;border-radius:10px;font-size:0.65em;font-weight:700}
+.followup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:8px}
+.followup-card{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:12px;transition:all 0.25s}
+.followup-card:hover{transform:translateX(3px);border-color:var(--danger);box-shadow:0 4px 14px var(--danger-glow)}
+.followup-card.critical{border-left:4px solid var(--danger)}
+.followup-card.high{border-left:4px solid var(--accent)}
+.followup-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:5px;gap:6px}
+.followup-client{font-weight:700;color:var(--text);font-size:0.85em;line-height:1.3}
+.followup-days{background:var(--danger);color:#fff;padding:2px 8px;border-radius:8px;font-size:0.7em;font-weight:800;flex-shrink:0}
+.followup-details{font-size:0.74em;color:var(--text-muted);line-height:1.5}
+.followup-amount{color:var(--danger-light);font-weight:800;font-size:1em;margin-top:4px;font-family:monospace}
+[data-theme="light"] .followup-amount{color:#991b1b}
+.followup-actions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+
+/* ─── BUTTONS ─── */
+.btn{padding:8px 16px;border:none;border-radius:9px;font-size:0.83em;font-weight:600;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(0.97)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 2px 10px var(--primary-glow)}
+.btn-primary:hover{box-shadow:0 5px 18px var(--primary-glow)}
+.btn-secondary{background:var(--surface-3);color:var(--text-muted);border:1px solid var(--border)}
+.btn-success{background:linear-gradient(135deg,var(--success),var(--success-dark));color:#fff;box-shadow:0 2px 10px var(--success-glow)}
+.btn-danger{background:linear-gradient(135deg,var(--danger),var(--danger-dark));color:#fff;box-shadow:0 2px 10px var(--danger-glow)}
+.btn-sm{padding:6px 11px;font-size:0.76em;border-radius:8px}
+.btn-xs{padding:5px 9px;font-size:0.7em;border-radius:7px;gap:3px;min-height:30px}
+
+/* ─── EXPORT DROPDOWN ─── */
+.export-dropdown{position:relative;display:inline-block}
+.export-dropdown-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:240px;box-shadow:0 12px 36px var(--shadow);z-index:500}
+.export-dropdown.open .export-dropdown-menu{display:block}
+.export-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;color:var(--text-muted);font-size:0.82em;font-weight:600;border:none;background:none;width:100%;text-align:left;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.export-item:hover,.export-item:active{background:var(--surface-3);color:var(--text)}
+.export-item .ei-icon{font-size:1.3em;width:24px;text-align:center;flex-shrink:0}
+.export-item .ei-sub{font-size:0.75em;color:var(--text-faint);font-weight:400}
+.export-divider{height:1px;background:var(--border);margin:4px 0}
+
+/* ─── ACTION BUTTONS ─── */
+.action-group{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}
+.act-btn{display:inline-flex;align-items:center;gap:3px;padding:5px 9px;border-radius:7px;border:none;cursor:pointer;font-size:0.7em;font-weight:600;transition:all 0.2s;text-decoration:none;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;min-height:28px}
+.act-btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.act-btn:active{transform:scale(0.95)}
+.act-wa{background:rgba(37,211,102,0.12);color:#22c55e;border:1px solid rgba(37,211,102,0.25)}
+.act-call{background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)}
+.act-pay{background:rgba(168,85,247,0.1);color:#a78bfa;border:1px solid rgba(168,85,247,0.2)}
+.act-ledger{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2)}
+[data-theme="light"] .act-wa{background:rgba(5,150,105,0.08);color:#059669;border-color:rgba(5,150,105,0.25)}
+[data-theme="light"] .act-call{background:rgba(37,99,235,0.08);color:#2563eb;border-color:rgba(37,99,235,0.2)}
+[data-theme="light"] .act-pay{background:rgba(124,58,237,0.08);color:#7c3aed;border-color:rgba(124,58,237,0.2)}
+[data-theme="light"] .act-ledger{background:rgba(180,83,9,0.08);color:#b45309;border-color:rgba(180,83,9,0.2)}
+.act-edit{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.2)}
+.act-delete{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
+[data-theme="light"] .act-edit{background:rgba(21,128,61,0.08);color:#15803d;border-color:rgba(21,128,61,0.2)}
+[data-theme="light"] .act-delete{background:rgba(185,28,28,0.08);color:#b91c1c;border-color:rgba(185,28,28,0.2)}
+
+/* ─── CONTROLS ─── */
+.controls-section{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border);box-shadow:0 2px 12px var(--shadow)}
+.controls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.input-group{display:flex;flex-direction:column;gap:4px}
+label{font-weight:700;color:var(--text-dim);font-size:0.67em;text-transform:uppercase;letter-spacing:0.5px}
+input,select{padding:9px 12px;border:1px solid var(--border);border-radius:9px;font-size:0.87em;transition:all 0.2s;background:var(--surface-2);color:var(--text);-webkit-appearance:none;min-height:40px}
+input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+input::placeholder{color:var(--text-faint)}
+select option{background:var(--surface);color:var(--text)}
+.actions-bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.filter-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.filter-tag{background:var(--primary-glow);color:var(--primary-light);padding:3px 10px;border-radius:13px;font-size:0.74em;border:1px solid rgba(99,102,241,0.25)}
+
+/* ─── TABLE ─── */
+.table-container{background:var(--surface);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 4px 20px var(--shadow)}
+.table-header{padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px}
+.table-scroll{overflow-x:auto;max-height:65vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:0.78em;min-width:1200px}
+thead{position:sticky;top:0;z-index:10}
+th{background:var(--primary-glow);color:var(--primary-light);padding:10px 9px;text-align:left;font-weight:700;text-transform:uppercase;font-size:0.68em;letter-spacing:0.8px;cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--border);backdrop-filter:blur(10px)}
+th:hover{background:rgba(99,102,241,0.2);color:var(--text)}
+td{padding:8px 9px;border-bottom:1px solid var(--border);color:var(--text-muted);vertical-align:middle}
+tr{transition:background 0.15s}
+tr:hover{background:var(--primary-glow)}
+.red-flag-row{background:var(--danger-glow)!important}
+.red-flag-row:hover{background:rgba(239,68,68,0.1)!important}
+.red-flag-row td{color:var(--danger-light);font-weight:500}
+[data-theme="light"] .red-flag-row td{color:#991b1b}
+
+/* ─── STATUS BADGES ─── */
+.status-badge{display:inline-block;padding:3px 8px;border-radius:7px;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap}
+.status-paid{background:var(--success-glow);color:var(--success-light);border:1px solid rgba(16,185,129,0.3)}
+.status-overdue{background:var(--accent-glow);color:var(--accent-light);border:1px solid rgba(245,158,11,0.3)}
+.status-unpaid{background:rgba(148,163,184,0.1);color:var(--text-muted);border:1px solid rgba(148,163,184,0.2)}
+.status-critical{background:var(--danger-glow);color:var(--danger-light);border:1px solid rgba(239,68,68,0.4);animation:blink 2s infinite}
+[data-theme="light"] .status-paid{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+[data-theme="light"] .status-overdue{background:#fef3c7;color:#92400e;border-color:#fde68a}
+[data-theme="light"] .status-unpaid{background:#f1f5f9;color:#334155;border-color:#cbd5e1}
+[data-theme="light"] .status-critical{background:#fee2e2;color:#991b1b;border-color:#fca5a5;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.7}}
+
+.amount{font-family:'Courier New',monospace;font-weight:700;color:var(--text);white-space:nowrap}
+.amount-positive{color:var(--success-light)!important}
+.amount-negative{color:var(--danger-light)!important}
+[data-theme="light"] .amount-positive{color:#065f46!important}
+[data-theme="light"] .amount-negative{color:#991b1b!important}
+
+.venue-tag{background:rgba(96,165,250,0.1);color:#60a5fa;padding:2px 6px;border-radius:6px;font-size:0.8em;font-weight:500;display:inline-block;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(96,165,250,0.2)}
+[data-theme="light"] .venue-tag{background:#dbeafe;color:#1d4ed8;border-color:#bfdbfe}
+
+.company-tag{display:inline-block;padding:2px 7px;border-radius:6px;font-size:0.72em;font-weight:700;white-space:nowrap}
+.tag-ce{background:var(--primary-glow);color:var(--primary-light);border:1px solid rgba(99,102,241,0.25)}
+.tag-cf{background:rgba(168,85,247,0.1);color:#c084fc;border:1px solid rgba(168,85,247,0.2)}
+.tag-rk{background:var(--success-glow);color:var(--success-light);border:1px solid rgba(16,185,129,0.25)}
+.tag-mahek{background:var(--accent-glow);color:var(--accent-light);border:1px solid rgba(245,158,11,0.2)}
+[data-theme="light"] .tag-ce{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe}
+[data-theme="light"] .tag-cf{background:#f3e8ff;color:#6d28d9;border-color:#ddd6fe}
+[data-theme="light"] .tag-rk{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+[data-theme="light"] .tag-mahek{background:#fef3c7;color:#92400e;border-color:#fde68a}
+
+.client-link{color:var(--text);cursor:pointer;text-decoration:none;font-weight:600;display:block;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color 0.15s}
+.client-link:hover{color:var(--primary-light);text-decoration:underline}
+
+/* ─── MOBILE CARDS ─── */
+.mobile-cards{display:none}
+.mobile-card{background:var(--surface);border-radius:13px;padding:13px;margin-bottom:8px;border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow)}
+.mobile-card.rf-card{border-left:4px solid var(--danger);background:rgba(239,68,68,0.04)}
+.mc-top{display:flex;justify-content:space-between;align-items:start;margin-bottom:5px;gap:6px}
+.mc-client{font-weight:700;color:var(--text);font-size:0.86em;flex:1;min-width:0;word-break:break-word;line-height:1.3}
+.mc-amounts{display:flex;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.mc-amt{font-weight:700;font-size:0.8em}
+.mc-meta{font-size:0.7em;color:var(--text-dim);margin-bottom:2px;line-height:1.4}
+.mc-notes{font-size:0.67em;color:var(--text-faint);font-style:italic;margin-top:3px;padding:5px 8px;background:var(--surface-2);border-radius:6px;border-left:2px solid var(--border)}
+.mc-actions{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.mc-actions .btn-xs{flex:1;justify-content:center;min-height:34px}
+
+/* ─── MODALS ─── */
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:1000;justify-content:center;align-items:center;padding:10px}
+.modal.active{display:flex}
+.modal-content{background:var(--surface);padding:20px;border-radius:18px;max-width:740px;width:100%;max-height:92vh;overflow-y:auto;animation:modalIn 0.25s ease;border:1px solid var(--border);box-shadow:0 25px 60px rgba(0,0,0,0.5)}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(0.97)}to{opacity:1;transform:none}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-header h2{font-size:1.1em;color:var(--text)}
+.close-btn{background:var(--surface-3);border:1px solid var(--border);font-size:1.1em;cursor:pointer;color:var(--text-muted);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0}
+.close-btn:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.form-grid .input-group.full-width{grid-column:1/-1}
+
+/* ─── LEDGER ─── */
+.ledger-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
+.ledger-sum-card{background:var(--surface-2);border-radius:9px;padding:11px;text-align:center;border:1px solid var(--border)}
+.ledger-sum-label{font-size:0.63em;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px}
+.ledger-sum-value{font-size:1.1em;font-weight:800;color:var(--text);margin-top:4px}
+.ledger-table-wrap{max-height:340px;overflow-y:auto;border-radius:9px;border:1px solid var(--border);-webkit-overflow-scrolling:touch}
+.ledger-table{width:100%;border-collapse:collapse;font-size:0.74em}
+.ledger-table th{background:var(--primary-glow);color:var(--primary-light);padding:7px 6px;font-size:0.66em;position:sticky;top:0;z-index:5;border-bottom:1px solid var(--border)}
+.ledger-table td{padding:6px;border-bottom:1px solid var(--border);color:var(--text-muted)}
+
+/* ─── TOAST ─── */
+.toast-container{position:fixed;top:10px;right:10px;z-index:2000;display:flex;flex-direction:column;gap:5px;pointer-events:none}
+.toast{padding:10px 15px;border-radius:10px;color:#fff;font-size:0.82em;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.3);animation:toastIn 0.3s ease,toastOut 0.3s ease 2.5s forwards;pointer-events:auto;display:flex;align-items:center;gap:7px;backdrop-filter:blur(8px)}
+.toast-success{background:linear-gradient(135deg,rgba(5,150,105,0.92),rgba(4,120,87,0.92))}
+.toast-error{background:linear-gradient(135deg,rgba(220,38,38,0.92),rgba(185,28,28,0.92))}
+.toast-info{background:linear-gradient(135deg,rgba(79,82,212,0.92),rgba(67,56,202,0.92))}
+@keyframes toastIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{to{transform:translateX(50px);opacity:0}}
+
+/* ─── INSIGHTS PANEL ─── */
+.insights-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px;box-shadow:0 2px 12px var(--shadow)}
+.insight-header{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.insight-icon{font-size:1.2em}
+.insight-title{font-weight:800;font-size:0.83em;color:var(--text);text-transform:uppercase;letter-spacing:0.5px}
+
+/* ─── COLLECTION BAR ─── */
+.collection-bar-wrap{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.collection-bar-track{flex:1;height:9px;background:var(--surface-3);border-radius:9px;overflow:hidden;border:1px solid var(--border)}
+.collection-bar-fill{height:100%;border-radius:9px;background:linear-gradient(90deg,var(--success),#34d399);transition:width 1s ease}
+.collection-pct-label{font-size:0.83em;font-weight:800;color:var(--success-light);min-width:36px;text-align:right}
+.insight-sub-row{display:flex;justify-content:space-between;font-size:0.73em;color:var(--text-muted);gap:6px;flex-wrap:wrap}
+
+/* ─── AGING BUCKETS ─── */
+.aging-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.aging-bucket{background:var(--surface-2);border-radius:9px;padding:9px 5px;text-align:center;border:1px solid var(--border)}
+.aging-bucket.ab-danger{background:rgba(249,115,22,0.08);border-color:rgba(249,115,22,0.3)}
+.aging-bucket.ab-critical{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3)}
+.ab-val{font-size:1.25em;font-weight:800;color:var(--text)}
+.ab-label{font-size:0.58em;color:var(--text-faint);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
+.aging-bucket.ab-danger .ab-val{color:var(--warning-light)}
+.aging-bucket.ab-critical .ab-val{color:var(--danger-light)}
+
+/* ─── SMART ACTIONS ─── */
+.smart-actions-list{display:flex;flex-direction:column;gap:5px}
+.smart-action-item{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--surface-2);border-radius:8px;border:1px solid var(--border);font-size:0.76em;color:var(--text-muted)}
+.sa-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sa-dot.red{background:var(--danger)}
+.sa-dot.orange{background:var(--warning)}
+.sa-dot.green{background:var(--success)}
+
+/* ─── LATEST BILLS PANEL ─── */
+.latest-bills-panel{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.bill-card{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 12px;transition:all 0.2s;cursor:pointer;
+}
+.bill-card:hover{border-color:var(--primary);background:var(--primary-glow)}
+.bill-card.bill-critical{border-left:3px solid var(--danger)}
+.bill-card.bill-overdue{border-left:3px solid var(--accent)}
+.bill-card.bill-paid{border-left:3px solid var(--success)}
+.bill-card.bill-unpaid{border-left:3px solid var(--text-faint)}
+.bill-row1{display:flex;justify-content:space-between;align-items:start;gap:6px;margin-bottom:3px}
+.bill-client{font-weight:700;font-size:0.78em;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+.bill-amount{font-weight:800;font-size:0.82em;font-family:monospace;color:var(--danger-light);flex-shrink:0}
+.bill-amount.paid{color:var(--success-light)}
+.bill-row2{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bill-meta{font-size:0.65em;color:var(--text-faint)}
+.bill-inv{font-size:0.82em;color:#fff;font-family:monospace;background:var(--primary);padding:3px 9px;border-radius:5px;font-weight:800;letter-spacing:0.3px;flex-shrink:0}
+[data-theme="light"] .bill-inv{color:#fff;background:var(--primary-dark)}
+.bill-days{font-size:0.62em;font-weight:800;color:var(--danger-light)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1100px){
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .filter-cards{grid-template-columns:repeat(3,1fr)}
+  .controls-grid{grid-template-columns:repeat(2,1fr)}
+  .insights-panel{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .quick-actions{grid-template-columns:repeat(2,1fr)}
+  .filter-cards{grid-template-columns:repeat(3,1fr);gap:5px}
+  .mobile-top-bar{display:flex}
+  h1{font-size:1.1em}
+  .last-updated,.company-badge{display:none}
+  .form-grid{grid-template-columns:1fr}
+  header{display:none}
+  .insights-panel{grid-template-columns:1fr}
+  .bottom-nav{display:block}
+  body{padding-bottom:80px}
+  .toast-container{top:auto;bottom:90px;left:10px;right:10px}
+  .toast{max-width:100%}
+}
+@media(max-width:640px){
+  body{padding:0 6px 80px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .stat-card{padding:10px}
+  .stat-value{font-size:1.05em}
+  .quick-actions{grid-template-columns:repeat(2,1fr);gap:6px}
+  .filter-cards{grid-template-columns:repeat(3,1fr);gap:4px}
+  .filter-card{padding:8px 4px}
+  .controls-grid{grid-template-columns:1fr 1fr}
+  .actions-bar .btn{flex:1;justify-content:center}
+  .table-scroll{display:none}
+  .mobile-cards{display:block}
+  .export-dropdown-menu{right:auto;left:0;min-width:220px}
+}
+@media(max-width:380px){
+  .filter-cards{grid-template-columns:repeat(2,1fr)}
+  .controls-grid{grid-template-columns:1fr}
+  .quick-actions{grid-template-columns:1fr 1fr}
+  .mc-actions .btn-xs{font-size:0.65em;padding:4px 7px}
+}
+@media(max-width:640px){
+  .table-scroll{max-height:45vh}
+}
+@media(max-width:480px){
+  .table-scroll{max-height:38vh}
+  .mobile-cards{max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+}
+</style>
+</head>
+<body>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ── STICKY MOBILE TOP BAR ── -->
+<div class="mobile-top-bar" id="mobileTopBar">
+  <div>
+    <div class="mobile-app-title">Carnival Payments</div>
+    <div class="mobile-app-sub" id="mobileSubtitle">Loading…</div>
+  </div>
+  <div class="theme-toggle-wrap">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"></button>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAVIGATION (mobile) ── -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-btn active" id="bnav-dashboard" onclick="showSection('dashboard')">
+      <span class="bnav-icon">📊</span><span class="bnav-label">Dashboard</span>
+    </button>
+    <button class="bnav-btn" id="bnav-redflag" onclick="showSection('redflag')">
+      <span class="bnav-icon">🚩</span><span class="bnav-label">Red Flags</span>
+    </button>
+    <button class="bnav-btn" id="bnav-records" onclick="showSection('records')">
+      <span class="bnav-icon">📋</span><span class="bnav-label">Records</span>
+    </button>
+    <button class="bnav-btn" id="bnav-add" onclick="openModal()">
+      <span class="bnav-icon">➕</span><span class="bnav-label">Add</span>
+    </button>
+    <button class="bnav-btn" id="bnav-export" onclick="showExportSheet()">
+      <span class="bnav-icon">📤</span><span class="bnav-label">Export</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── MOBILE EXPORT SHEET ── -->
+<div class="modal" id="exportSheet">
+  <div class="modal-content" style="max-width:400px;margin-top:auto">
+    <div class="modal-header">
+      <h2>📤 Export Options</h2>
+      <button class="close-btn" onclick="closeModal('exportSheet')">&times;</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-success" style="width:100%;justify-content:center;padding:12px" onclick="exportAllExcel();closeModal('exportSheet')">📊 Full Excel Report (All Data)</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="exportAllPDF();closeModal('exportSheet')">📄 Full PDF Report</button>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px" onclick="exportCurrentExcel();closeModal('exportSheet')">🔍 Current View (Excel)</button>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px" onclick="exportCurrentPDF();closeModal('exportSheet')">🔎 Current View (PDF)</button>
+      <button class="btn btn-danger" style="width:100%;justify-content:center;padding:12px" onclick="exportRedFlagsExcel();closeModal('exportSheet')">🚩 Red Flags (Excel)</button>
+      <button class="btn btn-danger" style="width:100%;justify-content:center;padding:12px" onclick="exportRedFlagsPDF();closeModal('exportSheet')">🔴 Red Flags (PDF)</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Alert Banner -->
+  <div class="alert-banner" id="alertBanner" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="alert-icon">🚨</div>
+      <div><div class="alert-text">URGENT: <span id="criticalCount">0</span> clients overdue 15+ days! <span class="alert-count" id="criticalAmount">₹0</span></div></div>
+    </div>
+    <button class="alert-btn" onclick="setFilterCard('redflag');scrollToTable()">View Red Flags</button>
+  </div>
+
+  <!-- ── DESKTOP HEADER ── -->
+  <header>
+    <div class="header-top">
+      <div style="flex:1;min-width:0">
+        <h1>CARNIVAL PAYMENT TRACKER <span class="company-badge badge-ce">Multi-Company</span></h1>
+        <p class="subtitle">Smart Dashboard — Carnival Entertainments · Foodcraft · RK Gulab</p>
+        <div class="last-updated" id="lastUpdated"></div>
+      </div>
+      <div class="theme-toggle-wrap" style="align-self:flex-start;margin-top:4px">
+        <span class="toggle-label" id="themeLabel">Dark</span>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light mode"></button>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card s-total">
+        <div class="stat-label">Total Invoiced</div>
+        <div class="stat-value v-primary" id="totalInvoiced">₹0</div>
+        <div class="stat-subtitle">Lifetime billing</div>
+        <div class="stat-icon">📊</div>
+      </div>
+      <div class="stat-card s-paid">
+        <div class="stat-label">Total Received</div>
+        <div class="stat-value v-success" id="totalReceived">₹0</div>
+        <div class="stat-subtitle">Collected payments</div>
+        <div class="stat-icon">💰</div>
+      </div>
+      <div class="stat-card s-danger">
+        <div class="stat-label">Outstanding</div>
+        <div class="stat-value v-danger" id="totalOutstanding">₹0</div>
+        <div class="stat-subtitle">Pending balance</div>
+        <div class="stat-icon">⚠️</div>
+      </div>
+      <div class="stat-card s-warn">
+        <div class="stat-label">Latest Bills</div>
+        <div class="stat-value v-accent" id="redFlagCount" style="font-size:0.72em;line-height:1.5;letter-spacing:0">—</div>
+        <div class="stat-subtitle">Per company · latest #</div>
+        <div class="stat-icon">🧾</div>
+      </div>
+      <div class="stat-card s-mca">
+        <div class="stat-label">MCA Outstanding</div>
+        <div class="stat-value v-mca" id="mcaOutstanding">₹0</div>
+        <div class="stat-subtitle">MCA venues</div>
+        <div class="stat-icon">🏟️</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MOBILE STATS STRIP ── -->
+  <div id="mobileStatsStrip" style="display:none;gap:6px;margin-bottom:10px;grid-template-columns:repeat(2,1fr)">
+    <div class="stat-card s-total" style="padding:10px">
+      <div class="stat-label">Invoiced</div>
+      <div class="stat-value v-primary" id="mTotalInvoiced" style="font-size:1em">₹0</div>
+    </div>
+    <div class="stat-card s-paid" style="padding:10px">
+      <div class="stat-label">Received</div>
+      <div class="stat-value v-success" id="mTotalReceived" style="font-size:1em">₹0</div>
+    </div>
+    <div class="stat-card s-danger" style="padding:10px">
+      <div class="stat-label">Outstanding</div>
+      <div class="stat-value v-danger" id="mTotalOutstanding" style="font-size:1em">₹0</div>
+    </div>
+    <div class="stat-card s-warn" style="padding:10px">
+      <div class="stat-label">Red Flags</div>
+      <div class="stat-value v-accent" id="mRedFlagCount" style="font-size:1em">0</div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <div class="quick-card" onclick="filterByCompany('Carnival Entertainments')">
+      <div class="quick-icon" style="font-size:1.2em;font-weight:900;letter-spacing:-1px;font-style:normal">CE</div>
+      <div class="quick-title">Carnival Entertainments</div>
+      <div class="quick-subtitle" id="ceStats">0 red flags</div>
+    </div>
+    <div class="quick-card" onclick="filterByCompany('Carnival Foodcraft')">
+      <div class="quick-icon" style="font-size:1.2em;font-weight:900;letter-spacing:-1px;font-style:normal">CF</div>
+      <div class="quick-title">Carnival Foodcraft</div>
+      <div class="quick-subtitle" id="cfStats">0 red flags</div>
+    </div>
+    <div class="quick-card" onclick="filterByCompany('RK Gulab')">
+      <div class="quick-icon" style="font-size:1.2em;font-weight:900;letter-spacing:-1px;font-style:normal">RK</div>
+      <div class="quick-title">RK Gulab</div>
+      <div class="quick-subtitle" id="rkStats">0 red flags</div>
+    </div>
+    <div class="quick-card" onclick="filterByVenueMCA()">
+      <div class="quick-icon" style="font-size:1.2em;font-weight:900;letter-spacing:-1px;font-style:normal">MCA</div>
+      <div class="quick-title">MCA Venues</div>
+      <div class="quick-subtitle" id="mcaStats">₹0 outstanding</div>
+    </div>
+  </div>
+
+  <!-- Filter Selector -->
+  <div class="filter-selector">
+    <div class="filter-selector-label">Quick Filter — Click to jump to filtered records</div>
+    <div class="filter-cards" id="filterCards">
+      <div class="filter-card active" data-filter="all" onclick="setFilterCard('all')">
+        <div class="fc-dot" style="background:var(--primary-light)"></div>
+        <div class="fc-icon">📋</div><div class="fc-label">Show All</div>
+        <div class="fc-count" id="fcCountAll">0</div>
+      </div>
+      <div class="filter-card" data-filter="redflag" onclick="setFilterCard('redflag')">
+        <div class="fc-dot" style="background:var(--danger-light)"></div>
+        <div class="fc-icon">🚩</div><div class="fc-label lc-red">Red Flag</div>
+        <div class="fc-count" id="fcCountRed">0</div>
+      </div>
+      <div class="filter-card" data-filter="critical" onclick="setFilterCard('critical')">
+        <div class="fc-dot" style="background:#f87171"></div>
+        <div class="fc-icon">🚨</div><div class="fc-label lc-red">Critical 15+</div>
+        <div class="fc-count" id="fcCountCritical">0</div>
+      </div>
+      <div class="filter-card" data-filter="overdue" onclick="setFilterCard('overdue')">
+        <div class="fc-dot" style="background:var(--accent-light)"></div>
+        <div class="fc-icon">⏰</div><div class="fc-label lc-orange">Overdue</div>
+        <div class="fc-count" id="fcCountOverdue">0</div>
+      </div>
+      <div class="filter-card" data-filter="unpaid" onclick="setFilterCard('unpaid')">
+        <div class="fc-dot" style="background:var(--accent-light)"></div>
+        <div class="fc-icon">⏳</div><div class="fc-label lc-yellow">Unpaid</div>
+        <div class="fc-count" id="fcCountUnpaid">0</div>
+      </div>
+      <div class="filter-card" data-filter="paid" onclick="setFilterCard('paid')">
+        <div class="fc-dot" style="background:var(--success-light)"></div>
+        <div class="fc-icon">✅</div><div class="fc-label lc-green">Paid</div>
+        <div class="fc-count" id="fcCountPaid">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Red Flag Section -->
+  <div class="red-flag-section" id="redFlagSection">
+    <div class="section-header">
+      <div class="section-title">🚩 Daily Follow-up Priority <span class="red-badge" id="redFlagBadge">0</span></div>
+    </div>
+    <div class="followup-grid" id="followupGrid"></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-section">
+    <h3 style="margin-bottom:10px;color:var(--text);font-size:0.93em;font-weight:800">🔍 Advanced Filters</h3>
+    <div class="controls-grid">
+      <div class="input-group">
+        <label>Search Client</label>
+        <input type="text" id="searchClient" placeholder="Type client name…" oninput="applyFilters()">
+      </div>
+      <div class="input-group">
+        <label>Venue</label>
+        <select id="filterVenue" onchange="applyFilters()"><option value="">All Venues</option></select>
+      </div>
+      <div class="input-group">
+        <label>Company</label>
+        <select id="filterCompany" onchange="applyFilters()"><option value="">All Companies</option></select>
+      </div>
+      <div class="input-group">
+        <label>Status</label>
+        <select id="filterStatus" onchange="applyFilters()">
+          <option value="">All Status</option>
+          <option value="Paid">Paid</option>
+          <option value="Unpaid">Unpaid</option>
+          <option value="Overdue">Overdue</option>
+          <option value="Critical">Critical (15+ days)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Date From</label>
+        <input type="date" id="dateFrom" onchange="applyFilters()">
+      </div>
+      <div class="input-group">
+        <label>Date To</label>
+        <input type="date" id="dateTo" onchange="applyFilters()">
+      </div>
+    </div>
+    <div class="actions-bar">
+      <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply</button>
+      <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Clear All</button>
+      <button class="btn btn-primary btn-sm" onclick="openModal()">+ Add Invoice</button>
+      <div class="export-dropdown" id="exportDropdown">
+        <button class="btn btn-success btn-sm" onclick="toggleExportMenu(event)">📤 Export ▾</button>
+        <div class="export-dropdown-menu" id="exportMenu">
+          <button class="export-item" onclick="exportAllExcel();closeExportMenu()">
+            <span class="ei-icon">📊</span>
+            <div><div>Export Excel — All Data</div><div class="ei-sub">Full report · Formulas · Colour-coded sheets</div></div>
+          </button>
+          <button class="export-item" onclick="exportAllPDF();closeExportMenu()">
+            <span class="ei-icon">📄</span>
+            <div><div>Export PDF — All Data</div><div class="ei-sub">Full report with summary + table</div></div>
+          </button>
+          <div class="export-divider"></div>
+          <button class="export-item" onclick="exportCurrentExcel();closeExportMenu()">
+            <span class="ei-icon">🔍</span>
+            <div><div>Current View (Excel)</div><div class="ei-sub">Filtered records only</div></div>
+          </button>
+          <button class="export-item" onclick="exportCurrentPDF();closeExportMenu()">
+            <span class="ei-icon">🔎</span>
+            <div><div>Current View (PDF)</div><div class="ei-sub">Filtered view as PDF</div></div>
+          </button>
+          <div class="export-divider"></div>
+          <button class="export-item" onclick="exportRedFlagsExcel();closeExportMenu()">
+            <span class="ei-icon">🚩</span>
+            <div><div>Red Flags (Excel)</div><div class="ei-sub">Urgent follow-up list</div></div>
+          </button>
+          <button class="export-item" onclick="exportRedFlagsPDF();closeExportMenu()">
+            <span class="ei-icon">🔴</span>
+            <div><div>Red Flags (PDF)</div><div class="ei-sub">Priority action list</div></div>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="filter-tags" id="activeFilters"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" id="tableContainer">
+    <div class="table-header">
+      <div style="display:flex;align-items:center;gap:9px">
+        <span style="font-weight:800;color:var(--text);font-size:0.88em">Payment Records</span>
+        <span id="recordCount" style="color:var(--text-dim);font-size:0.78em"></span>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table id="paymentsTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable('eventDate')">Date ↕</th>
+            <th onclick="sortTable('clientName')">Client ↕</th>
+            <th onclick="sortTable('venue')">Venue ↕</th>
+            <th onclick="sortTable('company')">Company ↕</th>
+            <th onclick="sortTable('invoiceNo')">Inv # ↕</th>
+            <th onclick="sortTable('invoiceAmount')">Invoice ↕</th>
+            <th onclick="sortTable('amountReceived')">Received ↕</th>
+            <th onclick="sortTable('balance')">Balance ↕</th>
+            <th onclick="sortTable('status')">Status ↕</th>
+            <th onclick="sortTable('dueDate')">Due Date ↕</th>
+            <th>Actions</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="mobile-cards" id="mobileCards"></div>
+  </div>
+
+  <!-- ── INSIGHTS PANEL ── -->
+  <div class="insights-panel" id="insightsPanel" style="margin-top:12px">
+
+    <!-- Latest Bills (replaces Collection Health) -->
+    <div class="insight-card">
+      <div class="insight-header">
+        <span class="insight-icon">🧾</span>
+        <span class="insight-title">Latest Bills</span>
+        <span id="latestBillsCount" style="margin-left:auto;font-size:0.68em;color:var(--text-faint)"></span>
+      </div>
+      <div class="latest-bills-panel" id="latestBillsList">
+        <div style="color:var(--text-faint);font-size:0.8em">Loading…</div>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-xs" onclick="setFilterCard('unpaid');scrollToTable()" style="flex:1;justify-content:center">View Unpaid</button>
+        <button class="btn btn-secondary btn-xs" onclick="setFilterCard('redflag');scrollToTable()" style="flex:1;justify-content:center">Red Flags</button>
+      </div>
+    </div>
+
+    <!-- Aging Analysis -->
+    <div class="insight-card">
+      <div class="insight-header">
+        <span class="insight-icon">⏱️</span>
+        <span class="insight-title">Aging Analysis</span>
+      </div>
+      <!-- Collection bar inside aging card -->
+      <div class="collection-bar-wrap" style="margin-bottom:12px">
+        <div class="collection-bar-track" style="flex:1">
+          <div class="collection-bar-fill" id="collectionBarFill" style="width:0%"></div>
+        </div>
+        <div class="collection-pct-label" id="collectionPctLabel">0%</div>
+      </div>
+      <div class="insight-sub-row" style="margin-bottom:10px">
+        <span style="color:var(--success-light)">✅ Collected: <strong id="insCollected">₹0</strong></span>
+        <span style="color:var(--danger-light)">⏳ Pending: <strong id="insPending">₹0</strong></span>
+      </div>
+      <div style="font-size:0.66em;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:700">Outstanding — Days Overdue</div>
+      <div class="aging-grid" id="agingGrid">
+        <div class="aging-bucket" id="agBucket0"><div class="ab-val">0</div><div class="ab-label">0–7d</div></div>
+        <div class="aging-bucket" id="agBucket1"><div class="ab-val">0</div><div class="ab-label">8–15d</div></div>
+        <div class="aging-bucket ab-danger" id="agBucket2"><div class="ab-val">0</div><div class="ab-label">16–30d</div></div>
+        <div class="aging-bucket ab-critical" id="agBucket3"><div class="ab-val">0</div><div class="ab-label">30+d</div></div>
+      </div>
+      <!-- Aging amounts row -->
+      <div class="aging-grid" id="agingAmtGrid" style="margin-top:5px">
+        <div class="aging-bucket" id="agAmt0" style="padding:5px"><div class="ab-label" style="font-size:0.56em;color:var(--text-faint)" id="agAmt0Val">₹0</div></div>
+        <div class="aging-bucket" id="agAmt1" style="padding:5px"><div class="ab-label" style="font-size:0.56em;color:var(--text-faint)" id="agAmt1Val">₹0</div></div>
+        <div class="aging-bucket ab-danger" id="agAmt2" style="padding:5px"><div class="ab-label" style="font-size:0.56em;color:var(--warning-light)" id="agAmt2Val">₹0</div></div>
+        <div class="aging-bucket ab-critical" id="agAmt3" style="padding:5px"><div class="ab-label" style="font-size:0.56em;color:var(--danger-light)" id="agAmt3Val">₹0</div></div>
+      </div>
+    </div>
+
+    <!-- Smart Actions -->
+    <div class="insight-card">
+      <div class="insight-header">
+        <span class="insight-icon">🎯</span>
+        <span class="insight-title">Today's Priority Actions</span>
+      </div>
+      <div id="smartActions" class="smart-actions-list">
+        <div style="color:var(--text-faint);font-size:0.8em">Loading actions…</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Add Invoice Modal -->
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>🎫 Add New Invoice</h2>
+      <button class="close-btn" onclick="closeModal('addModal')">&times;</button>
+    </div>
+    <form id="paymentForm" onsubmit="savePayment(event)">
+      <div class="form-grid">
+        <div class="input-group">
+          <label>Company *</label>
+          <select name="company" required>
+            <option value="Carnival Entertainments">CE — Carnival Entertainments</option>
+            <option value="Carnival Foodcraft">CF — Carnival Foodcraft</option>
+            <option value="RK Gulab">RK — RK Gulab</option>
+            <option value="Mahek Arts">MA — Mahek Arts</option>
+          </select>
+        </div>
+        <div class="input-group"><label>Event Date *</label><input type="date" name="eventDate" required></div>
+        <div class="input-group"><label>Client Name *</label><input type="text" name="clientName" required placeholder="Enter client name"></div>
+        <div class="input-group">
+          <label>Venue *</label>
+          <select name="venue" id="venueSelect"><option value="">Select Venue</option></select>
+        </div>
+        <div class="input-group"><label>Or New Venue</label><input type="text" id="newVenue" placeholder="Type if not in list"></div>
+        <div class="input-group"><label>Invoice Number</label><input type="text" name="invoiceNo" placeholder="e.g., 3548"></div>
+        <div class="input-group"><label>Invoice Amount (₹) *</label><input type="number" name="invoiceAmount" required min="0" step="0.01"></div>
+        <div class="input-group"><label>Amount Received (₹)</label><input type="number" name="amountReceived" min="0" step="0.01" value="0"></div>
+        <div class="input-group"><label>Due Date *</label><input type="date" name="dueDate" required></div>
+        <div class="input-group"><label>Client Phone</label><input type="tel" name="phone" placeholder="10-digit number"></div>
+        <div class="input-group full-width"><label>Client Email</label><input type="email" name="email" placeholder="For reminders"></div>
+        <div class="input-group full-width"><label>Payment Reference</label><input type="text" name="reference" placeholder="Cheque no, UTR…"></div>
+        <div class="input-group full-width"><label>Notes</label><input type="text" name="notes" placeholder="GST pending, instructions…"></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Invoice</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Pay Modal -->
+<div class="modal" id="payModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>✅ Mark as Paid</h2>
+      <button class="close-btn" onclick="closeModal('payModal')">&times;</button>
+    </div>
+    <div id="payModalBody"></div>
+  </div>
+</div>
+
+<!-- Ledger Modal -->
+<div class="modal" id="ledgerModal">
+  <div class="modal-content" style="max-width:860px">
+    <div class="modal-header">
+      <h2 id="ledgerTitle">Client Ledger</h2>
+      <button class="close-btn" onclick="closeModal('ledgerModal')">&times;</button>
+    </div>
+    <div id="ledgerBody"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────
+const initialData=[{"eventDate":"2025-04-02","clientName":"UNIVERSAL SOMPO GENERAL INSURANCE COMPANY LIMITED -GOREGAON VAIBHAVI MAAM","venue":"","company":"Carnival Entertainments","invoiceNo":3452,"invoiceAmount":184953,"amountReceived":184953,"balance":0,"status":"Paid","dueDate":"2025-11-21","phone":"98335 92820","email":"","reference":"","notes":""},{"eventDate":"2025-07-28","clientName":"NATIONAL PAYMENTS CORPORATION OF INDIA","venue":"","company":"Carnival Entertainments","invoiceNo":3476,"invoiceAmount":375370,"amountReceived":375370,"balance":0,"status":"Paid","dueDate":"2025-12-19","phone":"80972 07014","email":"sushant.chavan@npci.org.in","reference":"17-12-2025 9614","notes":""},{"eventDate":"2025-08-12","clientName":"UNIVERSAL SOMPO GENERAL INSURANCE COMPANY LIMITED","venue":"","company":"Carnival Entertainments","invoiceNo":3424,"invoiceAmount":59000,"amountReceived":59000,"balance":0,"status":"Paid","dueDate":"2025-12-12","phone":"8108194878","email":"anuja.ambavane@universalsompo.com","reference":"04-11-2025 UTIB0000328","notes":"GST PENDING"},{"eventDate":"2025-09-08","clientName":"BOROSIL LIMITED","venue":"MCA GOOGLY","company":"Carnival Entertainments","invoiceNo":3481,"invoiceAmount":22420,"amountReceived":22420,"balance":0,"status":"Paid","dueDate":"2026-01-16","phone":"","email":"","reference":7122509740,"notes":""},{"eventDate":"2025-09-12","clientName":"SBI CAPITAL MARKETS LTD","venue":"","company":"Carnival Entertainments","invoiceNo":3436,"invoiceAmount":44356,"amountReceived":44356,"balance":0,"status":"Paid","dueDate":"2025-11-01","phone":"7224093399","email":"","reference":"09-10-2025 SBIN0005345","notes":""},{"eventDate":"2025-10-02","clientName":"SUMEET AGRE - FARFEILD MARIOTT","venue":"","company":"RK Gulab","invoiceNo":"","invoiceAmount":35600,"amountReceived":0,"balance":35600,"status":"Overdue","dueDate":"2025-11-01","phone":"8097983941","email":"","reference":"","notes":"TOLD RO CUT FROM HIS COMMISION"},{"eventDate":"2025-10-14","clientName":"CINEOM BROADCAST INDIA LIMITED","venue":"","company":"Carnival Foodcraft","invoiceNo":555,"invoiceAmount":86140,"amountReceived":86140,"balance":0,"status":"Paid","dueDate":"2025-11-01","phone":"97693 65295","email":"cineomaccounts@cineom.in","reference":"","notes":""},{"eventDate":"2025-10-17","clientName":"MAHARASHTRA HOUSING AND AREA DEVELOPMENT AUTHORITY","venue":"","company":"Carnival Entertainments","invoiceNo":3472,"invoiceAmount":590000,"amountReceived":590000,"balance":0,"status":"Paid","dueDate":"2025-12-08","phone":"80077 79139","email":"","reference":"","notes":""},{"eventDate":"2025-10-31","clientName":"HOSPITALITY FIRST INDIA PVT LTD","venue":"","company":"Carnival Foodcraft","invoiceNo":578,"invoiceAmount":70800,"amountReceived":70800,"balance":0,"status":"Paid","dueDate":"2025-12-08","phone":"98101 72099","email":"aashish@hospitalityfirst.in","reference":"","notes":""},{"eventDate":"2025-11-14","clientName":"Multi Commodity Exchange of India Ltd","venue":"MCA BANQUET","company":"Carnival Foodcraft","invoiceNo":579,"invoiceAmount":1001926,"amountReceived":1001926,"balance":0,"status":"Paid","dueDate":"2025-12-10","phone":"88061 61971","email":"godwin.correia@mcxindia.com","reference":"","notes":""},{"eventDate":"2025-11-19","clientName":"ASAVARI RANJEET (19th NOV MCA BANQUET FLOWER WORK)","venue":"","company":"RK Gulab","invoiceNo":564,"invoiceAmount":30400,"amountReceived":30400,"balance":0,"status":"Paid","dueDate":"2025-11-27","phone":"98199 78499","email":"","reference":"","notes":"CASH PAID"},{"eventDate":"2025-12-19","clientName":"CS INFOCOMM PRIAVTE LIMITED - ANIL JOGLEKAR","venue":"MCA BOUNDARY","company":"Mahek Arts","invoiceNo":54,"invoiceAmount":213851,"amountReceived":0,"balance":213851,"status":"Overdue","dueDate":"2026-01-27","phone":"98679 75710","email":"","reference":"","notes":""},{"eventDate":"2026-01-09","clientName":"AXIOM GEN NXT INDIA PRIVATE LIMITED","venue":"TAJ VIVANTA THANE","company":"Carnival Foodcraft","invoiceNo":605,"invoiceAmount":151040,"amountReceived":123853,"balance":27187,"status":"Overdue","dueDate":"2026-02-17","phone":"98204 23140","email":"samuel@axiom.co.in","reference":"KVBLH00256107096","notes":"GST PENDING"},{"eventDate":"2026-01-20","clientName":"NATIONAL PAYMENTS CORPORATION OF INDIA","venue":"TAJ BANDRA","company":"Carnival Entertainments","invoiceNo":3493,"invoiceAmount":198635,"amountReceived":0,"balance":198635,"status":"Overdue","dueDate":"2026-02-28","phone":"80972 07014","email":"sushant.chavan@npci.org.in","reference":"","notes":""},{"eventDate":"2026-02-07","clientName":"TATA INTERNATIONAL LIMITED","venue":"VIOS TOWER","company":"Carnival Foodcraft","invoiceNo":610,"invoiceAmount":149152,"amountReceived":0,"balance":149152,"status":"Overdue","dueDate":"2026-03-12","phone":"98205 05083","email":"nooruddin.shaikh@tatainternational.com","reference":"","notes":""},{"eventDate":"2026-02-25","clientName":"SHIRKE INFRASTRUCTURE","venue":"MCA BOUNDARY","company":"Carnival Entertainments","invoiceNo":3498,"invoiceAmount":53100,"amountReceived":0,"balance":53100,"status":"Overdue","dueDate":"2026-03-13","phone":"","email":"","reference":"","notes":""},{"eventDate":"2026-03-05","clientName":"ADITYA BIRLA EDUCATION TRUST","venue":"MCA LAWN","company":"Carnival Entertainments","invoiceNo":3500,"invoiceAmount":501010,"amountReceived":424584,"balance":76426,"status":"Overdue","dueDate":"2026-03-25","phone":"89765 06528","email":"","reference":"GST PENDING","notes":""},{"eventDate":"2026-03-06","clientName":"SHIRKE INFRASTRUCTURE","venue":"MCA BANQUET","company":"Carnival Entertainments","invoiceNo":3501,"invoiceAmount":204140,"amountReceived":0,"balance":204140,"status":"Overdue","dueDate":"2026-03-26","phone":"","email":"","reference":"","notes":""},{"eventDate":"2026-03-09","clientName":"SEAFARES WELFARE FUND - GAURAV PRINTING","venue":"DELHI","company":"Carnival Foodcraft","invoiceNo":616,"invoiceAmount":79667,"amountReceived":0,"balance":79667,"status":"Overdue","dueDate":"2026-03-25","phone":"97693 49502","email":"","reference":"","notes":""},{"eventDate":"2026-03-15","clientName":"Liberty India Destination Management Co Pvt Ltd","venue":"MCA LAWN","company":"Carnival Foodcraft","invoiceNo":615,"invoiceAmount":89326,"amountReceived":46400,"balance":42926,"status":"Overdue","dueDate":"2026-03-25","phone":"93101 23504","email":"","reference":"","notes":""},{"eventDate":"2026-03-20","clientName":"Ventures Integrated Communications Private Limited","venue":"KORA KENDRA","company":"Carnival Entertainments","invoiceNo":3507,"invoiceAmount":212400,"amountReceived":0,"balance":212400,"status":"Overdue","dueDate":"2026-04-06","phone":"91677 60751","email":"","reference":"","notes":""},{"eventDate":"2026-03-30","clientName":"Ventures Integrated Communications Private Limited","venue":"YB CHAUHAN AUDITORIUM","company":"Carnival Entertainments","invoiceNo":3526,"invoiceAmount":113280,"amountReceived":0,"balance":113280,"status":"Overdue","dueDate":"2026-03-31","phone":"91677 60751","email":"","reference":"","notes":""},{"eventDate":"2026-02-04","clientName":"Mumbai Cricket Association","venue":"MCA BOUNDARY","company":"Carnival Entertainments","invoiceNo":3511,"invoiceAmount":70682,"amountReceived":0,"balance":70682,"status":"Overdue","dueDate":"2026-04-09","phone":"75062 81527","email":"","reference":"","notes":""},{"eventDate":"2026-02-05","clientName":"Mumbai Cricket Association","venue":"MCA CRICKET GROUND","company":"Carnival Entertainments","invoiceNo":3512,"invoiceAmount":306800,"amountReceived":0,"balance":306800,"status":"Overdue","dueDate":"2026-04-09","phone":"75063 81527","email":"","reference":"","notes":""},{"eventDate":"2026-02-24","clientName":"Mumbai Cricket Association","venue":"MCA BANQUET","company":"Carnival Entertainments","invoiceNo":3513,"invoiceAmount":77998,"amountReceived":0,"balance":77998,"status":"Overdue","dueDate":"2026-04-09","phone":"75064 81527","email":"","reference":"","notes":""},{"eventDate":"2026-02-27","clientName":"ABS MARINE SERVICES LIMITED","venue":"MCA GOOGLY","company":"Carnival Foodcraft","invoiceNo":620,"invoiceAmount":43660,"amountReceived":0,"balance":43660,"status":"Overdue","dueDate":"2026-04-10","phone":"98200 94636","email":"ovd@absmarine.com","reference":"","notes":""},{"eventDate":"2026-03-27","clientName":"BALMER LAWRIE AND COMPANY LIMITED","venue":"MCA BANQUET","company":"Carnival Entertainments","invoiceNo":3523,"invoiceAmount":503085,"amountReceived":447210,"balance":55875,"status":"Overdue","dueDate":"2026-04-15","phone":"96198 98947","email":"","reference":"","notes":""},{"eventDate":"2026-03-24","clientName":"Ventures Integrated Communications Private Limited","venue":"WANKHEDE STADIUM","company":"Carnival Entertainments","invoiceNo":3524,"invoiceAmount":138060,"amountReceived":0,"balance":138060,"status":"Overdue","dueDate":"2026-04-15","phone":"91677 60751","email":"","reference":"","notes":""},{"eventDate":"2026-01-02","clientName":"TAMARIND GLOBAL SERVICES PRIVATE LIMITED","venue":"JUHU NOVOTEL","company":"Carnival Entertainments","invoiceNo":3509,"invoiceAmount":236142,"amountReceived":200120,"balance":36022,"status":"Overdue","dueDate":"2026-04-08","phone":"96573 50704","email":"","reference":"","notes":"GST PENDING"},{"eventDate":"2026-02-15","clientName":"CRI Events Pvt Ltd - GENERATOR","venue":"MCA LAWN","company":"Carnival Foodcraft","invoiceNo":614,"invoiceAmount":21240,"amountReceived":0,"balance":21240,"status":"Overdue","dueDate":"2026-03-25","phone":"93101 23504","email":"","reference":"","notes":""},{"eventDate":"2026-03-06","clientName":"MUMBAI METRO ONE PVT LTD","venue":"VERSOVA","company":"RK Gulab","invoiceNo":580,"invoiceAmount":2000,"amountReceived":0,"balance":2000,"status":"Overdue","dueDate":"2026-03-25","phone":"81691 37630","email":"","reference":"","notes":""},{"eventDate":"2026-02-12","clientName":"EXPERIAN SERVICES INDIA PVT LTD","venue":"KURLA","company":"Carnival Entertainments","invoiceNo":3503,"invoiceAmount":7670,"amountReceived":0,"balance":7670,"status":"Overdue","dueDate":"2026-03-27","phone":"SANTOSH","email":"","reference":"","notes":""},{"eventDate":"2026-02-12","clientName":"ASTRON FOUNDATION","venue":"MCA BANQUET","company":"Carnival Entertainments","invoiceNo":3504,"invoiceAmount":74871,"amountReceived":74781,"balance":90,"status":"Overdue","dueDate":"2026-03-27","phone":"98186 98581","email":"Manoj.k@collectivegood.in","reference":"","notes":""},{"eventDate":"2026-01-17","clientName":"XED EXECUTIVE DEVELOPMENT LIMITED","venue":"XED EXECUTIVE DEVELOPMENT LIMITED","company":"Carnival Entertainments","invoiceNo":3527,"invoiceAmount":40917,"amountReceived":0,"balance":40917,"status":"Overdue","dueDate":"2026-04-10","phone":"","email":"accounts@xedinstitute.org","reference":"","notes":""},{"eventDate":"2026-03-05","clientName":"NATIONAL PAYMENTS CORPORATION OF INDIA","venue":"GOREGAON","company":"Carnival Entertainments","invoiceNo":3528,"invoiceAmount":97704,"amountReceived":0,"balance":97704,"status":"Overdue","dueDate":"2026-04-10","phone":"99200 24855","email":"","reference":"","notes":""},{"eventDate":"2026-02-27","clientName":"ABS MARINE SERVICES LIMITED","venue":"MCA GOOGLY","company":"Carnival Foodcraft","invoiceNo":621,"invoiceAmount":17700,"amountReceived":0,"balance":17700,"status":"Overdue","dueDate":"2026-04-10","phone":"98200 94636","email":"ovd@absmarine.com","reference":"","notes":""},{"eventDate":"2026-03-23","clientName":"TATA INTERNATIONAL LIMITED","venue":"VIOS TOWER","company":"Carnival Foodcraft","invoiceNo":622,"invoiceAmount":6254,"amountReceived":0,"balance":6254,"status":"Overdue","dueDate":"2026-04-10","phone":"98205 05083","email":"","reference":"","notes":""},{"eventDate":"2026-03-02","clientName":"TATA INTERNATIONAL LIMITED","venue":"VIOS TOWER","company":"Carnival Foodcraft","invoiceNo":623,"invoiceAmount":9440,"amountReceived":0,"balance":9440,"status":"Overdue","dueDate":"2026-04-10","phone":"98205 05083","email":"","reference":"","notes":""},{"eventDate":"2026-03-30","clientName":"Ventures Integrated Communications Private Limited","venue":"YB CHAUHAN AUDITORIUM","company":"Carnival Entertainments","invoiceNo":3525,"invoiceAmount":141600,"amountReceived":118800,"balance":22800,"status":"Overdue","dueDate":"2026-04-15","phone":"91677 60751","email":"","reference":"","notes":""},{"eventDate":"2026-04-15","clientName":"Happy and Hearty Foods LLP.","venue":"BARE BOMBAY WORLI","company":"Carnival Foodcraft","invoiceNo":629,"invoiceAmount":7080,"amountReceived":0,"balance":7080,"status":"Overdue","dueDate":"2026-04-15","phone":"SASHI","email":"","reference":"","notes":""},{"eventDate":"2026-03-13","clientName":"Rajhans Audio Visual","venue":"ORCHID + SAHARA STAR","company":"Carnival Foodcraft","invoiceNo":630,"invoiceAmount":11800,"amountReceived":0,"balance":11800,"status":"Overdue","dueDate":"","phone":"SANTOSH","email":"","reference":"","notes":""},{"eventDate":"2026-04-06","clientName":"UNIVERSAL SOMPO GENERAL INSURANCE COMPANY LIMITED","venue":"MCA BANQUET","company":"Carnival Entertainments","invoiceNo":3550,"invoiceAmount":330400,"amountReceived":0,"balance":330400,"status":"Paid","dueDate":"2026-04-30","phone":"98335 92820","email":"Purushottam.Komale@universalsompo.com","reference":"","notes":""},{"eventDate":"2026-03-20","clientName":"Fire Protection Association of India","venue":"MCA BANQUET","company":"Carnival Entertainments","invoiceNo":3506,"invoiceAmount":231233,"amountReceived":231233,"balance":0,"status":"Paid","dueDate":"2026-04-05","phone":"86918 79391","email":"info@fpai.in","reference":"","notes":""},{"eventDate":"2026-03-11","clientName":"CyberPeace Foundation","venue":"MCA GOOGLY","company":"Carnival Entertainments","invoiceNo":3502,"invoiceAmount":42480,"amountReceived":42480,"balance":0,"status":"Paid","dueDate":"2026-03-26","phone":"92622 97096","email":"","reference":"","notes":""},{"eventDate":"2026-03-07","clientName":"FOREX ASSOCIATION OF INDIA","venue":"MCA LAWN + BANQUET","company":"Carnival Foodcraft","invoiceNo":617,"invoiceAmount":939509,"amountReceived":0,"balance":939509,"status":"Paid","dueDate":"2026-03-26","phone":"","email":"faiadmin@forexindia.org","reference":"","notes":""},{"eventDate":"2026-03-13","clientName":"KOTAK ALTERNATE ASSET MANAGERS LIMITED","venue":"MCA GOOGLY","company":"Carnival Entertainments","invoiceNo":3508,"invoiceAmount":29500,"amountReceived":29500,"balance":0,"status":"Paid","dueDate":"2026-04-07","phone":"86559 62863","email":"renita.noronha@kotak.com","reference":"","notes":""},{"eventDate":"2026-04-13","clientName":"SHOWLIFT ENTERTAINMENT","venue":"BANDRA","company":"Carnival Foodcraft","invoiceNo":628,"invoiceAmount":22420,"amountReceived":22420,"balance":0,"status":"Paid","dueDate":"2026-04-13","phone":"SANTOSH","email":"","reference":"","notes":""},{"eventDate":"2026-04-09","clientName":"CONTROL RISKS INDIA PRIVATE LIMITED","venue":"MCA BOUNDARY","company":"Carnival Entertainments","invoiceNo":3542,"invoiceAmount":118466,"amountReceived":118466,"balance":0,"status":"Paid","dueDate":"2026-04-25","phone":"98331 71669","email":"","reference":"","notes":""},{"eventDate":"2026-04-04","clientName":"Zenplus Private Limited","venue":"COURTYARD (OCTNUM 5)","company":"Carnival Entertainments","invoiceNo":3545,"invoiceAmount":32757,"amountReceived":32757,"balance":0,"status":"Paid","dueDate":"2026-04-25","phone":"88792 20187","email":"","reference":"","notes":""},{"eventDate":"2026-04-10","clientName":"ANM Global Inc","venue":"MCA BOUNDARY","company":"RK Gulab","invoiceNo":585,"invoiceAmount":105000,"amountReceived":0,"balance":105000,"status":"Paid","dueDate":"2026-04-25","phone":"88790 90640","email":"","reference":"","notes":""}];
+
+initialData.forEach(p=>{p.clientName=(p.clientName||'').trim();p.phone=(p.phone||'').trim()});
+let payments=JSON.parse(JSON.stringify(initialData));
+payments.forEach(p=>{
+  p.balance=parseFloat(p.invoiceAmount||0)-parseFloat(p.amountReceived||0);
+  if(isNaN(p.balance))p.balance=0;
+});
+let filteredPayments=[...payments];
+let activeFilterCard='all';
+let sortColumn='eventDate';
+let sortDirection='desc';
+
+// ─── STORAGE: SAVE & LOAD ─────────────────────────────────────────────────
+function savePaymentsToStorage(){
+  try {
+    localStorage.setItem('pt_payments', JSON.stringify(payments));
+  } catch(e){ console.warn('Save failed:', e); }
+}
+
+function loadPaymentsFromStorage(){
+  try {
+    const raw = localStorage.getItem('pt_payments');
+    if(!raw) return;
+    const loaded = JSON.parse(raw);
+    if(!Array.isArray(loaded) || !loaded.length) return;
+    payments.length = 0;
+    loaded.forEach(p => {
+      p.clientName = (p.clientName||'').trim();
+      p.phone = (p.phone||'').trim();
+      p.balance = parseFloat(p.invoiceAmount||0) - parseFloat(p.amountReceived||0);
+      if(isNaN(p.balance)) p.balance = 0;
+      payments.push(p);
+    });
+    filteredPayments = [...payments];
+    populateFilters();
+    setFilterCard(activeFilterCard);
+    updateStats();
+    renderFollowups();
+  } catch(e){ console.warn('Load failed:', e); }
+}
+
+// Load from storage on startup (cloud sync will override if newer data exists)
+loadPaymentsFromStorage();
+
+// ─── UTILITIES ──────────────────────────────────────────────────────────────
+function FC(n){
+  const v=parseFloat(n)||0;
+  return '₹'+v.toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+function FCP(n){const v=parseFloat(n)||0;return 'Rs.'+v.toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function FD(d){
+  if(!d)return '—';
+  const dt=new Date(d);
+  if(isNaN(dt))return d;
+  return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+function esc(s){return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+function cleanPhone(p){return (p||'').replace(/\D/g,'').slice(-10)}
+function showToast(msg,type='info'){
+  const t=document.createElement('div');
+  t.className=`toast toast-${type}`;
+  t.textContent=msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+function toggleTheme(){
+  const d=document.documentElement;
+  const isLight=d.getAttribute('data-theme')==='light';
+  d.setAttribute('data-theme',isLight?'dark':'light');
+  document.getElementById('themeLabel').textContent=isLight?'Dark':'Light';
+}
+function scrollToTable(){
+  setTimeout(()=>{
+    const el=document.getElementById('tableContainer');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
+}
+function toggleExportMenu(e){
+  e.stopPropagation();
+  document.getElementById('exportDropdown').classList.toggle('open');
+}
+function closeExportMenu(){document.getElementById('exportDropdown').classList.remove('open')}
+document.addEventListener('click',()=>closeExportMenu());
+
+// ─── MOBILE SECTION NAV ──────────────────────────────────────────────────────
+let currentSection='dashboard';
+const SECTIONS=['dashboard','redflag','records'];
+function showSection(sec){
+  currentSection=sec;
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  const ab=document.getElementById('bnav-'+sec);
+  if(ab)ab.classList.add('active');
+  if(sec==='redflag'){
+    document.getElementById('redFlagSection').scrollIntoView({behavior:'smooth'});
+  } else if(sec==='records'){
+    document.getElementById('tableContainer').scrollIntoView({behavior:'smooth'});
+  } else {
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+function showExportSheet(){
+  document.getElementById('exportSheet').classList.add('active');
+}
+
+// ─── MOBILE RESPONSIVE SHOW/HIDE ────────────────────────────────────────────
+function checkMobile(){
+  const isMobile=window.innerWidth<=768;
+  const strip=document.getElementById('mobileStatsStrip');
+  if(strip) strip.style.display=isMobile?'grid':'none';
+}
+window.addEventListener('resize',checkMobile);
+checkMobile();
+
+// ─── STATUS CALC ──────────────────────────────────────────────────────────────
+function calcStatus(p){
+  const bal=parseFloat(p.balance||0);
+  if(bal<=0)return{status:'Paid',isRedFlag:false,daysOverdue:0,urgency:'normal'};
+  if(!p.dueDate)return{status:'Unpaid',isRedFlag:false,daysOverdue:0,urgency:'normal'};
+  const today=new Date();today.setHours(0,0,0,0);
+  const due=new Date(p.dueDate);due.setHours(0,0,0,0);
+  const diff=Math.floor((today-due)/86400000);
+  if(diff<=0)return{status:'Unpaid',isRedFlag:false,daysOverdue:0,urgency:'normal'};
+  if(diff>=15)return{status:'Critical',isRedFlag:true,daysOverdue:diff,urgency:'critical'};
+  return{status:'Overdue',isRedFlag:true,daysOverdue:diff,urgency:'overdue'};
+}
+
+// ─── FILTER COUNTS ────────────────────────────────────────────────────────────
+function updateFilterCounts(){
+  let red=0,crit=0,ovd=0,unp=0,paid=0;
+  payments.forEach(p=>{
+    const s=calcStatus(p);
+    if(s.isRedFlag)red++;
+    if(s.urgency==='critical')crit++;
+    if(s.status==='Overdue'||s.status==='Critical')ovd++;
+    if(s.status==='Unpaid')unp++;
+    if(s.status==='Paid')paid++;
+  });
+  document.getElementById('fcCountAll').textContent=payments.length+' records';
+  document.getElementById('fcCountRed').textContent=red+' overdue';
+  document.getElementById('fcCountCritical').textContent=crit+' critical';
+  document.getElementById('fcCountOverdue').textContent=ovd+' overdue';
+  document.getElementById('fcCountUnpaid').textContent=unp+' unpaid';
+  document.getElementById('fcCountPaid').textContent=paid+' paid';
+}
+
+function setFilterCard(type){
+  activeFilterCard=type;
+  document.querySelectorAll('.filter-card').forEach(c=>c.classList.toggle('active',c.dataset.filter===type));
+  ['searchClient','filterVenue','filterCompany','filterStatus','dateFrom','dateTo'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('activeFilters').innerHTML='';
+  switch(type){
+    case'all':filteredPayments=[...payments];break;
+    case'redflag':filteredPayments=payments.filter(p=>calcStatus(p).isRedFlag);break;
+    case'critical':filteredPayments=payments.filter(p=>calcStatus(p).urgency==='critical');break;
+    case'overdue':filteredPayments=payments.filter(p=>{const s=calcStatus(p);return s.status==='Overdue'||s.status==='Critical'});break;
+    case'unpaid':filteredPayments=payments.filter(p=>calcStatus(p).status==='Unpaid');break;
+    case'paid':filteredPayments=payments.filter(p=>calcStatus(p).status==='Paid');break;
+  }
+  filteredPayments.sort((a,b)=>{
+    const sa=calcStatus(a),sb=calcStatus(b);
+    if(sa.isRedFlag&&!sb.isRedFlag)return -1;if(!sa.isRedFlag&&sb.isRedFlag)return 1;
+    if(sa.isRedFlag&&sb.isRedFlag)return sb.daysOverdue-sa.daysOverdue;
+    return new Date(b.eventDate||0)-new Date(a.eventDate||0);
+  });
+  renderTable();renderMobileCards();
+  scrollToTable();
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+function updateStats(){
+  const ti=payments.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+  const tr=payments.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0);
+  let rc=0,ca=0,mo=0;const cs={};
+  payments.forEach(p=>{
+    const s=calcStatus(p),b=parseFloat(p.balance||0);
+    if(s.urgency==='critical'){rc++;ca+=b}
+    if(p.venue&&p.venue.includes('MCA'))mo+=b;
+    if(!cs[p.company])cs[p.company]={rf:0};
+    if(s.urgency==='critical')cs[p.company].rf++;
+  });
+  // Desktop stats
+  document.getElementById('totalInvoiced').textContent=FC(ti);
+  document.getElementById('totalReceived').textContent=FC(tr);
+  document.getElementById('totalOutstanding').textContent=FC(ti-tr);
+  // redFlagCount now shows latest bill numbers (handled by updateBillNumbers)
+  document.getElementById('mcaOutstanding').textContent=FC(mo);
+  // Mobile stats strip
+  document.getElementById('mTotalInvoiced').textContent=FC(ti);
+  document.getElementById('mTotalReceived').textContent=FC(tr);
+  document.getElementById('mTotalOutstanding').textContent=FC(ti-tr);
+  document.getElementById('mRedFlagCount').textContent=rc;
+  // Mobile subtitle
+  const mSub=document.getElementById('mobileSubtitle');
+  if(mSub)mSub.textContent=rc>0?`⚠️ ${rc} critical · ${FC(ti-tr)} outstanding`:FC(ti-tr)+' outstanding';
+
+  if(rc>0){
+    document.getElementById('alertBanner').style.display='flex';
+    document.getElementById('criticalCount').textContent=rc;
+    document.getElementById('criticalAmount').textContent=FC(ca);
+  }else{document.getElementById('alertBanner').style.display='none'}
+
+  document.getElementById('ceStats').textContent=(cs['Carnival Entertainments']?.rf||0)+' red flags';
+  document.getElementById('cfStats').textContent=(cs['Carnival Foodcraft']?.rf||0)+' red flags';
+  document.getElementById('rkStats').textContent=(cs['RK Gulab']?.rf||0)+' red flags';
+  document.getElementById('mcaStats').textContent=FC(mo)+' outstanding';
+  document.getElementById('lastUpdated').textContent='Last updated: '+new Date().toLocaleString('en-IN');
+  updateFilterCounts();
+  updateInsights();
+  updateBillNumbers();
+}
+
+// ─── INSIGHTS ─────────────────────────────────────────────────────────────────
+function updateInsights(){
+  const ti=payments.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+  const tr=payments.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0);
+  const pct=ti>0?Math.round(tr/ti*100):0;
+  document.getElementById('collectionBarFill').style.width=pct+'%';
+  document.getElementById('collectionPctLabel').textContent=pct+'%';
+  document.getElementById('insCollected').textContent=FC(tr);
+  document.getElementById('insPending').textContent=FC(ti-tr);
+
+  // Aging buckets — count + amount
+  let b0=0,b1=0,b2=0,b3=0,a0=0,a1=0,a2=0,a3=0;
+  payments.forEach(p=>{
+    const s=calcStatus(p);
+    if(s.status==='Paid')return;
+    const d=s.daysOverdue,bal=parseFloat(p.balance||0);
+    if(d<=0)return;
+    if(d<=7){b0++;a0+=bal;}
+    else if(d<=15){b1++;a1+=bal;}
+    else if(d<=30){b2++;a2+=bal;}
+    else{b3++;a3+=bal;}
+  });
+  document.getElementById('agBucket0').querySelector('.ab-val').textContent=b0;
+  document.getElementById('agBucket1').querySelector('.ab-val').textContent=b1;
+  document.getElementById('agBucket2').querySelector('.ab-val').textContent=b2;
+  document.getElementById('agBucket3').querySelector('.ab-val').textContent=b3;
+  document.getElementById('agAmt0Val').textContent=FC(a0);
+  document.getElementById('agAmt1Val').textContent=FC(a1);
+  document.getElementById('agAmt2Val').textContent=FC(a2);
+  document.getElementById('agAmt3Val').textContent=FC(a3);
+
+  // Latest Bills panel
+  updateLatestBills();
+
+  // Smart actions
+  const actions=[];
+  const criticals=payments.filter(p=>calcStatus(p).urgency==='critical').sort((a,b)=>calcStatus(b).daysOverdue-calcStatus(a).daysOverdue);
+  const overdues=payments.filter(p=>calcStatus(p).status==='Overdue');
+  const dueSoon=payments.filter(p=>{
+    if(parseFloat(p.balance||0)<=0||!p.dueDate)return false;
+    const d=Math.ceil((new Date(p.dueDate)-new Date())/86400000);
+    return d>=0&&d<=3;
+  });
+  window._smartActions=[];
+  if(criticals.length){
+    const top=criticals[0];
+    window._smartActions.push(()=>openLedger(top.clientName));
+    actions.push({dot:'red',text:`📞 Call ${top.clientName.split(' ').slice(0,3).join(' ')} — ${calcStatus(top).daysOverdue}d overdue (${FC(top.balance)})`,idx:window._smartActions.length-1,tip:'Open ledger'});
+  }
+  if(criticals.length>1){
+    window._smartActions.push(()=>{setFilterCard('critical');});
+    actions.push({dot:'red',text:`🚨 ${criticals.length-1} more critical client${criticals.length>2?'s':''} need urgent follow-up`,idx:window._smartActions.length-1,tip:'View critical'});
+  }
+  if(overdues.length){
+    window._smartActions.push(()=>{setFilterCard('overdue');});
+    actions.push({dot:'orange',text:`⏰ ${overdues.length} overdue invoice${overdues.length>1?'s':''} — follow up this week`,idx:window._smartActions.length-1,tip:'View overdue'});
+  }
+  if(dueSoon.length){
+    window._smartActions.push(()=>{filteredPayments=dueSoon;renderTable();renderMobileCards();document.querySelectorAll('.filter-card').forEach(c=>c.classList.remove('active'));scrollToTable();});
+    actions.push({dot:'orange',text:`⚡ ${dueSoon.length} payment${dueSoon.length>1?'s':''} due within 3 days`,idx:window._smartActions.length-1,tip:'View due soon'});
+  }
+  if(!actions.length){
+    window._smartActions.push(null);
+    actions.push({dot:'green',text:'✅ All caught up — no urgent follow-ups today!',idx:null,tip:''});
+  }
+  document.getElementById('smartActions').innerHTML=actions.map(a=>
+    a.idx!=null
+    ? `<div class="smart-action-item" onclick="window._smartActions[${a.idx}]()" style="cursor:pointer;transition:all 0.15s" onmouseenter="this.style.background='var(--surface-3)';this.style.borderColor='var(--primary)'" onmouseleave="this.style.background='';this.style.borderColor=''">
+        <span class="sa-dot ${a.dot}"></span><span style="flex:1">${a.text}</span><span style="font-size:0.85em;color:var(--text-faint);flex-shrink:0">${a.tip} →</span>
+       </div>`
+    : `<div class="smart-action-item"><span class="sa-dot ${a.dot}"></span>${a.text}</div>`
+  ).join('');
+}
+
+// ─── LATEST BILLS PANEL ────────────────────────────────────────────────────────
+function updateLatestBills(){
+  // Sort by event date descending — newest always at top
+  const sorted=[...payments].sort((a,b)=>
+    new Date(b.eventDate||0)-new Date(a.eventDate||0)
+  ).slice(0,15);
+
+  document.getElementById('latestBillsCount').textContent=`Recent ${sorted.length} of ${payments.length}`;
+  const container=document.getElementById('latestBillsList');
+  container.innerHTML=sorted.map(p=>{
+    const s=calcStatus(p);
+    const bal=parseFloat(p.balance||0);
+    const isPaid=s.status==='Paid';
+    const isCrit=s.urgency==='critical';
+    const isOvd=s.status==='Overdue';
+    const cardClass=isCrit?'bill-critical':isOvd?'bill-overdue':isPaid?'bill-paid':'bill-unpaid';
+    const ri=payments.indexOf(p);
+    return `<div class="bill-card ${cardClass}" onclick="openLedger('${esc(p.clientName)}')">
+      <div class="bill-row1">
+        <span class="bill-client" title="${p.clientName}">${p.clientName}</span>
+        ${p.invoiceNo?`<span class="bill-inv">${p.invoiceNo}</span>`:''}
+        <span class="bill-amount ${isPaid?'paid':''}">
+          ${isPaid?FC(p.invoiceAmount):FC(bal)}
+        </span>
+      </div>
+      <div class="bill-row2">
+        <span class="bill-meta">${FD(p.eventDate)}</span>
+        ${p.venue?`<span class="bill-meta">· ${p.venue.length>10?p.venue.substring(0,10)+'…':p.venue}</span>`:''}
+        <span class="status-badge ${s.status==='Paid'?'status-paid':s.status==='Critical'?'status-critical':s.status==='Overdue'?'status-overdue':'status-unpaid'}" style="font-size:0.6em;padding:1px 6px">${s.status}</span>
+        ${s.daysOverdue>0?`<span class="bill-days">${s.daysOverdue}d</span>`:''}
+      </div>
+      ${!isPaid&&bal>0?`<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap" onclick="event.stopPropagation()">
+        ${cleanPhone(p.phone)?`<a class="act-btn act-wa" href="https://wa.me/91${cleanPhone(p.phone)}" target="_blank" style="font-size:0.65em;padding:3px 7px">💬</a>`:''}
+        <button class="act-btn act-pay" onclick="openPayModal(${ri})" style="font-size:0.65em;padding:3px 7px">✅ Pay</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+
+// ─── BILL NUMBERS PANEL ───────────────────────────────────────────────────────
+function updateBillNumbers(){
+  const compDefs=[
+    {co:'Carnival Entertainments',label:'CE'},
+    {co:'Carnival Foodcraft',label:'CF'},
+    {co:'RK Gulab',label:'RK'},
+  ];
+  const el=document.getElementById('redFlagCount');
+  if(!el)return;
+  const parts=compDefs.map(({co,label})=>{
+    const nums=payments.filter(p=>p.company===co&&p.invoiceNo)
+      .map(p=>parseInt(p.invoiceNo)||0).filter(n=>n>0);
+    if(!nums.length)return null;
+    return `<span style="display:block">${label}&nbsp;<b>${Math.max(...nums)}</b></span>`;
+  }).filter(Boolean);
+  el.style.cssText='font-size:0.78em;line-height:1.6;letter-spacing:0;font-weight:400';
+  el.innerHTML=parts.join('');
+}
+
+// ─── FOLLOWUPS ────────────────────────────────────────────────────────────────
+function renderFollowups(){
+  const g=document.getElementById('followupGrid');
+  const r=payments.filter(p=>calcStatus(p).isRedFlag)
+    .sort((a,b)=>calcStatus(b).daysOverdue-calcStatus(a).daysOverdue).slice(0,8);
+  document.getElementById('redFlagBadge').textContent=r.length;
+  if(!r.length){
+    g.innerHTML='<div style="text-align:center;color:var(--success-light);padding:16px;font-size:0.9em">✅ No red flagged clients right now!</div>';
+    return;
+  }
+  g.innerHTML=r.map(p=>{
+    const s=calcStatus(p),cl=s.urgency==='critical'?'critical':'high';
+    const ph=cleanPhone(p.phone),idx=payments.indexOf(p);
+    return`<div class="followup-card ${cl}">
+      <div class="followup-header">
+        <div>
+          <div class="followup-client">${p.clientName}</div>
+          <div style="font-size:0.72em;color:var(--text-dim);margin-top:2px">${p.venue||'No venue'} &bull; ${p.company}</div>
+        </div>
+        <div class="followup-days">${s.daysOverdue}d overdue</div>
+      </div>
+      <div class="followup-details">Inv: ${p.invoiceNo||'N/A'} &bull; Due: ${FD(p.dueDate)}</div>
+      <div class="followup-amount">${FC(p.balance)}</div>
+      <div class="followup-actions">
+        ${ph?`<a class="btn btn-xs act-wa" href="https://wa.me/91${ph}" target="_blank">💬 WhatsApp</a>`:''}
+        ${ph?`<a class="btn btn-xs act-call" href="tel:${p.phone}">📞 Call</a>`:''}
+        ${p.email?`<a class="btn btn-xs act-call" href="mailto:${p.email}">✉️ Email</a>`:''}
+        <button class="btn btn-xs act-pay" onclick="openPayModal(${idx})">✅ Mark Paid</button>
+        <button class="btn btn-xs act-ledger" onclick="openLedger('${esc(p.clientName)}')">📋 Ledger</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── ACTION BUTTONS ───────────────────────────────────────────────────────────
+function buildActions(p,idx){
+  const ph=cleanPhone(p.phone),bal=parseFloat(p.balance)>0;
+  let h='<div class="action-group">';
+  if(ph)h+=`<a class="act-btn act-wa" href="https://wa.me/91${ph}" target="_blank"><span>💬</span><span>WA</span></a>`;
+  if(ph)h+=`<a class="act-btn act-call" href="tel:${p.phone}"><span>📞</span></a>`;
+  if(bal)h+=`<button class="act-btn act-pay" onclick="openPayModal(${idx})"><span>✅</span><span>Pay</span></button>`;
+  h+=`<button class="act-btn act-ledger" onclick="openLedger('${esc(p.clientName)}')"><span>📋</span></button>`;
+  h+=`<button class="act-btn act-edit" onclick="editPayment(${idx})" title="Edit"><span>✏️</span></button>`;
+  h+=`<button class="act-btn act-delete" onclick="deletePayment(${idx})" title="Delete"><span>🗑️</span></button>`;
+  h+='</div>';return h;
+}
+
+// ─── COMPANY EMOJI HELPER ─────────────────────────────────────────────────────
+function compInitials(c){
+  if(c==='Carnival Entertainments')return'CE';
+  if(c==='Carnival Foodcraft')return'CF';
+  if(c==='RK Gulab')return'RK';
+  if(c==='Mahek Arts')return'MA';
+  return c.substring(0,3).toUpperCase();
+}
+function compEmoji(c){return compInitials(c);}
+function compShort(c){return compInitials(c);}
+
+// ─── TABLE RENDER ─────────────────────────────────────────────────────────────
+function renderTable(){
+  const tb=document.getElementById('tableBody');
+  document.getElementById('recordCount').textContent=filteredPayments.length+' records';
+  if(!filteredPayments.length){
+    tb.innerHTML='<tr><td colspan="12" style="text-align:center;padding:28px;color:var(--text-dim)">No records found</td></tr>';
+    return;
+  }
+  tb.innerHTML=filteredPayments.map(p=>{
+    const s=calcStatus(p);
+    const sc=s.status==='Paid'?'status-paid':s.status==='Critical'?'status-critical':s.status==='Overdue'?'status-overdue':'status-unpaid';
+    const rc=s.isRedFlag?'red-flag-row':'';
+    const cc=p.company==='Carnival Entertainments'?'tag-ce':p.company==='Carnival Foodcraft'?'tag-cf':p.company==='RK Gulab'?'tag-rk':'tag-mahek';
+    const ri=payments.indexOf(p);
+    const balColor=parseFloat(p.balance)>0?'amount-negative':'amount-positive';
+    return`<tr class="${rc}">
+      <td style="white-space:nowrap;font-weight:800;color:var(--text);font-size:0.82em">${FD(p.eventDate)}</td>
+      <td><a class="client-link" onclick="openLedger('${esc(p.clientName)}')">${p.clientName}</a></td>
+      <td><span class="venue-tag" title="${p.venue||''}" style="font-weight:700">${p.venue||'—'}</span></td>
+      <td><span class="company-tag ${cc}">${p.company}</span></td>
+      <td style="white-space:nowrap">${p.invoiceNo?`<span style="display:inline-block;background:var(--primary);color:#fff;font-family:monospace;font-size:1.05em;font-weight:800;padding:4px 11px;border-radius:6px;letter-spacing:0.3px">${p.invoiceNo}</span>`:'<span style="color:var(--text-faint);font-size:0.9em">—</span>'}</td>
+      <td class="amount">${FC(p.invoiceAmount)}</td>
+      <td class="amount amount-positive">${FC(p.amountReceived)}</td>
+      <td class="amount ${balColor}">${FC(p.balance)}</td>
+      <td><span class="status-badge ${sc}">${s.status}</span></td>
+      <td style="white-space:nowrap;font-weight:700;color:var(--text-muted);font-size:0.8em">${FD(p.dueDate)}</td>
+      <td style="min-width:190px">${buildActions(p,ri)}</td>
+      <td style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-dim)" title="${esc(p.notes)}">${p.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── MOBILE CARDS ─────────────────────────────────────────────────────────────
+function renderMobileCards(){
+  const c=document.getElementById('mobileCards');
+  if(!filteredPayments.length){
+    c.innerHTML='<div style="text-align:center;padding:12px;color:var(--text-dim)">No records found</div>';
+    return;
+  }
+  c.innerHTML=filteredPayments.map(p=>{
+    const s=calcStatus(p),rf=s.isRedFlag;
+    const sc=s.status==='Paid'?'status-paid':s.status==='Critical'?'status-critical':s.status==='Overdue'?'status-overdue':'status-unpaid';
+    const ph=cleanPhone(p.phone),ri=payments.indexOf(p),bal=parseFloat(p.balance)>0;
+    return`<div class="mobile-card ${rf?'rf-card':''}" style="padding:9px 11px;margin-bottom:6px">
+      <div class="mc-top" style="margin-bottom:3px">
+        <div class="mc-client" style="font-size:0.83em">${p.clientName}</div>
+        <span class="status-badge ${sc}" style="font-size:0.62em;padding:2px 6px;flex-shrink:0">${s.status}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
+        <span style="font-weight:800;font-size:0.72em;color:var(--text)">${FD(p.eventDate)}</span>
+        ${p.venue?`<span style="font-weight:700;font-size:0.68em;color:#60a5fa;background:rgba(96,165,250,0.1);padding:1px 6px;border-radius:5px;border:1px solid rgba(96,165,250,0.2)">${p.venue}</span>`:''}
+        <span style="font-size:0.65em;color:var(--text-faint);font-weight:700">${compInitials(p.company)}</span>
+        ${s.daysOverdue>0?`<span style="color:var(--danger-light);font-weight:800;font-size:0.68em">${s.daysOverdue}d overdue</span>`:''}
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+        <span style="font-size:0.75em;color:var(--text-muted)">Inv <strong style="color:var(--text);font-family:monospace">${FC(p.invoiceAmount)}</strong></span>
+        <span style="font-size:0.75em;color:var(--success-light)">Rec <strong style="font-family:monospace">${FC(p.amountReceived)}</strong></span>
+        <span style="font-size:0.75em;color:${bal?'var(--danger-light)':'var(--success-light)'}">Bal <strong style="font-family:monospace">${FC(p.balance)}</strong></span>
+        ${p.invoiceNo?`<span style="font-size:0.65em;color:var(--text-faint)">#${p.invoiceNo}</span>`:''}
+      </div>
+      ${p.notes?`<div style="font-size:0.63em;color:var(--text-faint);font-style:italic;padding:3px 7px;background:var(--surface-2);border-radius:5px;border-left:2px solid var(--border);margin-bottom:4px">${p.notes}</div>`:''}
+      <div class="mc-actions" style="margin-top:5px">
+        ${ph?`<a class="btn btn-xs act-wa" href="https://wa.me/91${ph}" target="_blank" style="font-size:0.66em;padding:4px 8px">💬</a>`:''}
+        ${ph?`<a class="btn btn-xs act-call" href="tel:${p.phone}" style="font-size:0.66em;padding:4px 8px">📞</a>`:''}
+        ${bal?`<button class="btn btn-xs act-pay" onclick="openPayModal(${ri})" style="font-size:0.66em;padding:4px 8px">✅ Pay</button>`:''}
+        <button class="btn btn-xs act-ledger" onclick="openLedger('${esc(p.clientName)}')" style="font-size:0.66em;padding:4px 8px;flex:1">📋 Ledger</button>
+        <button class="btn btn-xs act-edit" onclick="editPayment(${ri})" style="font-size:0.66em;padding:4px 8px">✏️ Edit</button>
+        <button class="btn btn-xs act-delete" onclick="deletePayment(${ri})" style="font-size:0.66em;padding:4px 8px">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── PAY MODAL ────────────────────────────────────────────────────────────────
+function openPayModal(idx){
+  const p=payments[idx];if(!p)return;
+  const bal=parseFloat(p.balance);
+  document.getElementById('payModalBody').innerHTML=`
+    <div style="background:var(--surface-2);border-radius:11px;padding:13px;margin-bottom:13px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;font-size:0.82em;margin-bottom:4px">
+        <span style="color:var(--text-dim)">Invoice</span><span style="font-weight:700;color:var(--text)">${p.invoiceNo||'N/A'}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.82em;margin-bottom:4px">
+        <span style="color:var(--text-dim)">Client</span><span style="font-weight:600;color:var(--text)">${p.clientName}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.82em;margin-bottom:4px">
+        <span style="color:var(--text-dim)">Company</span><span style="color:var(--text-muted)">${p.company}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.9em;padding-top:8px;border-top:1px solid var(--border)">
+        <span style="color:var(--text-dim);font-weight:700">Outstanding</span>
+        <span style="font-weight:800;color:var(--danger-light)">${FC(bal)}</span>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="input-group"><label>Payment Amount (₹)</label><input type="number" id="payAmt" value="${bal}" min="0" step="0.01"></div>
+      <div class="input-group"><label>Payment Date</label><input type="date" id="payDate" value="${new Date().toISOString().split('T')[0]}"></div>
+      <div class="input-group"><label>Method</label><select id="payMethod"><option>NEFT</option><option>RTGS</option><option>UPI</option><option>Cash</option><option>Cheque</option><option>Card</option><option>Other</option></select></div>
+      <div class="input-group"><label>Reference / UTR</label><input type="text" id="payRef" placeholder="Optional"></div>
+      <div class="input-group full-width"><label>Notes</label><input type="text" id="payNotes" placeholder="Optional"></div>
+    </div>
+    <div style="margin-top:13px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="closeModal('payModal')">Cancel</button>
+      <button class="btn btn-success" onclick="confirmPay(${idx})">✅ Confirm Payment</button>
+    </div>`;
+  document.getElementById('payModal').classList.add('active');
+}
+
+function confirmPay(idx){
+  const p=payments[idx];
+  const amt=parseFloat(document.getElementById('payAmt').value)||0;
+  const method=document.getElementById('payMethod').value;
+  const ref=document.getElementById('payRef').value;
+  const notes=document.getElementById('payNotes').value;
+  if(amt<=0){showToast('Enter a valid amount','error');return}
+  if(amt>parseFloat(p.balance)){showToast('Amount exceeds outstanding balance','error');return}
+  p.amountReceived=parseFloat(p.amountReceived)+amt;
+  p.balance=parseFloat(p.invoiceAmount)-p.amountReceived;
+  const nr=[p.reference,document.getElementById('payDate').value+' '+method+(ref?' '+ref:'')].filter(Boolean).join(' | ');
+  p.reference=nr;
+  if(notes)p.notes=[p.notes,notes].filter(Boolean).join(' | ');
+  setFilterCard(activeFilterCard);updateStats();renderFollowups();closeModal('payModal');
+  savePaymentsToStorage();
+  showToast(`${p.invoiceNo||'Invoice'} — ${FC(amt)} marked as paid`,'success');
+}
+
+// ─── LEDGER ───────────────────────────────────────────────────────────────────
+function openLedger(clientName){
+  let records=payments.filter(p=>p.clientName===clientName).sort((a,b)=>new Date(a.eventDate||0)-new Date(b.eventDate||0));
+  const ti=records.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+  const tr=records.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0),tb=ti-tr;
+  document.getElementById('ledgerTitle').textContent='📋 Client Ledger';
+  document.getElementById('ledgerBody').innerHTML=`
+    <div style="background:var(--surface-2);border-radius:9px;padding:10px;margin-bottom:11px;border:1px solid var(--border)">
+      <div style="font-weight:800;color:var(--text);font-size:0.9em;word-break:break-word">${clientName}</div>
+      <div style="font-size:0.74em;color:var(--text-dim);margin-top:2px">${records.length} invoice(s) · ${records[0]?.company||''}</div>
+    </div>
+    <div class="ledger-summary">
+      <div class="ledger-sum-card"><div class="ledger-sum-label">Total Invoiced</div><div class="ledger-sum-value" style="color:var(--primary-light)">${FC(ti)}</div></div>
+      <div class="ledger-sum-card"><div class="ledger-sum-label">Total Received</div><div class="ledger-sum-value" style="color:var(--success-light)">${FC(tr)}</div></div>
+      <div class="ledger-sum-card"><div class="ledger-sum-label">Balance Due</div><div class="ledger-sum-value" style="color:${tb>0?'var(--danger-light)':'var(--success-light)'}">${FC(tb)}</div></div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:11px;flex-wrap:wrap">
+      <button class="btn btn-success btn-xs" onclick="exportLedgerExcel('${esc(clientName)}')">📊 Excel</button>
+      <button class="btn btn-primary btn-xs" onclick="exportLedgerPDF('${esc(clientName)}')">📄 PDF</button>
+      ${cleanPhone(records[0]?.phone)?`<a class="btn btn-xs act-wa" href="https://wa.me/91${cleanPhone(records[0].phone)}" target="_blank">💬 WhatsApp Client</a>`:''}
+    </div>
+    <div class="ledger-table-wrap">
+      <table class="ledger-table">
+        <thead><tr><th>Date</th><th>Inv No</th><th>Venue</th><th>Company</th><th>Invoice</th><th>Received</th><th>Balance</th><th>Status</th></tr></thead>
+        <tbody>
+          ${records.map(p=>{
+            const s=calcStatus(p);
+            const sc=s.status==='Paid'?'status-paid':s.status==='Critical'?'status-critical':s.status==='Overdue'?'status-overdue':'status-unpaid';
+            return`<tr>
+              <td>${FD(p.eventDate)}</td>
+              <td style="font-weight:700;color:var(--text)">${p.invoiceNo||'—'}</td>
+              <td>${p.venue||'—'}</td>
+              <td style="font-size:0.7em">${p.company}</td>
+              <td style="font-weight:700;color:var(--text);font-family:monospace">${FC(p.invoiceAmount)}</td>
+              <td style="color:var(--success-light);font-weight:700;font-family:monospace">${FC(p.amountReceived)}</td>
+              <td style="color:${parseFloat(p.balance)>0?'var(--danger-light)':'var(--success-light)'};font-weight:800;font-family:monospace">${FC(p.balance)}</td>
+              <td><span class="status-badge ${sc}" style="font-size:0.62em">${s.status}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  document.getElementById('ledgerModal').classList.add('active');
+}
+
+// ─── FILTERS ──────────────────────────────────────────────────────────────────
+function applyFilters(){
+  const search=document.getElementById('searchClient').value.toLowerCase();
+  const venue=document.getElementById('filterVenue').value;
+  const company=document.getElementById('filterCompany').value;
+  const status=document.getElementById('filterStatus').value;
+  const from=document.getElementById('dateFrom').value;
+  const to=document.getElementById('dateTo').value;
+  filteredPayments=payments.filter(p=>{
+    const s=calcStatus(p);
+    if(search&&!(p.clientName||'').toLowerCase().includes(search))return false;
+    if(venue&&p.venue!==venue)return false;
+    if(company&&p.company!==company)return false;
+    if(status){
+      if(status==='Critical'&&s.urgency!=='critical')return false;
+      else if(status!=='Critical'&&s.status!==status)return false;
+    }
+    if(from&&p.eventDate&&new Date(p.eventDate)<new Date(from))return false;
+    if(to&&p.eventDate&&new Date(p.eventDate)>new Date(to))return false;
+    return true;
+  });
+  activeFilterCard='custom';
+  document.querySelectorAll('.filter-card').forEach(c=>c.classList.remove('active'));
+  const tags=[];
+  if(search)tags.push('Search: "'+search+'"');
+  if(venue)tags.push('Venue: '+venue);
+  if(company)tags.push('Company: '+company);
+  if(status)tags.push('Status: '+status);
+  if(from)tags.push('From: '+from);
+  if(to)tags.push('To: '+to);
+  document.getElementById('activeFilters').innerHTML=tags.map(t=>'<span class="filter-tag">'+t+'</span>').join('');
+  renderTable();renderMobileCards();
+}
+
+function clearFilters(){
+  ['searchClient','filterVenue','filterCompany','filterStatus','dateFrom','dateTo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('activeFilters').innerHTML='';
+  setFilterCard('all');
+}
+
+function filterByCompany(c){
+  document.getElementById('filterCompany').value=c;
+  applyFilters();scrollToTable();
+}
+
+function filterByVenueMCA(){
+  activeFilterCard='custom';
+  document.querySelectorAll('.filter-card').forEach(c=>c.classList.remove('active'));
+  filteredPayments=payments.filter(p=>p.venue&&p.venue.includes('MCA'));
+  document.getElementById('activeFilters').innerHTML='<span class="filter-tag">Venue: MCA Locations</span>';
+  renderTable();renderMobileCards();scrollToTable();
+}
+
+function sortTable(col){
+  if(sortColumn===col)sortDirection=sortDirection==='asc'?'desc':'asc';
+  else{sortColumn=col;sortDirection='asc'}
+  filteredPayments.sort((a,b)=>{
+    let va=a[col]||'',vb=b[col]||'';
+    if(['invoiceAmount','amountReceived','balance'].includes(col)){va=parseFloat(va)||0;vb=parseFloat(vb)||0}
+    if(col==='eventDate'||col==='dueDate'){va=new Date(va)||0;vb=new Date(vb)||0}
+    if(va<vb)return sortDirection==='asc'?-1:1;
+    if(va>vb)return sortDirection==='asc'?1:-1;
+    return 0;
+  });
+  renderTable();renderMobileCards();
+}
+
+function savePayment(e){
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  let venue=fd.get('venue');
+  const nv=document.getElementById('newVenue').value.trim();
+  if(!venue&&nv)venue=nv;
+  if(!venue){
+    const vs=document.getElementById('venueSelect');
+    const ni=document.getElementById('newVenue');
+    vs.style.borderColor='var(--danger)';
+    ni.style.borderColor='var(--danger)';
+    ni.placeholder='⚠ Select a venue OR type a new one here';
+    ni.focus();
+    setTimeout(()=>{vs.style.borderColor='';ni.style.borderColor='';ni.placeholder='Type if not in list';},3000);
+    return;
+  }
+  const inv=parseFloat(fd.get('invoiceAmount'));
+  const rec=parseFloat(fd.get('amountReceived')||0);
+  const entry={
+    company:fd.get('company'),eventDate:fd.get('eventDate'),clientName:fd.get('clientName'),
+    venue:venue,invoiceNo:fd.get('invoiceNo'),invoiceAmount:inv,amountReceived:rec,
+    dueDate:fd.get('dueDate'),phone:fd.get('phone'),email:fd.get('email'),
+    reference:fd.get('reference'),notes:fd.get('notes'),balance:inv-rec
+  };
+  if(window._editIdx !== null && window._editIdx !== undefined){
+    payments[window._editIdx] = entry;
+    showToast('Invoice updated successfully','success');
+  } else {
+    payments.unshift(entry);
+    showToast('Invoice added successfully','success');
+  }
+  if(nv&&![...document.getElementById('filterVenue').options].some(o=>o.value===nv)){
+    document.getElementById('filterVenue').innerHTML+=`<option value="${nv}">${nv}</option>`;
+    document.getElementById('venueSelect').innerHTML+=`<option value="${nv}">${nv}</option>`;
+  }
+  window._editIdx = null;
+  savePaymentsToStorage();
+  setFilterCard(activeFilterCard);updateStats();renderFollowups();closeModal('addModal');
+}
+
+function populateFilters(){
+  const venues=[...new Set(payments.map(p=>p.venue).filter(v=>v))].sort();
+  const vs=document.getElementById('filterVenue'),va=document.getElementById('venueSelect');
+  venues.forEach(v=>{vs.innerHTML+=`<option value="${v}">${v}</option>`;va.innerHTML+=`<option value="${v}">${v}</option>`});
+  [...new Set(payments.map(p=>p.company).filter(c=>c))].sort()
+    .forEach(c=>{document.getElementById('filterCompany').innerHTML+=`<option value="${c}">${c}</option>`});
+}
+
+function openModal(editIdx){
+  window._editIdx = (editIdx !== undefined) ? editIdx : null;
+  const modal = document.getElementById('addModal');
+  const title = modal.querySelector('.modal-header h2');
+  const saveBtn = modal.querySelector('button[type="submit"]');
+  if(window._editIdx !== null){
+    title.textContent = '✏️ Edit Invoice';
+    saveBtn.textContent = 'Update Invoice';
+  } else {
+    title.textContent = '🎫 Add New Invoice';
+    saveBtn.textContent = 'Save Invoice';
+  }
+  modal.classList.add('active');
+}
+
+function editPayment(idx){
+  const p = payments[idx];
+  if(!p) return;
+  openModal(idx);
+  // Pre-fill form
+  const f = document.getElementById('paymentForm');
+  f.querySelector('[name="company"]').value = p.company || '';
+  f.querySelector('[name="eventDate"]').value = p.eventDate || '';
+  f.querySelector('[name="clientName"]').value = p.clientName || '';
+  f.querySelector('[name="invoiceNo"]').value = p.invoiceNo || '';
+  f.querySelector('[name="invoiceAmount"]').value = p.invoiceAmount || '';
+  f.querySelector('[name="amountReceived"]').value = p.amountReceived || 0;
+  f.querySelector('[name="dueDate"]').value = p.dueDate || '';
+  f.querySelector('[name="phone"]').value = p.phone || '';
+  f.querySelector('[name="email"]').value = p.email || '';
+  f.querySelector('[name="reference"]').value = p.reference || '';
+  f.querySelector('[name="notes"]').value = p.notes || '';
+  // Set venue
+  const vs = document.getElementById('venueSelect');
+  const venueExists = [...vs.options].some(o => o.value === p.venue);
+  if(venueExists){
+    vs.value = p.venue;
+    document.getElementById('newVenue').value = '';
+  } else if(p.venue){
+    vs.value = '';
+    document.getElementById('newVenue').value = p.venue;
+  }
+}
+
+function deletePayment(idx){
+  const p = payments[idx];
+  if(!p) return;
+  const confirmed = confirm(`🗑️ Delete this invoice?\n\n${p.clientName}\nInv #${p.invoiceNo||'N/A'} · ${FC(p.invoiceAmount)}\n\nThis cannot be undone.`);
+  if(!confirmed) return;
+  payments.splice(idx, 1);
+  savePaymentsToStorage();
+  setFilterCard(activeFilterCard);
+  updateStats();
+  renderFollowups();
+  showToast('Invoice deleted', 'error');
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove('active');
+  if(id==='addModal'){
+    document.getElementById('paymentForm').reset();
+    document.getElementById('newVenue').value = '';
+    window._editIdx = null;
+    const modal = document.getElementById('addModal');
+    modal.querySelector('.modal-header h2').textContent = '🎫 Add New Invoice';
+    modal.querySelector('button[type="submit"]').textContent = 'Save Invoice';
+  }
+}
+['addModal','payModal','ledgerModal','exportSheet'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)closeModal(id)});
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')['addModal','payModal','ledgerModal','exportSheet'].forEach(id=>closeModal(id))});
+
+// ════════════════════════════════════════════════════════════════════════════
+//  EXCEL EXPORT — ExcelJS with proper FORMULAS, analysis, colour-coding
+// ════════════════════════════════════════════════════════════════════════════
+async function buildAndDownloadExcel(dataToExport, reportTitle, includeAllSheets, filename){
+  if(typeof ExcelJS==='undefined'){showToast('ExcelJS loading, please wait…','error');return;}
+  showToast('Building Excel with formulas…','info');
+
+  const wb=new ExcelJS.Workbook();
+  wb.creator='Carnival Payment Tracker';wb.created=new Date();
+  const now=new Date().toLocaleString('en-IN');
+  const all=includeAllSheets?payments:dataToExport;
+
+  const ti=all.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+  const tr=all.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0);
+  const paidList=all.filter(p=>calcStatus(p).status==='Paid');
+  const overdueList=all.filter(p=>{const s=calcStatus(p);return s.status==='Overdue'||s.status==='Critical'});
+  const critList=all.filter(p=>calcStatus(p).urgency==='critical');
+  const redList=all.filter(p=>calcStatus(p).isRedFlag);
+
+  const compMap={};
+  all.forEach(p=>{
+    if(!compMap[p.company])compMap[p.company]={inv:0,rec:0,cnt:0,paid:0,unpaid:0,crit:0};
+    compMap[p.company].inv+=parseFloat(p.invoiceAmount||0);
+    compMap[p.company].rec+=parseFloat(p.amountReceived||0);
+    compMap[p.company].cnt++;
+    const s=calcStatus(p);
+    if(s.status==='Paid')compMap[p.company].paid++;
+    else compMap[p.company].unpaid++;
+    if(s.urgency==='critical')compMap[p.company].crit++;
+  });
+
+  function sc(cell,{bg,fg,bold=false,sz=10,halign='left',numFmt=null,border=true,italic=false,wrap=false}){
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+    cell.font={name:'Calibri',size:sz,bold,italic,color:{argb:fg}};
+    cell.alignment={horizontal:halign,vertical:'middle',wrapText:wrap};
+    if(border)cell.border={top:{style:'thin',color:{argb:'FFD1D5DB'}},bottom:{style:'thin',color:{argb:'FFD1D5DB'}},left:{style:'thin',color:{argb:'FFD1D5DB'}},right:{style:'thin',color:{argb:'FFD1D5DB'}}};
+    if(numFmt)cell.numFmt=numFmt;
+  }
+
+  // ── SHEET 1: SUMMARY with KPI formulas ────────────────────────────────────
+  const ss=wb.addWorksheet('Summary');
+  ss.columns=[{width:3},{width:3},{width:44},{width:26},{width:22},{width:22},{width:16},{width:14},{width:14},{width:16}];
+
+  ss.mergeCells('A1:J1');
+  sc(ss.getCell('A1'),{bg:'FF3730A3',fg:'FFFFFFFF',bold:true,sz:16,halign:'left',border:false});
+  ss.getCell('A1').value='CARNIVAL PAYMENT TRACKER — EXECUTIVE SUMMARY';
+  ss.getRow(1).height=40;
+
+  ss.mergeCells('A2:J2');
+  sc(ss.getCell('A2'),{bg:'FF3730A3',fg:'FFC7D2FE',sz:9,halign:'left',border:false,italic:true});
+  ss.getCell('A2').value=`Report: ${reportTitle}   |   Generated: ${now}`;
+  ss.getRow(2).height=18;
+
+  ss.mergeCells('A3:J3');
+  sc(ss.getCell('A3'),{bg:'FFF1F5F9',fg:'FF000000',border:false});ss.getRow(3).height=6;
+
+  // Financial overview
+  ss.mergeCells('A4:J4');
+  sc(ss.getCell('A4'),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:12,halign:'left',border:false});
+  ss.getCell('A4').value='   FINANCIAL OVERVIEW';ss.getRow(4).height=26;
+
+  const kpis=[
+    ['Total Records (this report)',all.length,'FFDBEAFE','FF1E40AF',null,'0'],
+    ['Total Invoiced (INR)',ti,'FFDBEAFE','FF1E40AF','#,##0.00'],
+    ['Total Received (INR)',tr,'FFD1FAE5','FF065F46','#,##0.00'],
+    ['Total Outstanding (INR)',ti-tr,'FFFEE2E2','FF991B1B','#,##0.00'],
+    ['Collection Rate',ti>0?parseFloat((tr/ti*100).toFixed(2)):0,'FFD1FAE5','FF065F46','0.00%'],
+    ['Total Paid Invoices',paidList.length,'FFD1FAE5','FF065F46','0'],
+    ['Total Unpaid / Overdue',all.length-paidList.length,'FFFEF3C7','FF92400E','0'],
+    ['Critical (15+ days overdue)',critList.length,'FFFEE2E2','FF991B1B','0'],
+    ['Red Flag Outstanding (INR)',redList.reduce((s,p)=>s+parseFloat(p.balance||0),0),'FFFEE2E2','FF991B1B','#,##0.00'],
+  ];
+  kpis.forEach((kv,i)=>{
+    const row=ss.getRow(5+i);row.height=22;
+    sc(row.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+    sc(row.getCell(2),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+    sc(row.getCell(3),{bg:'FFEFF6FF',fg:'FF1E3A8A',bold:true,sz:10,halign:'left'});
+    row.getCell(3).value=kv[0];
+    sc(row.getCell(4),{bg:kv[2],fg:kv[3],bold:true,sz:12,halign:'right',numFmt:kv[4]||null});
+    row.getCell(4).value=kv[1];
+    // Formulas in column E for validation
+    if(kv[0]==='Collection Rate'){
+      sc(row.getCell(5),{bg:'FFE0FDF4',fg:'FF047857',bold:false,sz:9,halign:'center'});
+      row.getCell(5).value='Collection %';
+    }
+  });
+
+  // Company breakdown section
+  const compStartRow=15;
+  ss.mergeCells(`A${compStartRow-1}:J${compStartRow-1}`);
+  sc(ss.getCell(`A${compStartRow-1}`),{bg:'FFF1F5F9',fg:'FF000000',border:false});ss.getRow(compStartRow-1).height=8;
+
+  ss.mergeCells(`A${compStartRow}:J${compStartRow}`);
+  sc(ss.getCell(`A${compStartRow}`),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:12,halign:'left',border:false});
+  ss.getCell(`A${compStartRow}`).value='   COMPANY-WISE BREAKDOWN';ss.getRow(compStartRow).height=26;
+
+  const compHdrs=['Company','Count','Invoiced (INR)','Received (INR)','Balance (INR)','Collection %','Paid','Unpaid','Critical'];
+  const compHdrRow=ss.getRow(compStartRow+1);compHdrRow.height=22;
+  sc(compHdrRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  sc(compHdrRow.getCell(2),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  compHdrs.forEach((h,j)=>{
+    const c=compHdrRow.getCell(j+3);c.value=h;
+    sc(c,{bg:'FF312E81',fg:'FFFFFFFF',bold:true,sz:9,halign:j>=2?'right':j===1?'center':'left'});
+  });
+
+  let cRow=compStartRow+2;
+  const compEntries=Object.entries(compMap);
+  compEntries.forEach(([name,v])=>{
+    const row=ss.getRow(cRow);row.height=20;
+    sc(row.getCell(1),{bg:'FFEEF2FF',fg:'FF000000',border:false});
+    sc(row.getCell(2),{bg:'FFEEF2FF',fg:'FF000000',border:false});
+    const balBg=v.inv-v.rec>0?'FFFEE2E2':'FFD1FAE5';
+    const balFg=v.inv-v.rec>0?'FF991B1B':'FF065F46';
+    const pct=v.inv>0?v.rec/v.inv:0;
+    const vals=[name,v.cnt,v.inv,v.rec,v.inv-v.rec,pct,v.paid,v.unpaid,v.crit];
+    const fmts=[null,'0','#,##0.00','#,##0.00','#,##0.00','0.00%','0','0','0'];
+    const haligns=['left','center','right','right','right','center','center','center','center'];
+    vals.forEach((val,j)=>{
+      const c=row.getCell(j+3);c.value=val;
+      if(j===4)sc(c,{bg:balBg,fg:balFg,bold:true,sz:9,halign:haligns[j],numFmt:fmts[j]});
+      else if(j===8&&val>0)sc(c,{bg:'FFFEE2E2',fg:'FF991B1B',bold:true,sz:9,halign:haligns[j],numFmt:fmts[j]});
+      else sc(c,{bg:'FFEEF2FF',fg:'FF1E293B',sz:9,halign:haligns[j],numFmt:fmts[j]});
+    });
+    cRow++;
+  });
+
+  // Totals row for company breakdown
+  const totRow=ss.getRow(cRow);totRow.height=22;
+  sc(totRow.getCell(1),{bg:'FFF1F5F9',fg:'FF000000',border:false});
+  sc(totRow.getCell(2),{bg:'FFF1F5F9',fg:'FF000000',border:false});
+  const compTotVals=['TOTAL',all.length,ti,tr,ti-tr,ti>0?tr/ti:0,paidList.length,all.length-paidList.length,critList.length];
+  const compTotFmts=[null,'0','#,##0.00','#,##0.00','#,##0.00','0.00%','0','0','0'];
+  const compTotAligns=['left','center','right','right','right','center','center','center','center'];
+  compTotVals.forEach((val,j)=>{
+    const c=totRow.getCell(j+3);c.value=val;
+    sc(c,{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:10,halign:compTotAligns[j],numFmt:compTotFmts[j]});
+  });
+
+  // ── DATA SHEET BUILDER with FORMULAS ──────────────────────────────────────
+  function addDataSheet(sheetName, data, hdrArgb){
+    const ws=wb.addWorksheet(sheetName);
+    ws.columns=[
+      {width:5},{width:14},{width:22},{width:36},{width:28},{width:12},
+      {width:20},{width:18},{width:18},{width:18},{width:12},{width:13},{width:14},
+      {width:15},{width:28},{width:30}
+    ];
+
+    // Title
+    ws.mergeCells('A1:P1');
+    sc(ws.getCell('A1'),{bg:'FF3730A3',fg:'FFFFFFFF',bold:true,sz:14,halign:'left',border:false});
+    ws.getCell('A1').value='CARNIVAL PAYMENT TRACKER — '+sheetName.toUpperCase();
+    ws.getRow(1).height=34;
+
+    ws.mergeCells('A2:P2');
+    sc(ws.getCell('A2'),{bg:'FF3730A3',fg:'FFC7D2FE',sz:9,halign:'left',border:false,italic:true});
+    ws.getCell('A2').value=`Generated: ${now}   |   ${data.length} record${data.length!==1?'s':''}   |   Report: ${reportTitle}`;
+    ws.getRow(2).height=18;
+
+    ws.mergeCells('A3:P3');
+    sc(ws.getCell('A3'),{bg:'FFF1F5F9',fg:'FF000000',border:false});ws.getRow(3).height=6;
+
+    // Headers
+    const COLS=['#','Event Date','Venue','Client Name','Company','Inv No',
+      'Invoice Amt (₹)','Received (₹)','Balance (₹)','Status',
+      'Days Overdue','Due Date','% Collected','Phone','Email','Notes'];
+    const HDR_ALIGNS=['center','center','left','left','left','center',
+      'right','right','right','center','center','center','center','left','left','left'];
+    const hdrRow=ws.getRow(4);hdrRow.height=24;
+    COLS.forEach((h,j)=>{
+      const c=hdrRow.getCell(j+1);c.value=h;
+      sc(c,{bg:hdrArgb,fg:'FFFFFFFF',bold:true,sz:9,halign:HDR_ALIGNS[j]});
+    });
+
+    ws.views=[{state:'frozen',xSplit:0,ySplit:4,activeCell:'A5'}];
+
+    // Data rows — with FORMULA for % Collected column
+    data.forEach((p,i)=>{
+      const st=calcStatus(p);
+      let bg,fg,bold=false;
+      if(st.urgency==='critical'){bg='FFFEF2F2';fg='FF991B1B';bold=true;}
+      else if(st.status==='Overdue'){bg='FFFFFBEB';fg='FF92400E';}
+      else if(st.status==='Paid'){bg='FFF0FDF4';fg='FF065F46';}
+      else{bg='FFF8FAFC';fg='FF1E293B';}
+
+      const bal=parseFloat(p.balance||0);
+      const dataRowNum=5+i; // Excel row number
+      const row=ws.getRow(dataRowNum);row.height=17;
+
+      // Col G = Invoice Amt, Col H = Received, Col I = Balance formula, Col M = % formula
+      const invAmt=parseFloat(p.invoiceAmount||0);
+      const recAmt=parseFloat(p.amountReceived||0);
+      const gRef=`G${dataRowNum}`;
+      const hRef=`H${dataRowNum}`;
+      const iRef=`I${dataRowNum}`;
+
+      const rowVals=[
+        {v:i+1,fmt:'0'},
+        {v:p.eventDate?new Date(p.eventDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'-',fmt:null},
+        {v:p.venue||'-',fmt:null},
+        {v:p.clientName||'',fmt:null},
+        {v:p.company||'',fmt:null},
+        {v:String(p.invoiceNo||'-'),fmt:null},
+        {v:invAmt,fmt:'#,##0.00'},                // G — Invoice
+        {v:recAmt,fmt:'#,##0.00'},                // H — Received
+        {formula:`${gRef}-${hRef}`,result:bal,fmt:'#,##0.00'}, // I — Balance FORMULA
+        {v:st.status,fmt:null},
+        {v:st.daysOverdue>0?st.daysOverdue:0,fmt:'0'},
+        {v:p.dueDate?new Date(p.dueDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'-',fmt:null},
+        {formula:`IF(${gRef}=0,0,${hRef}/${gRef})`,result:invAmt>0?recAmt/invAmt:0,fmt:'0.00%'}, // M — % FORMULA
+        {v:p.phone||'',fmt:null},
+        {v:p.email||'',fmt:null},
+        {v:p.notes||'',fmt:null}
+      ];
+
+      const haligns=['center','center','left','left','left','center','right','right','right','center','center','center','center','left','left','left'];
+
+      rowVals.forEach((cell,j)=>{
+        const c=row.getCell(j+1);
+        if(cell.formula){
+          c.value={formula:cell.formula,result:cell.result};
+        } else {
+          c.value=cell.v;
+        }
+        if(j===8){ // Balance col
+          const balBg=bal>0?'FFFEF2F2':'FFF0FDF4';
+          const balFg=bal>0?'FF991B1B':'FF065F46';
+          sc(c,{bg:balBg,fg:balFg,bold:true,sz:9,halign:'right',numFmt:cell.fmt||undefined});
+        } else if(j===9){ // Status col
+          const stC={'Paid':['FFF0FDF4','FF065F46'],'Critical':['FFFEF2F2','FF991B1B'],'Overdue':['FFFFFBEB','FF92400E'],'Unpaid':['FFF8FAFC','FF64748B']};
+          const [sbg,sfg]=(stC[cell.v]||stC['Unpaid']);
+          sc(c,{bg:sbg,fg:sfg,bold:true,sz:9,halign:'center'});
+        } else if(j===10&&cell.v>0){ // Days overdue
+          sc(c,{bg:bg,fg:'FFEF4444',bold:true,sz:9,halign:'center',numFmt:'0'});
+        } else if(j===12){ // % collected — formula cell
+          const pctBg=recAmt>=invAmt&&invAmt>0?'FFD1FAE5':recAmt>0?'FFFFFBEB':'FFFEE2E2';
+          const pctFg=recAmt>=invAmt&&invAmt>0?'FF065F46':recAmt>0?'FF92400E':'FF991B1B';
+          sc(c,{bg:pctBg,fg:pctFg,bold:false,sz:9,halign:'center',numFmt:'0.00%'});
+        } else {
+          sc(c,{bg,fg,bold:bold&&j<5,sz:9,halign:haligns[j],numFmt:cell.fmt||undefined});
+        }
+      });
+    });
+
+    // ── TOTALS ROW WITH FORMULAS ──
+    const firstDataRow=5;
+    const lastDataRow=4+data.length;
+    const totRowNum=5+data.length;
+    const totRow=ws.getRow(totRowNum);totRow.height=24;
+
+    const totCells=[
+      {v:'TOTALS',fmt:null},{v:'',fmt:null},{v:'',fmt:null},{v:data.length+' records',fmt:null},
+      {v:'',fmt:null},{v:'',fmt:null},
+      {formula:`SUM(G${firstDataRow}:G${lastDataRow})`,result:data.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0),fmt:'#,##0.00'}, // G total
+      {formula:`SUM(H${firstDataRow}:H${lastDataRow})`,result:data.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0),fmt:'#,##0.00'}, // H total
+      {formula:`G${totRowNum}-H${totRowNum}`,result:data.reduce((s,p)=>s+parseFloat(p.balance||0),0),fmt:'#,##0.00'}, // I total formula
+      {v:'',fmt:null},{v:'',fmt:null},{v:'',fmt:null},
+      {formula:`IF(G${totRowNum}=0,0,H${totRowNum}/G${totRowNum})`,result:0,fmt:'0.00%'}, // M total formula
+      {v:'',fmt:null},{v:'',fmt:null},{v:'',fmt:null}
+    ];
+
+    totCells.forEach((cell,j)=>{
+      const c=totRow.getCell(j+1);
+      if(cell.formula){c.value={formula:cell.formula,result:cell.result};}
+      else{c.value=cell.v;}
+      const isMoney=j>=6&&j<=8;
+      const isPct=j===12;
+      if(j===8){
+        const tiT=data.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+        const trT=data.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0);
+        const balFg=tiT-trT>0?'FFFCA5A5':'FF6EE7B7';
+        sc(c,{bg:'FF1E3A5F',fg:balFg,bold:true,sz:11,halign:'right',numFmt:cell.fmt||undefined});
+      } else {
+        sc(c,{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:10,halign:j>=6?'right':'left',numFmt:cell.fmt||undefined});
+      }
+    });
+
+    // ── ANALYSIS SECTION ── (below totals)
+    const analysisStart=totRowNum+2;
+    ws.mergeCells(`A${analysisStart}:P${analysisStart}`);
+    sc(ws.getCell(`A${analysisStart}`),{bg:'FF312E81',fg:'FFFFFFFF',bold:true,sz:11,halign:'left',border:false});
+    ws.getCell(`A${analysisStart}`).value='   ANALYSIS SUMMARY';
+    ws.getRow(analysisStart).height=24;
+
+    const tiT=data.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+    const trT=data.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0);
+    const paid=data.filter(p=>calcStatus(p).status==='Paid').length;
+    const unpaid=data.filter(p=>calcStatus(p).status!=='Paid').length;
+    const crit=data.filter(p=>calcStatus(p).urgency==='critical');
+    const ovd=data.filter(p=>calcStatus(p).status==='Overdue');
+    const unpaidAmt=data.filter(p=>calcStatus(p).status!=='Paid').reduce((s,p)=>s+parseFloat(p.balance||0),0);
+
+    const analysisCells=[
+      {label:'Total Invoices in this sheet',val:data.length,fmt:'0',bg:'FFDBEAFE',fg:'FF1E40AF'},
+      {label:'Total Invoice Amount (INR)',val:tiT,fmt:'#,##0.00',bg:'FFDBEAFE',fg:'FF1E40AF'},
+      {label:'Total Amount Received (INR)',val:trT,fmt:'#,##0.00',bg:'FFD1FAE5',fg:'FF065F46'},
+      {label:'Total Outstanding (INR)',val:tiT-trT,fmt:'#,##0.00',bg:'FFFEE2E2',fg:'FF991B1B'},
+      {label:'Overall Collection %',val:tiT>0?trT/tiT:0,fmt:'0.00%',bg:'FFD1FAE5',fg:'FF065F46'},
+      {label:'Paid Invoices',val:paid,fmt:'0',bg:'FFD1FAE5',fg:'FF065F46'},
+      {label:'Unpaid / Overdue Invoices',val:unpaid,fmt:'0',bg:'FFFEF3C7',fg:'FF92400E'},
+      {label:'Critical (15+ days overdue) Count',val:crit.length,fmt:'0',bg:'FFFEE2E2',fg:'FF991B1B'},
+      {label:'Critical Outstanding Amount (INR)',val:crit.reduce((s,p)=>s+parseFloat(p.balance||0),0),fmt:'#,##0.00',bg:'FFFEE2E2',fg:'FF991B1B'},
+      {label:'Total Unpaid Amount (INR)',val:unpaidAmt,fmt:'#,##0.00',bg:'FFFEF3C7',fg:'FF92400E'},
+      {label:'Overdue Invoice Count',val:ovd.length,fmt:'0',bg:'FFFEF3C7',fg:'FF92400E'},
+      {label:'Average Invoice Amount (INR)',val:data.length>0?tiT/data.length:0,fmt:'#,##0.00',bg:'FFDBEAFE',fg:'FF1E40AF'},
+      {label:'Largest Invoice (INR)',val:data.reduce((m,p)=>Math.max(m,parseFloat(p.invoiceAmount||0)),0),fmt:'#,##0.00',bg:'FFDBEAFE',fg:'FF1E40AF'},
+      {label:'Smallest Invoice (INR)',val:data.reduce((m,p)=>Math.min(m,parseFloat(p.invoiceAmount||0)),Infinity)===Infinity?0:data.reduce((m,p)=>Math.min(m,parseFloat(p.invoiceAmount||0)),Infinity),fmt:'#,##0.00',bg:'FFDBEAFE',fg:'FF1E40AF'},
+    ];
+
+    analysisCells.forEach((item,i)=>{
+      const row=ws.getRow(analysisStart+1+i);row.height=20;
+      sc(row.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+      ws.mergeCells(`B${analysisStart+1+i}:E${analysisStart+1+i}`);
+      sc(row.getCell(2),{bg:'FFEFF6FF',fg:'FF1E3A8A',bold:true,sz:10,halign:'left'});
+      row.getCell(2).value=item.label;
+      sc(row.getCell(6),{bg:item.bg,fg:item.fg,bold:true,sz:11,halign:'right',numFmt:item.fmt});
+      row.getCell(6).value=item.val;
+    });
+
+    // Auto-filter
+    ws.autoFilter={from:{row:4,column:1},to:{row:4,column:16}};
+  }
+
+  // Build sheets
+  addDataSheet('All Records',dataToExport,'FF4338CA');
+  if(includeAllSheets){
+    const rfData=all.filter(p=>calcStatus(p).isRedFlag).sort((a,b)=>calcStatus(b).daysOverdue-calcStatus(a).daysOverdue);
+    if(rfData.length)addDataSheet('Red Flags',rfData,'FFB91C1C');
+    const paidData=all.filter(p=>calcStatus(p).status==='Paid');
+    if(paidData.length)addDataSheet('Paid',paidData,'FF065F46');
+    const unpaidData=all.filter(p=>calcStatus(p).status!=='Paid');
+    if(unpaidData.length)addDataSheet('Outstanding',unpaidData,'FF9A3412');
+    // Aging analysis sheet
+    buildAgingSheet(wb,all);
+    // Month-wise analysis
+    buildMonthSheet(wb,all);
+    // Venue-wise analysis
+    buildVenueSheet(wb,all);
+    // Company comparison
+    buildCompanySheet(wb,all);
+  }
+
+  // Download
+  try{
+    const buffer=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=filename+'.xlsx';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    showToast('Excel exported — open in Microsoft Excel for formulas','success');
+  }catch(err){
+    console.error('ExcelJS export error:',err);
+    showToast('Export error: '+err.message,'error');
+  }
+}
+
+// ── AGING ANALYSIS SHEET ──────────────────────────────────────────────────────
+function buildAgingSheet(wb,data){
+  const ws=wb.addWorksheet('Aging Analysis');
+  ws.columns=[{width:3},{width:40},{width:24},{width:22},{width:22},{width:22},{width:16},{width:16}];
+
+  function sc(cell,{bg,fg,bold=false,sz=10,halign='left',numFmt=null,border=true}){
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+    cell.font={name:'Calibri',size:sz,bold,color:{argb:fg}};
+    cell.alignment={horizontal:halign,vertical:'middle'};
+    if(border)cell.border={top:{style:'thin',color:{argb:'FFD1D5DB'}},bottom:{style:'thin',color:{argb:'FFD1D5DB'}},left:{style:'thin',color:{argb:'FFD1D5DB'}},right:{style:'thin',color:{argb:'FFD1D5DB'}}};
+    if(numFmt)cell.numFmt=numFmt;
+  }
+
+  ws.mergeCells('A1:H1');
+  sc(ws.getCell('A1'),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:14,halign:'left',border:false});
+  ws.getCell('A1').value='AGING ANALYSIS — OVERDUE INVOICES BREAKDOWN';
+  ws.getRow(1).height=34;
+
+  ws.mergeCells('A2:H2');
+  sc(ws.getCell('A2'),{bg:'FF1E3A5F',fg:'FFC7D2FE',sz:9,halign:'left',border:false});
+  ws.getCell('A2').value=`Generated: ${new Date().toLocaleString('en-IN')}   |   Unpaid records only`;
+  ws.getRow(2).height=18;
+
+  // Bucket summary
+  const buckets=[
+    {label:'Current (0–7 days)',min:1,max:7,bg:'FFD1FAE5',fg:'FF065F46'},
+    {label:'Overdue (8–15 days)',min:8,max:15,bg:'FFFFFBEB',fg:'FF92400E'},
+    {label:'Late (16–30 days)',min:16,max:30,bg:'FFFEF3C7',fg:'FF92400E'},
+    {label:'Critical (31+ days)',min:31,max:9999,bg:'FFFEE2E2',fg:'FF991B1B'},
+  ];
+
+  const hdrs=['Aging Bucket','Count','Total Outstanding (INR)','Avg per Invoice (INR)','% of Total Outstanding','Worst Offender','Max Days Overdue'];
+  const hdrRow=ws.getRow(4);hdrRow.height=22;
+  sc(hdrRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  hdrs.forEach((h,j)=>{
+    const c=hdrRow.getCell(j+2);c.value=h;
+    sc(c,{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:9,halign:j===0?'left':'right'});
+  });
+
+  const totalOutstanding=data.filter(p=>calcStatus(p).status!=='Paid').reduce((s,p)=>s+parseFloat(p.balance||0),0);
+
+  let bRow=5;
+  buckets.forEach(bucket=>{
+    const items=data.filter(p=>{
+      const s=calcStatus(p);
+      if(s.status==='Paid')return false;
+      return s.daysOverdue>=bucket.min&&s.daysOverdue<=bucket.max;
+    });
+    const totalBal=items.reduce((s,p)=>s+parseFloat(p.balance||0),0);
+    const maxItem=items.sort((a,b)=>calcStatus(b).daysOverdue-calcStatus(a).daysOverdue)[0];
+    const row=ws.getRow(bRow);row.height=20;
+    sc(row.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+    sc(row.getCell(2),{bg:bucket.bg,fg:bucket.fg,bold:true,sz:10,halign:'left'});
+    row.getCell(2).value=bucket.label;
+    sc(row.getCell(3),{bg:bucket.bg,fg:bucket.fg,bold:true,sz:10,halign:'right',numFmt:'0'});
+    row.getCell(3).value=items.length;
+    sc(row.getCell(4),{bg:bucket.bg,fg:bucket.fg,bold:true,sz:10,halign:'right',numFmt:'#,##0.00'});
+    row.getCell(4).value=totalBal;
+    sc(row.getCell(5),{bg:bucket.bg,fg:bucket.fg,sz:9,halign:'right',numFmt:'#,##0.00'});
+    row.getCell(5).value=items.length>0?totalBal/items.length:0;
+    sc(row.getCell(6),{bg:bucket.bg,fg:bucket.fg,sz:9,halign:'right',numFmt:'0.00%'});
+    row.getCell(6).value=totalOutstanding>0?totalBal/totalOutstanding:0;
+    sc(row.getCell(7),{bg:bucket.bg,fg:bucket.fg,sz:9,halign:'left'});
+    row.getCell(7).value=maxItem?maxItem.clientName.substring(0,30):'—';
+    sc(row.getCell(8),{bg:bucket.bg,fg:bucket.fg,bold:true,sz:9,halign:'right',numFmt:'0'});
+    row.getCell(8).value=maxItem?calcStatus(maxItem).daysOverdue:0;
+    bRow++;
+  });
+
+  // Grand total row
+  const gtRow=ws.getRow(bRow);gtRow.height=22;
+  sc(gtRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  sc(gtRow.getCell(2),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:10,halign:'left'});
+  gtRow.getCell(2).value='TOTAL OUTSTANDING';
+  sc(gtRow.getCell(3),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:10,halign:'right',numFmt:'0'});
+  gtRow.getCell(3).value=data.filter(p=>calcStatus(p).status!=='Paid').length;
+  sc(gtRow.getCell(4),{bg:'FF1E3A5F',fg:'FFFCA5A5',bold:true,sz:11,halign:'right',numFmt:'#,##0.00'});
+  gtRow.getCell(4).value=totalOutstanding;
+  [5,6,7,8].forEach(j=>{sc(gtRow.getCell(j),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:10,halign:'right'})});
+
+  // Individual overdue records
+  bRow+=2;
+  ws.mergeCells(`A${bRow}:H${bRow}`);
+  sc(ws.getCell(`A${bRow}`),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:11,halign:'left',border:false});
+  ws.getCell(`A${bRow}`).value='   INDIVIDUAL OVERDUE RECORDS (sorted by days overdue)';
+  ws.getRow(bRow).height=24;
+  bRow++;
+
+  const ovdHdrs=['Client Name','Company','Invoice No','Invoice Amt','Balance','Days Overdue','Due Date'];
+  const ovdHdrRow=ws.getRow(bRow);ovdHdrRow.height=20;
+  sc(ovdHdrRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  ovdHdrs.forEach((h,j)=>{
+    const c=ovdHdrRow.getCell(j+2);c.value=h;
+    sc(c,{bg:'FF4338CA',fg:'FFFFFFFF',bold:true,sz:9,halign:j>=3?'right':'left'});
+  });
+  bRow++;
+
+  const ovdItems=data.filter(p=>calcStatus(p).status!=='Paid'&&calcStatus(p).daysOverdue>0)
+    .sort((a,b)=>calcStatus(b).daysOverdue-calcStatus(a).daysOverdue);
+
+  ovdItems.forEach(p=>{
+    const s=calcStatus(p);
+    const rowBg=s.urgency==='critical'?'FFFEF2F2':'FFFFFBEB';
+    const rowFg=s.urgency==='critical'?'FF991B1B':'FF92400E';
+    const row=ws.getRow(bRow);row.height=17;
+    sc(row.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+    const vals=[p.clientName,p.company,p.invoiceNo||'-',parseFloat(p.invoiceAmount||0),parseFloat(p.balance||0),s.daysOverdue,p.dueDate?new Date(p.dueDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'-'];
+    const fmts=[null,null,null,'#,##0.00','#,##0.00','0',null];
+    vals.forEach((v,j)=>{
+      const c=row.getCell(j+2);c.value=v;
+      sc(c,{bg:rowBg,fg:rowFg,bold:j===5,sz:9,halign:j>=3&&j<=5?'right':'left',numFmt:fmts[j]||undefined});
+    });
+    bRow++;
+  });
+}
+
+// ── MONTH-WISE ANALYSIS SHEET ─────────────────────────────────────────────────
+function buildMonthSheet(wb,data){
+  const ws=wb.addWorksheet('Monthly Analysis');
+  ws.columns=[{width:3},{width:22},{width:10},{width:20},{width:20},{width:20},{width:14},{width:14}];
+  function sc(cell,{bg,fg,bold=false,sz=10,halign='left',numFmt=null,border=true}){
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+    cell.font={name:'Calibri',size:sz,bold,color:{argb:fg}};
+    cell.alignment={horizontal:halign,vertical:'middle'};
+    if(border)cell.border={top:{style:'thin',color:{argb:'FFD1D5DB'}},bottom:{style:'thin',color:{argb:'FFD1D5DB'}},left:{style:'thin',color:{argb:'FFD1D5DB'}},right:{style:'thin',color:{argb:'FFD1D5DB'}}};
+    if(numFmt)cell.numFmt=numFmt;
+  }
+  ws.mergeCells('A1:H1');
+  sc(ws.getCell('A1'),{bg:'FF065F46',fg:'FFFFFFFF',bold:true,sz:14,halign:'left',border:false});
+  ws.getCell('A1').value='MONTHLY ANALYSIS — EVENTS BY MONTH';
+  ws.getRow(1).height=32;
+  ws.mergeCells('A2:H2');
+  sc(ws.getCell('A2'),{bg:'FF065F46',fg:'FF6EE7B7',sz:8,halign:'left',border:false});
+  ws.getCell('A2').value=`Generated: ${new Date().toLocaleString('en-IN')}`;
+  ws.getRow(2).height=16;
+
+  const hdrs=['Month','Events','Invoiced (INR)','Received (INR)','Outstanding (INR)','Collection %','Paid','Unpaid'];
+  const hdrRow=ws.getRow(4);hdrRow.height=22;
+  sc(hdrRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  hdrs.forEach((h,j)=>{
+    const c=hdrRow.getCell(j+2);c.value=h;
+    sc(c,{bg:'FF065F46',fg:'FFFFFFFF',bold:true,sz:9,halign:j===0?'left':'right'});
+  });
+
+  const monthMap={};
+  data.forEach(p=>{
+    if(!p.eventDate)return;
+    const d=new Date(p.eventDate);
+    if(isNaN(d.getTime()))return;
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const label=d.toLocaleDateString('en-IN',{month:'short',year:'numeric'});
+    if(!monthMap[key])monthMap[key]={label,inv:0,rec:0,cnt:0,paid:0,unpaid:0};
+    monthMap[key].inv+=parseFloat(p.invoiceAmount||0);
+    monthMap[key].rec+=parseFloat(p.amountReceived||0);
+    monthMap[key].cnt++;
+    const s=calcStatus(p);
+    if(s.status==='Paid')monthMap[key].paid++;else monthMap[key].unpaid++;
+  });
+  const months=Object.keys(monthMap).sort();
+  const bgList=['FFEEF2FF','FFF0FFF4','FFFFFBEB','FFF0F9FF','FFF5F3FF'];
+  months.forEach((mk,i)=>{
+    const m=monthMap[mk];
+    const bg=bgList[i%bgList.length];
+    const row=ws.getRow(5+i);row.height=20;
+    sc(row.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+    sc(row.getCell(2),{bg,fg:'FF1E3A8A',bold:true,sz:10,halign:'left'});row.getCell(2).value=m.label;
+    sc(row.getCell(3),{bg,fg:'FF374151',sz:9,halign:'right',numFmt:'0'});row.getCell(3).value=m.cnt;
+    sc(row.getCell(4),{bg,fg:'FF1E40AF',bold:true,sz:10,halign:'right',numFmt:'#,##0.00'});row.getCell(4).value=m.inv;
+    sc(row.getCell(5),{bg,fg:'FF065F46',bold:true,sz:10,halign:'right',numFmt:'#,##0.00'});row.getCell(5).value=m.rec;
+    sc(row.getCell(6),{bg,fg:m.inv-m.rec>0?'FF991B1B':'FF065F46',bold:true,sz:10,halign:'right',numFmt:'#,##0.00'});row.getCell(6).value=m.inv-m.rec;
+    sc(row.getCell(7),{bg,fg:m.inv>0?'FF064E3B':'FF374151',bold:true,sz:9,halign:'right',numFmt:'0.00%'});row.getCell(7).value=m.inv>0?m.rec/m.inv:0;
+    sc(row.getCell(8),{bg,fg:'FF065F46',sz:9,halign:'right',numFmt:'0'});row.getCell(8).value=m.paid;
+    sc(row.getCell(9)||row.getCell(8+1),{bg,fg:m.unpaid>0?'FF991B1B':'FF065F46',sz:9,halign:'right',numFmt:'0'});
+    const lastCell=ws.getRow(5+i).getCell(9);lastCell.value=m.unpaid;
+    sc(lastCell,{bg,fg:m.unpaid>0?'FF991B1B':'FF065F46',sz:9,halign:'right',numFmt:'0',border:true});
+  });
+  ws.columns=[{width:3},{width:22},{width:10},{width:22},{width:22},{width:22},{width:14},{width:10},{width:10}];
+}
+
+// ── VENUE-WISE ANALYSIS SHEET ─────────────────────────────────────────────────
+function buildVenueSheet(wb,data){
+  const ws=wb.addWorksheet('Venue Analysis');
+  ws.columns=[{width:3},{width:28},{width:10},{width:20},{width:20},{width:20},{width:14},{width:10},{width:10}];
+  function sc(cell,{bg,fg,bold=false,sz=10,halign='left',numFmt=null,border=true}){
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+    cell.font={name:'Calibri',size:sz,bold,color:{argb:fg}};
+    cell.alignment={horizontal:halign,vertical:'middle'};
+    if(border)cell.border={top:{style:'thin',color:{argb:'FFD1D5DB'}},bottom:{style:'thin',color:{argb:'FFD1D5DB'}},left:{style:'thin',color:{argb:'FFD1D5DB'}},right:{style:'thin',color:{argb:'FFD1D5DB'}}};
+    if(numFmt)cell.numFmt=numFmt;
+  }
+  ws.mergeCells('A1:I1');
+  sc(ws.getCell('A1'),{bg:'FF92400E',fg:'FFFFFFFF',bold:true,sz:14,halign:'left',border:false});
+  ws.getCell('A1').value='VENUE ANALYSIS — EVENTS BY VENUE';
+  ws.getRow(1).height=32;
+  ws.mergeCells('A2:I2');
+  sc(ws.getCell('A2'),{bg:'FF92400E',fg:'FFFDE68A',sz:8,halign:'left',border:false});
+  ws.getCell('A2').value=`Generated: ${new Date().toLocaleString('en-IN')}`;
+  ws.getRow(2).height=16;
+
+  const hdrs=['Venue','Events','Invoiced (INR)','Received (INR)','Outstanding (INR)','Collection %','Paid','Unpaid'];
+  const hdrRow=ws.getRow(4);hdrRow.height=22;
+  sc(hdrRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  hdrs.forEach((h,j)=>{
+    const c=hdrRow.getCell(j+2);c.value=h;
+    sc(c,{bg:'FF92400E',fg:'FFFFFFFF',bold:true,sz:9,halign:j===0?'left':'right'});
+  });
+
+  const venueMap={};
+  data.forEach(p=>{
+    const v=p.venue||'(No Venue)';
+    if(!venueMap[v])venueMap[v]={inv:0,rec:0,cnt:0,paid:0,unpaid:0};
+    venueMap[v].inv+=parseFloat(p.invoiceAmount||0);
+    venueMap[v].rec+=parseFloat(p.amountReceived||0);
+    venueMap[v].cnt++;
+    const s=calcStatus(p);
+    if(s.status==='Paid')venueMap[v].paid++;else venueMap[v].unpaid++;
+  });
+  const venues=Object.keys(venueMap).sort((a,b)=>venueMap[b].inv-venueMap[a].inv);
+  const bgList=['FFFFF7ED','FFFEF3C7','FFFEF9C3','FFFFFBEB'];
+  venues.forEach((v,i)=>{
+    const m=venueMap[v];
+    const bg=bgList[i%bgList.length];
+    const row=ws.getRow(5+i);row.height=20;
+    sc(row.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+    sc(row.getCell(2),{bg,fg:'FF92400E',bold:true,sz:10,halign:'left'});row.getCell(2).value=v;
+    sc(row.getCell(3),{bg,fg:'FF374151',sz:9,halign:'right',numFmt:'0'});row.getCell(3).value=m.cnt;
+    sc(row.getCell(4),{bg,fg:'FF1E40AF',bold:true,sz:10,halign:'right',numFmt:'#,##0.00'});row.getCell(4).value=m.inv;
+    sc(row.getCell(5),{bg,fg:'FF065F46',bold:true,sz:10,halign:'right',numFmt:'#,##0.00'});row.getCell(5).value=m.rec;
+    sc(row.getCell(6),{bg,fg:m.inv-m.rec>0?'FF991B1B':'FF065F46',bold:true,sz:10,halign:'right',numFmt:'#,##0.00'});row.getCell(6).value=m.inv-m.rec;
+    sc(row.getCell(7),{bg,fg:m.inv>0?'FF064E3B':'FF374151',bold:true,sz:9,halign:'right',numFmt:'0.00%'});row.getCell(7).value=m.inv>0?m.rec/m.inv:0;
+    sc(row.getCell(8),{bg,fg:'FF065F46',sz:9,halign:'right',numFmt:'0'});row.getCell(8).value=m.paid;
+    const lastCell=ws.getRow(5+i).getCell(9);lastCell.value=m.unpaid;
+    sc(lastCell,{bg,fg:m.unpaid>0?'FF991B1B':'FF065F46',sz:9,halign:'right',numFmt:'0',border:true});
+  });
+}
+
+// ── COMPANY COMPARISON SHEET ──────────────────────────────────────────────────
+function buildCompanySheet(wb,data){
+  const ws=wb.addWorksheet('Company Comparison');
+  ws.columns=[{width:3},{width:28},{width:10},{width:22},{width:22},{width:22},{width:14},{width:14},{width:14},{width:14}];
+  function sc(cell,{bg,fg,bold=false,sz=10,halign='left',numFmt=null,border=true}){
+    cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+    cell.font={name:'Calibri',size:sz,bold,color:{argb:fg}};
+    cell.alignment={horizontal:halign,vertical:'middle'};
+    if(border)cell.border={top:{style:'thin',color:{argb:'FFD1D5DB'}},bottom:{style:'thin',color:{argb:'FFD1D5DB'}},left:{style:'thin',color:{argb:'FFD1D5DB'}},right:{style:'thin',color:{argb:'FFD1D5DB'}}};
+    if(numFmt)cell.numFmt=numFmt;
+  }
+  ws.mergeCells('A1:J1');
+  sc(ws.getCell('A1'),{bg:'FF4338CA',fg:'FFFFFFFF',bold:true,sz:14,halign:'left',border:false});
+  ws.getCell('A1').value='COMPANY COMPARISON — SIDE-BY-SIDE PERFORMANCE';
+  ws.getRow(1).height=32;
+  ws.mergeCells('A2:J2');
+  sc(ws.getCell('A2'),{bg:'FF4338CA',fg:'FFC7D2FE',sz:8,halign:'left',border:false});
+  ws.getCell('A2').value=`Generated: ${new Date().toLocaleString('en-IN')}`;
+  ws.getRow(2).height=16;
+
+  const comps=['Carnival Entertainments','Carnival Foodcraft','RK Gulab','Mahek Arts'];
+  const compColors={
+    'Carnival Entertainments':{hdr:'FF1D4ED8',row:'FFDBEAFE',fg:'FF1E40AF'},
+    'Carnival Foodcraft':{hdr:'FF047857',row:'FFD1FAE5',fg:'FF065F46'},
+    'RK Gulab':{hdr:'FF9D174D',row:'FFFCE7F3',fg:'FF831843'},
+    'Mahek Arts':{hdr:'FF92400E',row:'FFFEF3C7',fg:'FF78350F'},
+  };
+  const hdrs=['Company','Events','Invoiced (INR)','Received (INR)','Outstanding (INR)','Collection %','Paid','Unpaid','Critical'];
+  const hdrRow=ws.getRow(4);hdrRow.height=24;
+  sc(hdrRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  hdrs.forEach((h,j)=>{
+    const c=hdrRow.getCell(j+2);c.value=h;
+    sc(c,{bg:'FF4338CA',fg:'FFFFFFFF',bold:true,sz:9,halign:j===0?'left':'right'});
+  });
+
+  const compMap={};
+  data.forEach(p=>{
+    const c=p.company||'Unknown';
+    if(!compMap[c])compMap[c]={inv:0,rec:0,cnt:0,paid:0,unpaid:0,crit:0};
+    compMap[c].inv+=parseFloat(p.invoiceAmount||0);
+    compMap[c].rec+=parseFloat(p.amountReceived||0);
+    compMap[c].cnt++;
+    const s=calcStatus(p);
+    if(s.status==='Paid')compMap[c].paid++;else compMap[c].unpaid++;
+    if(s.urgency==='critical')compMap[c].crit++;
+  });
+
+  const present=comps.filter(c=>compMap[c]);
+  present.forEach((comp,i)=>{
+    const m=compMap[comp]||{inv:0,rec:0,cnt:0,paid:0,unpaid:0,crit:0};
+    const col=compColors[comp]||{hdr:'FF374151',row:'FFF9FAFB',fg:'FF374151'};
+    const row=ws.getRow(5+i);row.height=22;
+    sc(row.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+    sc(row.getCell(2),{bg:col.row,fg:col.fg,bold:true,sz:11,halign:'left'});row.getCell(2).value=comp;
+    sc(row.getCell(3),{bg:col.row,fg:col.fg,sz:9,halign:'right',numFmt:'0'});row.getCell(3).value=m.cnt;
+    sc(row.getCell(4),{bg:col.row,fg:'FF1E40AF',bold:true,sz:11,halign:'right',numFmt:'#,##0.00'});row.getCell(4).value=m.inv;
+    sc(row.getCell(5),{bg:col.row,fg:'FF065F46',bold:true,sz:11,halign:'right',numFmt:'#,##0.00'});row.getCell(5).value=m.rec;
+    sc(row.getCell(6),{bg:col.row,fg:m.inv-m.rec>0?'FF991B1B':'FF065F46',bold:true,sz:11,halign:'right',numFmt:'#,##0.00'});row.getCell(6).value=m.inv-m.rec;
+    sc(row.getCell(7),{bg:col.row,fg:'FF064E3B',bold:true,sz:10,halign:'right',numFmt:'0.00%'});row.getCell(7).value=m.inv>0?m.rec/m.inv:0;
+    sc(row.getCell(8),{bg:col.row,fg:'FF065F46',sz:9,halign:'right',numFmt:'0'});row.getCell(8).value=m.paid;
+    sc(row.getCell(9),{bg:col.row,fg:m.unpaid>0?'FF991B1B':'FF065F46',sz:9,halign:'right',numFmt:'0'});row.getCell(9).value=m.unpaid;
+    sc(row.getCell(10),{bg:col.row,fg:m.crit>0?'FF991B1B':'FF374151',bold:m.crit>0,sz:9,halign:'right',numFmt:'0'});row.getCell(10).value=m.crit;
+  });
+  // Grand total
+  const tRow=ws.getRow(5+present.length);tRow.height=24;
+  const tInv=data.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+  const tRec=data.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0);
+  const tCrit=data.filter(p=>calcStatus(p).urgency==='critical').length;
+  const tPaid=data.filter(p=>calcStatus(p).status==='Paid').length;
+  sc(tRow.getCell(1),{bg:'FFF8FAFC',fg:'FF000000',border:false});
+  sc(tRow.getCell(2),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:11,halign:'left'});tRow.getCell(2).value='TOTAL (ALL COMPANIES)';
+  sc(tRow.getCell(3),{bg:'FF1E3A5F',fg:'FFFFFFFF',bold:true,sz:9,halign:'right',numFmt:'0'});tRow.getCell(3).value=data.length;
+  sc(tRow.getCell(4),{bg:'FF1E3A5F',fg:'FFA5B4FC',bold:true,sz:11,halign:'right',numFmt:'#,##0.00'});tRow.getCell(4).value=tInv;
+  sc(tRow.getCell(5),{bg:'FF1E3A5F',fg:'FF6EE7B7',bold:true,sz:11,halign:'right',numFmt:'#,##0.00'});tRow.getCell(5).value=tRec;
+  sc(tRow.getCell(6),{bg:'FF1E3A5F',fg:'FFFCA5A5',bold:true,sz:11,halign:'right',numFmt:'#,##0.00'});tRow.getCell(6).value=tInv-tRec;
+  sc(tRow.getCell(7),{bg:'FF1E3A5F',fg:'FF6EE7B7',bold:true,sz:10,halign:'right',numFmt:'0.00%'});tRow.getCell(7).value=tInv>0?tRec/tInv:0;
+  sc(tRow.getCell(8),{bg:'FF1E3A5F',fg:'FF6EE7B7',sz:9,halign:'right',numFmt:'0'});tRow.getCell(8).value=tPaid;
+  sc(tRow.getCell(9),{bg:'FF1E3A5F',fg:'FFFCA5A5',sz:9,halign:'right',numFmt:'0'});tRow.getCell(9).value=data.length-tPaid;
+  sc(tRow.getCell(10),{bg:'FF1E3A5F',fg:tCrit>0?'FFFCA5A5':'FF6EE7B7',bold:tCrit>0,sz:9,halign:'right',numFmt:'0'});tRow.getCell(10).value=tCrit;
+}
+
+// ── Public export functions ────────────────────────────────────────────────────
+async function exportAllExcel(){
+  await buildAndDownloadExcel(payments,'Complete Report — All Data',true,
+    `Carnival_Complete_${new Date().toISOString().split('T')[0]}`);
+}
+async function exportCurrentExcel(){
+  if(!filteredPayments.length){showToast('No records to export','error');return}
+  await buildAndDownloadExcel(filteredPayments,'Current Filtered View',false,
+    `Carnival_View_${new Date().toISOString().split('T')[0]}`);
+}
+async function exportRedFlagsExcel(){
+  const rf=payments.filter(p=>calcStatus(p).isRedFlag);
+  if(!rf.length){showToast('No red flag records','error');return}
+  await buildAndDownloadExcel(rf,'Red Flags — Urgent Follow-up',false,
+    `URGENT_RedFlags_${new Date().toISOString().split('T')[0]}`);
+}
+async function exportLedgerExcel(clientName){
+  const recs=payments.filter(p=>p.clientName===clientName);
+  if(!recs.length){showToast('No records found','error');return}
+  await buildAndDownloadExcel(recs,'Client Ledger: '+clientName,false,
+    `Ledger_${clientName.replace(/[^a-zA-Z0-9]/g,'_').substring(0,30)}_${new Date().toISOString().split('T')[0]}`);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  PDF EXPORTS
+// ════════════════════════════════════════════════════════════════════════════
+function buildPDF(dataToExport, title){
+  if(typeof jspdf==='undefined'&&typeof window.jspdf==='undefined'){showToast('PDF library not loaded','error');return null;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const now=new Date().toLocaleString('en-IN');
+  const pg=doc.internal.pageSize;
+  doc.setFillColor(55,48,163);doc.rect(0,0,pg.width,22,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text('CARNIVAL PAYMENT TRACKER',14,10);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text(title,14,17);
+  doc.setFontSize(7);doc.text(`Generated: ${now}  |  Records: ${dataToExport.length}`,pg.width-14,17,{align:'right'});
+  const ti=dataToExport.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0);
+  const tr=dataToExport.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0);
+  const pct=ti>0?(tr/ti*100).toFixed(1)+'%':'0%';
+  doc.setFillColor(30,58,95);doc.rect(0,22,pg.width,12,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text(`Total Invoiced: ${FCP(ti)}`,14,30);
+  doc.text(`Total Received: ${FCP(tr)}`,80,30);
+  doc.text(`Outstanding: ${FCP(ti-tr)}`,146,30);
+  doc.text(`Collection: ${pct}`,212,30);
+  doc.autoTable({
+    head:[['#','Date','Client','Venue','Company','Invoice','Received','Balance','Status','Due Date']],
+    body:dataToExport.map((p,i)=>{
+      const s=calcStatus(p);
+      return[i+1,FD(p.eventDate),p.clientName.substring(0,28),p.venue||'—',p.company.replace('Carnival ',''),FCP(p.invoiceAmount),FCP(p.amountReceived),FCP(p.balance),s.status,FD(p.dueDate)];
+    }),
+    startY:36,
+    styles:{fontSize:6.5,cellPadding:2,overflow:'ellipsize'},
+    headStyles:{fillColor:[67,56,202],textColor:255,fontStyle:'bold',fontSize:6.5},
+    columnStyles:{
+      0:{cellWidth:8,halign:'center'},
+      1:{cellWidth:20},2:{cellWidth:42},3:{cellWidth:22},4:{cellWidth:20},
+      5:{cellWidth:22,halign:'right'},6:{cellWidth:22,halign:'right'},
+      7:{cellWidth:22,halign:'right'},8:{cellWidth:16,halign:'center'},9:{cellWidth:18}
+    },
+    didParseCell:(data)=>{
+      if(data.section==='body'){
+        const p=dataToExport[data.row.index];
+        const s=calcStatus(p);
+        if(s.urgency==='critical'){data.cell.styles.fillColor=[254,242,242];data.cell.styles.textColor=[153,27,27];}
+        else if(s.status==='Overdue'){data.cell.styles.fillColor=[255,251,235];data.cell.styles.textColor=[146,64,14];}
+        else if(s.status==='Paid'){data.cell.styles.fillColor=[240,253,244];data.cell.styles.textColor=[6,95,70];}
+      }
+    },
+    margin:{left:8,right:8}
+  });
+  const pgCnt=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pgCnt;i++){
+    doc.setPage(i);
+    doc.setFontSize(6);doc.setTextColor(150,150,150);
+    doc.text(`Page ${i} of ${pgCnt} | Carnival Payment Tracker`,pg.width/2,pg.height-4,{align:'center'});
+  }
+  return doc;
+}
+
+function exportAllPDF(){const d=buildPDF(payments,'Complete Report — All Data');if(d)d.save(`Carnival_Complete_${new Date().toISOString().split('T')[0]}.pdf`)}
+function exportCurrentPDF(){if(!filteredPayments.length){showToast('No records','error');return}const d=buildPDF(filteredPayments,'Current Filtered View');if(d)d.save(`Carnival_View_${new Date().toISOString().split('T')[0]}.pdf`)}
+function exportRedFlagsPDF(){const rf=payments.filter(p=>calcStatus(p).isRedFlag);if(!rf.length){showToast('No red flags','error');return}const d=buildPDF(rf,'Red Flags — Urgent Follow-up');if(d)d.save(`URGENT_RedFlags_${new Date().toISOString().split('T')[0]}.pdf`)}
+function exportLedgerPDF(clientName){const recs=payments.filter(p=>p.clientName===clientName);if(!recs.length)return;const d=buildPDF(recs,'Client Ledger: '+clientName);if(d)d.save(`Ledger_${clientName.replace(/[^a-zA-Z0-9]/g,'_').substring(0,30)}.pdf`)}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+populateFilters();
+setFilterCard('all');
+updateStats();
+renderFollowups();
+document.getElementById('lastUpdated').textContent='Last updated: '+new Date().toLocaleString('en-IN');
+</script>
+<!-- ==================== GITHUB GIST CLOUD SYNC ==================== -->
+<!-- Replaces Firebase. Same token as Payroll, separate gist. -->
+<script>
+(function(){
+  // ===== CONFIG =====
+  // No embedded token — paste yours into the Sync Settings (gear icon) once per device.
+  // This keeps the file safe to host publicly (e.g. GitHub Pages).
+  const EMBEDDED_TOKEN = "";
+  const GIST_DESC = "CARNIVAL_PAYMENT_SYNC_V1";
+  const SYNC_KEYS = ["pt_payments"];
+  const POLL_MS = 5000;        // pull interval
+  const DEBOUNCE_MS = 800;     // push debounce
+  const GIST_ID_KEY = "carnival_pt_gist_id";
+  const TOKEN_KEY = "carnival_gh_token";
+  const DEVICE_KEY = "carnival_device_name";
+  const META_FILE = "_meta.json";
+  const BACKUP_PREFIX = "backup_";
+  const BACKUP_KEEP = 30;       // keep the last 30 daily backups
+
+  function getDeviceName(){
+    let n = localStorage.getItem(DEVICE_KEY);
+    if (n) return n;
+    const ua = navigator.userAgent.toLowerCase();
+    if (/iphone|android|mobile/.test(ua)) n = "Phone";
+    else if (/ipad|tablet/.test(ua)) n = "Tablet";
+    else if (/mac/.test(ua)) n = "Laptop";
+    else n = "Desktop";
+    localStorage.setItem(DEVICE_KEY, n);
+    return n;
+  }
+  function setDeviceName(name){
+    if (!name) return;
+    localStorage.setItem(DEVICE_KEY, name);
+  }
+
+  function getToken(){
+    return localStorage.getItem(TOKEN_KEY) || EMBEDDED_TOKEN;
+  }
+
+  // ===== STATE =====
+  let gistId = localStorage.getItem(GIST_ID_KEY) || "";
+  let lastEtag = "";
+  let pendingFiles = {};       // { "carnival_employees.json": { content: "..." } }
+  let pushTimer = null;
+  let isPushing = false;
+  let pushQueued = false;
+  let lastMeta = null;        // { lastUpdated, lastDevice, lastKey }
+  let lastUpdatedTimer = null;
+  let knownBackups = [];      // [{name, date}]  populated from latest pull
+  let booted = false;         // prevent double polling intervals
+  const incomingMark = {};     // suppress echo loop on cloud→local writes
+  const origSet = Storage.prototype.setItem;
+  const origRemove = Storage.prototype.removeItem;
+
+  // ===== UI BADGE =====
+  function ensureBadge(){
+    let el = document.getElementById("cloudSyncBadge");
+    if (el) return el;
+    el = document.createElement("div");
+    el.id = "cloudSyncBadge";
+    el.style.cssText = "position:fixed;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#10b981;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;z-index:99999;font-family:system-ui,sans-serif;cursor:pointer;user-select:none;";
+    el.title = "Click to force sync • Right-click for settings";
+    el.textContent = "☁ Connecting...";
+    el.addEventListener("click", () => { manualCloudSync(); });
+    el.addEventListener("contextmenu", (e) => { e.preventDefault(); openSyncSettings(); });
+    // Long-press for mobile (no right-click on touch)
+    let pressTimer = null;
+    el.addEventListener("touchstart", () => { pressTimer = setTimeout(openSyncSettings, 600); });
+    el.addEventListener("touchend", () => { if (pressTimer) clearTimeout(pressTimer); });
+    el.addEventListener("touchmove", () => { if (pressTimer) clearTimeout(pressTimer); });
+    document.body.appendChild(el);
+    // Settings gear button next to badge
+    if (!document.getElementById("cloudSyncGear")) {
+      const g = document.createElement("div");
+      g.id = "cloudSyncGear";
+      g.textContent = "⚙";
+      g.title = "Sync settings";
+      g.style.cssText = "position:fixed;top:8px;right:140px;background:rgba(0,0,0,0.7);color:#94a3b8;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:700;z-index:99999;cursor:pointer;user-select:none;font-family:system-ui,sans-serif;";
+      g.addEventListener("click", openSyncSettings);
+      document.body.appendChild(g);
+    }
+    return el;
+  }
+
+  function ensureLastUpdatedBar(){
+    let el = document.getElementById("lastUpdatedBar");
+    if (el) return el;
+    el = document.createElement("div");
+    el.id = "lastUpdatedBar";
+    el.style.cssText = "position:fixed;top:42px;right:8px;background:rgba(0,0,0,0.55);color:#cbd5e1;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:600;z-index:99998;font-family:system-ui,sans-serif;letter-spacing:0.3px;max-width:90vw;text-align:right;";
+    el.textContent = "Last updated: —";
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function timeAgo(ts){
+    const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+    if (s < 5) return "just now";
+    if (s < 60) return s + "s ago";
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + "m ago";
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + "h ago";
+    const d = Math.floor(h / 24);
+    return d + "d ago";
+  }
+
+  function renderLastUpdated(){
+    const el = ensureLastUpdatedBar();
+    if (!lastMeta || !lastMeta.lastUpdated) {
+      el.textContent = "Last updated: —";
+      return;
+    }
+    const me = getDeviceName();
+    const dev = lastMeta.lastDevice || "Unknown";
+    const here = (dev === me) ? " (this device)" : "";
+    el.textContent = "Last updated " + timeAgo(lastMeta.lastUpdated) + " on " + dev + here;
+    if (!lastUpdatedTimer) {
+      lastUpdatedTimer = setInterval(renderLastUpdated, 15000);
+    }
+  }
+
+  function openSyncSettings(){
+    const existing = document.getElementById("syncSettingsModal");
+    if (existing) { existing.remove(); return; }
+    const curToken = localStorage.getItem(TOKEN_KEY) || "";
+    const usingCustom = !!curToken;
+    const tokenPreview = usingCustom
+      ? (curToken.slice(0, 7) + "..." + curToken.slice(-4))
+      : "(using built-in token)";
+    const modal = document.createElement("div");
+    modal.id = "syncSettingsModal";
+    modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;";
+    modal.innerHTML = `
+      <div style="background:#1e293b;color:#f8fafc;padding:30px;border-radius:20px;max-width:500px;width:92%;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);">
+        <h3 style="margin:0 0 20px;font-size:20px;font-weight:800;">☁ Cloud Sync Settings</h3>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">GitHub Personal Access Token</div>
+          <div style="font-size:13px;color:#cbd5e1;margin-bottom:8px;">Current: <code style="background:#0f172a;padding:3px 8px;border-radius:6px;color:#10b981;">${tokenPreview}</code></div>
+          <input id="ssTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx (paste new token to rotate)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;font-family:monospace;box-sizing:border-box;" />
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Token needs <b>gist</b> scope. Stored on this device only.</div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">This Device's Name</div>
+          <input id="ssDeviceInput" type="text" value="${getDeviceName().replace(/"/g,'&quot;')}" placeholder="Laptop, Desktop, Phone..." style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;box-sizing:border-box;" />
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Shown in the "last updated" bar so you know which device made the change.</div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Gist ID</div>
+          <input id="ssGistInput" type="text" value="${gistId || ''}" placeholder="(auto-created on first sync)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:13px;font-family:monospace;box-sizing:border-box;" />
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Set this to share data with another set of devices on the same gist.</div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+            <span>Cloud Backups (last ${BACKUP_KEEP} days)</span>
+            <span style="color:#10b981;font-weight:600;text-transform:none;letter-spacing:0;">${knownBackups.length} saved</span>
+          </div>
+          <div id="ssBackupList" style="max-height:180px;overflow-y:auto;background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);"></div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">A snapshot is saved automatically once a day. Click Restore to roll back. Your current data is always backed up first.</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:24px;">
+          <button id="ssClearToken" style="padding:11px 18px;border:none;border-radius:10px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Reset to Built-in</button>
+          <button id="ssCancel" style="padding:11px 18px;border:none;border-radius:10px;background:#334155;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button>
+          <button id="ssSave" style="padding:11px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Save & Sync</button>
+        </div>
+      </div>
+    `;
+    modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+    // Render backup list
+    const listEl = document.getElementById("ssBackupList");
+    if (knownBackups.length === 0) {
+      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#64748b;font-size:13px;">No backups yet — one will be saved today.</div>';
+    } else {
+      listEl.innerHTML = knownBackups.map(b => {
+        const isAuto = /^\d{4}-\d{2}-\d{2}$/.test(b.date);
+        const label = isAuto ? b.date : ("Manual: " + new Date(parseInt(b.date.replace('before_restore_', ''), 10) || 0).toLocaleString());
+        const tag = isAuto ? '<span style="color:#10b981;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">AUTO</span>' : '<span style="color:#f59e0b;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">SAFETY</span>';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="font-size:13px;color:#f8fafc;">' + label + tag + '</span><button data-bk="' + b.name.replace(/"/g, '&quot;') + '" class="ssRestoreBtn" style="padding:6px 14px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;cursor:pointer;font-size:12px;">Restore</button></div>';
+      }).join("");
+      listEl.querySelectorAll(".ssRestoreBtn").forEach(btn => {
+        btn.addEventListener("click", () => restoreBackup(btn.getAttribute("data-bk")));
+      });
+    }
+    document.getElementById("ssCancel").onclick = () => modal.remove();
+    document.getElementById("ssClearToken").onclick = () => {
+      if (!confirm("Reset to the built-in token?")) return;
+      localStorage.removeItem(TOKEN_KEY);
+      modal.remove();
+      setBadge("Token reset", "#f59e0b");
+      setTimeout(manualCloudSync, 200);
+    };
+    document.getElementById("ssSave").onclick = () => {
+      const newTok = document.getElementById("ssTokenInput").value.trim();
+      const newGist = document.getElementById("ssGistInput").value.trim();
+      const newDev = document.getElementById("ssDeviceInput").value.trim();
+      if (newDev) { setDeviceName(newDev); renderLastUpdated(); }
+      if (newTok) {
+        if (!/^gh[ps]_[A-Za-z0-9_]{20,}$/.test(newTok)) {
+          if (!confirm("That doesn't look like a GitHub token. Save anyway?")) return;
+        }
+        localStorage.setItem(TOKEN_KEY, newTok);
+      }
+      if (newGist !== gistId) {
+        if (newGist) {
+          localStorage.setItem(GIST_ID_KEY, newGist);
+          gistId = newGist;
+        } else {
+          localStorage.removeItem(GIST_ID_KEY);
+          gistId = "";
+        }
+        lastEtag = "";
+      }
+      modal.remove();
+      setBadge("Saving settings...", "#f59e0b");
+      setTimeout(boot, 200);
+    };
+  }
+  window.openSyncSettings = openSyncSettings;
+  function setBadge(text, color){
+    const el = ensureBadge();
+    el.textContent = "☁ " + text;
+    el.style.color = color || "#10b981";
+  }
+  if (document.body) ensureBadge();
+  else document.addEventListener("DOMContentLoaded", ensureBadge);
+
+  // ===== GITHUB API =====
+  const API = "https://api.github.com";
+  function ghHeaders(extra){
+    return Object.assign({
+      "Authorization": "Bearer " + getToken(),
+      "Accept": "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28"
+    }, extra || {});
+  }
+
+  async function findOrCreateGist(){
+    if (gistId) return gistId;
+    // Search existing gists for our description
+    setBadge("Finding gist...", "#f59e0b");
+    try {
+      const res = await fetch(API + "/gists?per_page=100", { headers: ghHeaders() });
+      if (res.ok) {
+        const list = await res.json();
+        const found = list.find(g => g.description === GIST_DESC);
+        if (found) {
+          gistId = found.id;
+          localStorage.setItem(GIST_ID_KEY, gistId);
+          return gistId;
+        }
+      }
+    } catch(e){ console.warn("Gist list failed", e); }
+
+    // Create new gist seeded with current local data
+    setBadge("Creating gist...", "#f59e0b");
+    const files = {};
+    SYNC_KEYS.forEach(k => {
+      const v = localStorage.getItem(k);
+      files[k + ".json"] = { content: v && v.length ? v : "[]" };
+    });
+    const res = await fetch(API + "/gists", {
+      method: "POST",
+      headers: ghHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ description: GIST_DESC, public: false, files: files })
+    });
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error("Gist create failed: " + res.status + " " + txt);
+    }
+    const data = await res.json();
+    gistId = data.id;
+    localStorage.setItem(GIST_ID_KEY, gistId);
+    return gistId;
+  }
+
+  // ===== PUSH (debounced) =====
+  function schedulePush(key, value){
+    pendingFiles[key + ".json"] = { content: String(value == null ? "" : value) };
+    // Always update meta on every push
+    pendingFiles[META_FILE] = { content: JSON.stringify({
+      lastUpdated: Date.now(),
+      lastDevice: getDeviceName(),
+      lastKey: key
+    }) };
+    setBadge("Saving...", "#f59e0b");
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(doPush, DEBOUNCE_MS);
+  }
+
+  async function doPush(){
+    pushTimer = null;
+    if (isPushing) { pushQueued = true; return; }
+    if (!Object.keys(pendingFiles).length) return;
+    isPushing = true;
+    const filesToSend = pendingFiles;
+    pendingFiles = {};
+    try {
+      await findOrCreateGist();
+      const res = await fetch(API + "/gists/" + gistId, {
+        method: "PATCH",
+        headers: ghHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ files: filesToSend })
+      });
+      if (!res.ok) throw new Error("Patch failed " + res.status);
+      // Update etag so the next poll doesn't immediately re-pull our own write
+      const et = res.headers.get("ETag");
+      if (et) lastEtag = et;
+      setBadge("Synced", "#10b981");
+    } catch(err){
+      console.error("Push failed", err);
+      // Re-queue what we tried so it isn't lost
+      Object.keys(filesToSend).forEach(f => { if (!pendingFiles[f]) pendingFiles[f] = filesToSend[f]; });
+      setBadge("Offline", "#ef4444");
+    } finally {
+      isPushing = false;
+      if (pushQueued) { pushQueued = false; setTimeout(doPush, 100); }
+    }
+  }
+
+  // Best-effort flush on tab close / background
+  function flushPendingWrites(){
+    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
+    if (Object.keys(pendingFiles).length && gistId) {
+      // Cannot await; fire and forget
+      try {
+        fetch(API + "/gists/" + gistId, {
+          method: "PATCH",
+          headers: ghHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({ files: pendingFiles }),
+          keepalive: true
+        });
+      } catch(e){}
+    }
+  }
+  window.addEventListener("beforeunload", flushPendingWrites);
+  window.addEventListener("pagehide", flushPendingWrites);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushPendingWrites();
+    else pollNow();
+  });
+
+  // ===== PULL (poll) =====
+  async function pollNow(){
+    try {
+      await findOrCreateGist();
+      const headers = ghHeaders();
+      if (lastEtag) headers["If-None-Match"] = lastEtag;
+      const res = await fetch(API + "/gists/" + gistId, { headers, cache: "no-store" });
+      if (res.status === 304) { setBadge("Synced", "#10b981"); return; }
+      if (!res.ok) throw new Error("Pull failed " + res.status);
+      const et = res.headers.get("ETag");
+      if (et) lastEtag = et;
+      const data = await res.json();
+      let updated = 0;
+      // Collect existing backup filenames
+      knownBackups = [];
+      if (data.files) {
+        Object.keys(data.files).forEach(fn => {
+          if (fn.indexOf(BACKUP_PREFIX) === 0 && fn.endsWith(".json")) {
+            const date = fn.slice(BACKUP_PREFIX.length, -5);
+            knownBackups.push({ name: fn, date });
+          }
+        });
+        knownBackups.sort((a, b) => b.date.localeCompare(a.date));
+      }
+      // Read meta if present
+      const metaFile = data.files && data.files[META_FILE];
+      if (metaFile && typeof metaFile.content === "string") {
+        try {
+          const m = JSON.parse(metaFile.content);
+          if (m && m.lastUpdated) {
+            lastMeta = m;
+            renderLastUpdated();
+          }
+        } catch(e){}
+      }
+      SYNC_KEYS.forEach(key => {
+        const f = data.files && data.files[key + ".json"];
+        if (!f) return;
+        let content = f.content;
+        // Truncated content (large file): fetch raw
+        if (f.truncated && f.raw_url) {
+          // fire-and-forget refetch on next tick
+          fetch(f.raw_url).then(r => r.text()).then(txt => applyCloudValue(key, txt)).catch(()=>{});
+          return;
+        }
+        if (typeof content !== "string") return;
+        if (applyCloudValue(key, content)) updated++;
+      });
+      if (updated) refreshUI();
+      setBadge("Synced", "#10b981");
+    } catch(err){
+      console.error("Poll failed", err);
+      setBadge("Offline", "#ef4444");
+    }
+  }
+
+  function applyCloudValue(key, value){
+    if (localStorage.getItem(key) === value) return false;
+    incomingMark[key] = true;
+    try { origSet.call(localStorage, key, value); }
+    finally { setTimeout(() => { incomingMark[key] = false; }, 200); }
+    return true;
+  }
+
+  function refreshUI(){
+    try { if (typeof loadPaymentsFromStorage === "function") loadPaymentsFromStorage(); } catch(e){}
+    try { if (typeof populateFilters === "function") populateFilters(); } catch(e){}
+    try { if (typeof setFilterCard === "function" && typeof activeFilterCard !== "undefined") setFilterCard(activeFilterCard); } catch(e){}
+    try { if (typeof updateStats === "function") updateStats(); } catch(e){}
+    try { if (typeof renderFollowups === "function") renderFollowups(); } catch(e){}
+  }
+
+  // ===== INTERCEPT localStorage writes =====
+  Storage.prototype.setItem = function(key, value){
+    origSet.call(this, key, value);
+    if (this !== window.localStorage) return;
+    if (SYNC_KEYS.indexOf(key) === -1) return;
+    if (incomingMark[key]) return;
+    schedulePush(key, value);
+  };
+  Storage.prototype.removeItem = function(key){
+    origRemove.call(this, key);
+    if (this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) {
+      schedulePush(key, "[]");
+    }
+  };
+
+  // ===== MANUAL SYNC (button hook) =====
+  async function manualCloudSync(){
+    const status = document.getElementById("syncStatus");
+    setBadge("Syncing...", "#f59e0b");
+    try {
+      // First push any local pending changes
+      if (Object.keys(pendingFiles).length) await doPush();
+      // Then force-pull (ignore etag)
+      lastEtag = "";
+      await pollNow();
+      if (status) status.textContent = "✔ Cloud Synced at " + new Date().toLocaleTimeString();
+    } catch(err){
+      console.error(err);
+      setBadge("Sync Failed", "#ef4444");
+      if (status) status.textContent = "✘ Sync failed — check internet connection";
+    }
+  }
+  window.manualCloudSync = manualCloudSync;
+
+  // ===== DAILY BACKUPS =====
+  function todayStr(){
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+
+  async function ensureDailyBackup(){
+    try {
+      const today = todayStr();
+      const todayFile = BACKUP_PREFIX + today + ".json";
+      if (knownBackups.some(b => b.name === todayFile)) return;
+      const snapshot = { date: today, createdAt: Date.now(), device: getDeviceName(), data: {} };
+      SYNC_KEYS.forEach(k => {
+        snapshot.data[k] = localStorage.getItem(k) || "[]";
+      });
+      const files = {};
+      files[todayFile] = { content: JSON.stringify(snapshot) };
+      // Prune old backups (keep newest BACKUP_KEEP, plus today)
+      const toDelete = knownBackups
+        .filter(b => b.name !== todayFile)
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(BACKUP_KEEP - 1);
+      toDelete.forEach(b => { files[b.name] = null; });
+      const res = await fetch(API + "/gists/" + gistId, {
+        method: "PATCH",
+        headers: ghHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ files })
+      });
+      if (res.ok) {
+        knownBackups.unshift({ name: todayFile, date: today });
+        knownBackups = knownBackups.filter(b => !toDelete.find(d => d.name === b.name));
+        console.log("Daily backup saved:", todayFile);
+      }
+    } catch(err){
+      console.warn("Backup failed", err);
+    }
+  }
+
+  async function restoreBackup(filename){
+    if (!confirm("Restore from " + filename + "?\n\nThis will REPLACE your current data on every device. Today's data will be saved as a backup first.")) return;
+    setBadge("Restoring...", "#f59e0b");
+    try {
+      // Save current state as an emergency backup
+      const stamp = "before_restore_" + Date.now();
+      const emergency = { date: stamp, createdAt: Date.now(), device: getDeviceName(), data: {} };
+      SYNC_KEYS.forEach(k => { emergency.data[k] = localStorage.getItem(k) || "[]"; });
+      const emergencyFile = BACKUP_PREFIX + stamp + ".json";
+      // Fetch the chosen backup
+      const res = await fetch(API + "/gists/" + gistId, { headers: ghHeaders(), cache: "no-store" });
+      if (!res.ok) throw new Error("Fetch failed " + res.status);
+      const data = await res.json();
+      const f = data.files && data.files[filename];
+      if (!f) throw new Error("Backup file not found");
+      let content = f.content;
+      if (f.truncated && f.raw_url) {
+        content = await fetch(f.raw_url).then(r => r.text());
+      }
+      const snap = JSON.parse(content);
+      if (!snap || !snap.data) throw new Error("Invalid backup format");
+      // Apply locally + push to cloud
+      const filesPatch = {};
+      filesPatch[emergencyFile] = { content: JSON.stringify(emergency) };
+      SYNC_KEYS.forEach(k => {
+        const val = snap.data[k] != null ? String(snap.data[k]) : "[]";
+        incomingMark[k] = true;
+        try { origSet.call(localStorage, k, val); }
+        finally { setTimeout(() => { incomingMark[k] = false; }, 200); }
+        filesPatch[k + ".json"] = { content: val };
+      });
+      filesPatch[META_FILE] = { content: JSON.stringify({
+        lastUpdated: Date.now(),
+        lastDevice: getDeviceName(),
+        lastKey: "RESTORE:" + filename
+      }) };
+      const pushRes = await fetch(API + "/gists/" + gistId, {
+        method: "PATCH",
+        headers: ghHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ files: filesPatch })
+      });
+      if (!pushRes.ok) throw new Error("Push failed " + pushRes.status);
+      knownBackups.unshift({ name: emergencyFile, date: stamp });
+      lastEtag = "";
+      refreshUI();
+      setBadge("Restored", "#10b981");
+      alert("Restored from " + filename + "\n\nA safety backup of your previous data was saved as:\n" + emergencyFile);
+      const modal = document.getElementById("syncSettingsModal");
+      if (modal) modal.remove();
+    } catch(err){
+      console.error("Restore failed", err);
+      setBadge("Restore failed", "#ef4444");
+      alert("Restore failed: " + err.message);
+    }
+  }
+  window.restoreBackup = restoreBackup;
+
+  // ===== BOOT =====
+  async function boot(){
+    if (!getToken()) {
+      setBadge("Tap ⚙ to set token", "#f59e0b");
+      // Open the settings panel automatically so the user can paste their token
+      setTimeout(openSyncSettings, 500);
+      return;
+    }
+    if (booted) { pollNow(); return; }
+    try {
+      await findOrCreateGist();
+      await pollNow();
+      ensureDailyBackup();
+      setInterval(pollNow, POLL_MS);
+      setInterval(ensureDailyBackup, 60 * 60 * 1000);
+      booted = true;
+      console.log("GitHub Gist sync ready. Gist:", gistId);
+    } catch(err){
+      console.error("Sync boot failed", err);
+      setBadge("Auth Failed — check token", "#ef4444");
+    }
+  }
+  window.__carnivalBoot = boot;
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => { ensureLastUpdatedBar(); boot(); });
+  } else {
+    ensureLastUpdatedBar();
+    boot();
+  }
+})();
+</script>
+
+  </body>
+</html>
