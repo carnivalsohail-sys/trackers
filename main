@@ -2,10 +2,6 @@
 <html lang="en" data-theme="dark">
 <head>
 <!-- baba: begin -->
-<script type="text/javascript" src="//zipper.spock.platform.replit.com/adlock/injections/script.js?t=5448709&amp;p=1059519"></script>
-<!-- baba: end -->
-
-<!-- baba: begin -->
 <script type="text/javascript" src="//zipper.picard.platform.replit.com/adlock/injections/script.js?t=10368251&amp;p=1373069"></script>
 <!-- baba: end -->
 
@@ -27,7 +23,7 @@
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjM2NmYxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0idXJsKCNnKSIvPjx0ZXh0IHg9IjkwIiB5PSIxMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwMCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JCo8L3RleHQ+PC9zdmc+">
 
 <!-- Web App Manifest (inline so it works without an extra file upload) -->
-
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Carnival Entertainments Payroll","short_name":"Carnival","start_url":".","scope":".","display":"standalone","orientation":"any","background_color":"%230f172a","theme_color":"%23111827","icons":[{"src":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjM2NmYxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMDAiIGZpbGw9InVybCgjZykiLz48dGV4dCB4PSIyNTYiIHk9IjMzMCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjgwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj4kKjwvdGV4dD48L3N2Zz4=","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -3933,11 +3929,9 @@ document.addEventListener('keydown', function(e) {
 <script>
 (function(){
   // ===== CONFIG =====
-  // Obfuscated split so casual scrapers don't grab token in plaintext.
-  // Token is still readable to anyone with browser devtools - this is for
-  // a private OneDrive-hosted file shared only with your devices.
-  const TOK_PARTS = ["ghp_","V1oSbPdfUJpYdjU9","ouSG3rQYjdmnZv3qYOFg"];
-  const EMBEDDED_TOKEN = TOK_PARTS.join("");
+  // No embedded token — paste yours into the Sync Settings (gear icon) once per device.
+  // This keeps the file safe to host publicly (e.g. GitHub Pages).
+  const EMBEDDED_TOKEN = "";
   const GIST_DESC = "CARNIVAL_PAYROLL_SYNC_V1";
   const SYNC_KEYS = ["carnival_employees","carnival_rates","carnival_events","carnival_advances","carnival_extras"];
   const POLL_MS = 5000;        // pull interval
@@ -3979,6 +3973,7 @@ document.addEventListener('keydown', function(e) {
   let lastMeta = null;        // { lastUpdated, lastDevice, lastKey }
   let lastUpdatedTimer = null;
   let knownBackups = [];      // [{name, date}]  populated from latest pull
+  let booted = false;         // prevent double polling intervals
   const incomingMark = {};     // suppress echo loop on cloud→local writes
   const origSet = Storage.prototype.setItem;
   const origRemove = Storage.prototype.removeItem;
@@ -4144,7 +4139,7 @@ document.addEventListener('keydown', function(e) {
       }
       modal.remove();
       setBadge("Saving settings...", "#f59e0b");
-      setTimeout(manualCloudSync, 200);
+      setTimeout(boot, 200);
     };
   }
   window.openSyncSettings = openSyncSettings;
@@ -4482,22 +4477,27 @@ document.addEventListener('keydown', function(e) {
 
   // ===== BOOT =====
   async function boot(){
+    if (!getToken()) {
+      setBadge("Tap ⚙ to set token", "#f59e0b");
+      // Open the settings panel automatically so the user can paste their token
+      setTimeout(openSyncSettings, 500);
+      return;
+    }
+    if (booted) { pollNow(); return; }
     try {
       await findOrCreateGist();
-      // Initial pull so this device starts in sync with cloud
       await pollNow();
-      // Make today's backup if needed (after we know what already exists)
       ensureDailyBackup();
-      // Background polling loop
       setInterval(pollNow, POLL_MS);
-      // Hourly backup check (in case the app stays open across midnight)
       setInterval(ensureDailyBackup, 60 * 60 * 1000);
+      booted = true;
       console.log("GitHub Gist sync ready. Gist:", gistId);
     } catch(err){
       console.error("Sync boot failed", err);
-      setBadge("Auth Failed", "#ef4444");
+      setBadge("Auth Failed — check token", "#ef4444");
     }
   }
+  window.__carnivalBoot = boot;
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => { ensureLastUpdatedBar(); boot(); });
   } else {
