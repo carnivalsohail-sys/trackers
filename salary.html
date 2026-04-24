@@ -546,7 +546,60 @@
             font-weight: 700;
         }
 
-        @media print { 
+        
+        /* ===== TRAVEL PARSER STYLES ===== */
+        .tp-stats-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .tp-stat-pill { background: var(--stat-card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 16px 18px; min-width: 100px; flex: 1; text-align: center; }
+        .tp-stat-pill .tp-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .tp-stat-pill .tp-value { font-size: 20px; font-weight: 800; color: var(--accent-primary); margin-top: 6px; }
+        .tp-textarea { width: 100%; min-height: 200px; background: var(--input-bg); border: 2px solid var(--border-color); border-radius: 14px; padding: 18px; color: var(--text-main); font-family: 'Inter', monospace; font-size: 14px; line-height: 1.7; resize: vertical; }
+        .tp-textarea:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.15); }
+        .tp-accumulator { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); border-radius: 14px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 14px; }
+        .tp-accumulator .tp-acc-total { font-weight: 800; font-size: 18px; color: #10b981; }
+        .tp-person-card { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; }
+        .tp-person-card .tp-pname { font-size: 14px; font-weight: 800; color: var(--accent-primary); display: flex; align-items: center; gap: 8px; }
+        .tp-person-card .tp-ptotal { font-size: 18px; font-weight: 800; color: #10b981; float: right; }
+        .tp-person-card .tp-pshare { font-size: 11px; font-weight: 700; color: var(--text-muted); float: right; clear: right; margin-top: 2px; }
+        .tp-person-card .tp-pbar-wrap { width: 100%; height: 6px; background: rgba(99,102,241,0.1); border-radius: 3px; margin-top: 8px; clear: both; }
+        .tp-person-card .tp-pbar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #10b981, #059669); transition: width 0.3s ease; }
+        .tp-person-card .tp-psub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .tp-grand-bar { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04)); border: 1px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+        .tp-grand-bar .tp-gt-label { font-size: 14px; font-weight: 700; }
+        .tp-grand-bar .tp-gt-value { font-size: 26px; font-weight: 800; color: #10b981; }
+        .tp-grand-bar .tp-gt-sub { font-size: 12px; color: var(--text-muted); }
+        .tp-day-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; border-radius: 10px; margin-bottom: 4px; font-size: 13px; }
+        .tp-day-row:nth-child(even) { background: rgba(99,102,241,0.04); }
+        .tp-day-row .tp-day-date { color: var(--text-muted); font-weight: 600; }
+        .tp-day-row .tp-day-total { font-weight: 800; color: #10b981; }
+        .tp-day-row .tp-day-legs { font-size: 11px; color: var(--text-muted); }
+        .tp-scroll-box { max-height: 500px; overflow-y: auto; border-radius: 14px; border: 1px solid var(--border-color); }
+        .tp-filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .tp-filter-bar input, .tp-filter-bar select { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 13px; }
+        .tp-filter-bar input:focus, .tp-filter-bar select:focus { outline: none; border-color: var(--accent-primary); }
+        .tp-editable { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; color: var(--text-main); font-family: inherit; font-size: 13px; width: 100%; }
+        .tp-editable:focus { outline: none; border-color: var(--accent-primary); }
+        .tp-conf-high { border-left: 4px solid #10b981; }
+        .tp-conf-med { border-left: 4px solid #f59e0b; }
+        .tp-conf-low { border-left: 4px solid #ef4444; }
+        .tp-remove-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 18px; padding: 6px; border-radius: 8px; }
+        .tp-remove-btn:hover { transform: scale(1.1); background: rgba(239,68,68,0.1); }
+        .tp-tab-bar { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 0; }
+        .tp-tab-btn { padding: 12px 22px; border: none; background: none; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+        .tp-tab-btn.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+        .tp-tab-btn:hover { color: var(--text-main); }
+        .tp-push-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 16px 28px; border: none; border-radius: 14px; font-size: 16px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-family: inherit; transition: all 0.3s; }
+        .tp-push-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(16,185,129,0.35); }
+        .tp-empty-state { text-align: center; padding: 50px 24px; color: var(--text-muted); }
+        .tp-empty-state .tp-big-icon { font-size: 44px; margin-bottom: 14px; opacity: 0.5; }
+        .tp-person-header { padding: 12px 18px; border-radius: 12px; margin-top: 16px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .tp-sample-link { font-size: 12px; color: var(--text-muted); margin-top: 10px; }
+        .tp-sample-link a { color: var(--accent-primary); cursor: pointer; text-decoration: underline; margin-right: 4px; }
+        .tp-filter-active { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+        .tp-emp-select { width: 100%; background: var(--input-bg); border: 2px solid var(--border-color); border-radius: 14px; padding: 16px 18px; color: var(--text-main); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
+        .tp-emp-select:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 4px rgba(99,102,241,0.15); }
+        .tp-section-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+
+@media print { 
             @page { size: A4 landscape; margin: 8mm; }
             .nav-tabs,.btn,.no-print,.theme-toggle { display:none !important; } 
             body { background:white; color:black; padding:0; } 
@@ -904,7 +957,7 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Employee</label>
-                            <select id="advanceEmployee"></select>
+                            <select id="advanceEmployee" onchange="syncAdvanceEmployeeToParser()"></select>
                         </div>
                         <div class="form-group">
                             <label>Type</label>
@@ -932,72 +985,144 @@
                 </div>
                 <!-- Enhanced Multi-Leg Travel Calculator -->
                 <div class="card" style="border: 2px solid var(--accent-primary); background: linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(139,92,246,0.05) 100%);">
-                    <h3 style="color:var(--accent-primary); margin-bottom:15px; font-size:16px; display: flex; align-items: center; gap: 10px;">
-                        🚕 Multi-Leg Travel Calculator 
-                        <span style="font-size: 10px; background: var(--accent-primary); color: white; padding: 2px 8px; border-radius: 10px;">NEW</span>
+                    <h3 style="color:var(--accent-primary); margin-bottom:10px; font-size:16px; display: flex; align-items: center; gap: 10px;">
+                        🚕 Multi-Leg Travel Calculator
                     </h3>
 
-                    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
-                        <div class="form-group">
-                            <label>From Location</label>
-                            <input type="text" id="travelFrom" placeholder="e.g., Office" list="locationSuggestions">
-                            <datalist id="locationSuggestions">
-                                <option value="Office">
-                                <option value="Home">
-                                <option value="Venue A">
-                                <option value="Venue B">
-                                <option value="Station">
-                                <option value="Airport">
-                            </datalist>
+                    <!-- Sub-tab bar: Manual Entry | WhatsApp Parser -->
+                    <div class="tp-tab-bar" style="margin-bottom:18px;">
+                        <button class="tp-tab-btn active" id="tcTabManual" onclick="setTravelCalcMode('manual')">✍️ Manual Entry</button>
+                        <button class="tp-tab-btn" id="tcTabParser" onclick="setTravelCalcMode('parser')">📱 WhatsApp Parser</button>
+                    </div>
+
+                    <!-- ===== MANUAL ENTRY MODE ===== -->
+                    <div id="travelCalcManual">
+                        <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+                            <div class="form-group">
+                                <label>From Location</label>
+                                <input type="text" id="travelFrom" placeholder="e.g., Office" list="locationSuggestions">
+                                <datalist id="locationSuggestions">
+                                    <option value="Office">
+                                    <option value="Home">
+                                    <option value="Venue A">
+                                    <option value="Venue B">
+                                    <option value="Station">
+                                    <option value="Airport">
+                                </datalist>
+                            </div>
+                            <div class="form-group">
+                                <label>To Location</label>
+                                <input type="text" id="travelTo" placeholder="e.g., Venue" list="locationSuggestions">
+                            </div>
+                            <div class="form-group">
+                                <label>Mode</label>
+                                <select id="travelMode" style="padding: 16px 18px;">
+                                    <option value="auto">Auto</option>
+                                    <option value="taxi">Taxi</option>
+                                    <option value="bus">Bus</option>
+                                    <option value="train">Train</option>
+                                    <option value="metro">Metro</option>
+                                    <option value="bike">Bike</option>
+                                    <option value="tempo">Tempo</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Amount (₹)</label>
+                                <input type="number" id="travelLegAmount" placeholder="0" min="0">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>To Location</label>
-                            <input type="text" id="travelTo" placeholder="e.g., Venue" list="locationSuggestions">
+
+                        <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 10px;">
+                            <div class="form-group">
+                                <label>Distance (km)</label>
+                                <input type="number" id="travelDistance" placeholder="Optional" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="travelDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Notes</label>
+                                <input type="text" id="travelNotes" placeholder="e.g., Toll, Parking">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Mode</label>
-                            <select id="travelMode" style="padding: 16px 18px;">
-                                <option value="auto">Auto</option>
-                                <option value="taxi">Taxi</option>
-                                <option value="bus">Bus</option>
-                                <option value="train">Train</option>
-                                <option value="metro">Metro</option>
-                                <option value="bike">Bike</option>
-                                <option value="tempo">Tempo</option>
-                                <option value="other">Other</option>
+
+                        <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; align-items: center;">
+                            <button class="btn btn-success" type="button" onclick="addTravelLeg()" style="display: flex; align-items: center; gap: 5px;">
+                                <span>➕</span> Add Leg
+                            </button>
+                            <button class="btn btn-danger" type="button" onclick="clearTravelLegs()" style="display: flex; align-items: center; gap: 5px;">
+                                <span>🗑️</span> Clear All
+                            </button>
+                            <button class="btn btn-warning" type="button" onclick="saveTravelAsAdvance()" style="display: flex; align-items: center; gap: 5px;">
+                                <span>💾</span> Save as Advance
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ===== WHATSAPP PARSER MODE ===== -->
+                    <div id="travelCalcParser" style="display:none;">
+
+                        <!-- Employee Selector -->
+                        <div style="margin-bottom: 22px; background: rgba(99,102,241,0.06); border: 1px solid rgba(99,102,241,0.15); border-radius: 14px; padding: 16px 18px;">
+                            <div class="tp-section-label" style="margin-bottom: 8px;">👤 Assign To Employee</div>
+                            <select id="tpEmployeeSelect" class="tp-emp-select">
+                                <option value="">-- Select Employee --</option>
                             </select>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Auto-synced with the Advance employee dropdown above</div>
                         </div>
-                        <div class="form-group">
-                            <label>Amount (₹)</label>
-                            <input type="number" id="travelLegAmount" placeholder="0" min="0">
+
+                        <!-- Paste Area -->
+                        <div style="margin-bottom: 20px;">
+                            <div class="tp-section-label">📱 Paste WhatsApp Travel Messages</div>
+                            <textarea id="wpTravelInput" class="tp-textarea" placeholder="Paste WhatsApp messages here...&#10;&#10;Supports: [HH:MM, DD/MM/YY] +91 format&#10;OR plain text travel details&#10;&#10;Dates like 21/04/26 are auto-detected.&#10;New legs APPEND to existing data."></textarea>
+                            <div class="tp-sample-link">
+                                Try samples:
+                                <a onclick="tpLoadSample(1)">GUL multi-day</a> &bull;
+                                <a onclick="tpLoadSample(2)">Porter event</a> &bull;
+                                <a onclick="tpLoadSample(3)">Round trips</a> &bull;
+                                <a onclick="tpLoadSample(4)">Iqbal multi-leg</a>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div style="display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="parseAndAppendTravel()" style="padding: 14px 28px; font-size: 15px; font-weight: 800;">🔍 Parse &amp; Append</button>
+                            <button class="btn btn-warning" onclick="clearTravelInput()" style="padding: 14px 22px; font-size: 15px;">🧹 Clear Input</button>
+                            <button class="btn btn-danger" onclick="resetAllTravel()" style="padding: 14px 22px; font-size: 15px;">🗑️ Reset All</button>
+                        </div>
+
+                        <!-- Accumulator -->
+                        <div id="travelAccumulator" class="tp-accumulator" style="display:none; margin-bottom: 22px;"></div>
+
+                        <!-- Stats Bar -->
+                        <div id="tpStatsBar" class="tp-stats-bar" style="display:none; margin-bottom: 22px;"></div>
+
+                        <!-- Person Totals + Push -->
+                        <div id="tpPersonTotalsCard" style="display:none; margin-bottom: 22px;">
+                            <div class="tp-section-label" style="margin-bottom: 14px;">💰 Person Totals (out of Grand Total)</div>
+                            <div id="tpPersonTotalsList" style="max-height: 400px; overflow-y: auto; margin-bottom: 14px;"></div>
+                            <div id="tpGrandTotalBar"></div>
+                        </div>
+
+                        <!-- Push + Export Row -->
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 22px;">
+                            <button class="tp-push-btn" onclick="pushParsedToTravelCalc()">🚀 Push to Travel Legs</button>
+                            <button class="btn btn-success" onclick="tpExportCSV()" style="padding: 14px 22px; font-size: 14px;">📊 Export CSV</button>
+                            <button class="btn btn-primary" onclick="tpExportJSON()" style="padding: 14px 22px; font-size: 14px;">📤 Export JSON</button>
+                        </div>
+
+                        <!-- Parsed Legs Table -->
+                        <div id="tpParsedLegsCard" style="display:none;">
+                            <div id="tpTabBar" class="tp-tab-bar"></div>
+                            <div id="tpLegsContent"></div>
+                            <div id="tpSummaryContent"></div>
                         </div>
                     </div>
 
-                    <div class="form-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 10px;">
-                        <div class="form-group">
-                            <label>Distance (km)</label>
-                            <input type="number" id="travelDistance" placeholder="Optional" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="travelDate">
-                        </div>
-                        <div class="form-group">
-                            <label>Notes</label>
-                            <input type="text" id="travelNotes" placeholder="e.g., Toll, Parking">
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; align-items: center;">
-                        <button class="btn btn-success" type="button" onclick="addTravelLeg()" style="display: flex; align-items: center; gap: 5px;">
-                            <span>➕</span> Add Leg
-                        </button>
-                        <button class="btn btn-danger" type="button" onclick="clearTravelLegs()" style="display: flex; align-items: center; gap: 5px;">
-                            <span>🗑️</span> Clear All
-                        </button>
-                        <button class="btn btn-warning" type="button" onclick="saveTravelAsAdvance()" style="display: flex; align-items: center; gap: 5px;">
-                            <span>💾</span> Save as Advance
-                        </button>
+                    <!-- SHARED: Total display (always visible) -->
+                    <div style="display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; align-items: center;">
                         <div style="margin-left: auto; background: var(--card-bg); padding: 10px 20px; border-radius: 12px; border: 2px solid var(--accent-primary);">
                             <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Total Travel</span>
                             <div id="travelTotalDisplay" style="font-size: 24px; font-weight: 800; color: var(--accent-primary);">₹0</div>
@@ -1063,9 +1188,36 @@
                     <button class="btn btn-success" onclick="calculateAllSalaries()">Calculate</button>
                 </div>
                 <div id="salaryResults" style="display: none; margin-top: 20px;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
                         <button class="btn btn-primary" onclick="exportSalaryExcel()">Excel</button>
                         <button class="btn btn-success" onclick="printSalaryReport()">Print</button>
+                        <button class="btn" onclick="showWhatsAppModal()" style="background:linear-gradient(135deg,#25D366,#128C7E); color:white;">📱 WhatsApp Payslip</button>
+                    </div>
+                    <!-- WhatsApp Payslip Modal -->
+                    <div id="waModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; justify-content:center; align-items:center;">
+                        <div style="background:var(--container-bg); border-radius:20px; padding:30px; max-width:500px; width:90%; max-height:85vh; overflow-y:auto; border:2px solid #25D366; box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                                <h3 style="color:#25D366; font-size:18px;">📱 WhatsApp Payslip</h3>
+                                <button onclick="document.getElementById('waModal').style.display='none'" style="background:none; border:none; color:var(--text-muted); font-size:24px; cursor:pointer;">✕</button>
+                            </div>
+                            <div style="margin-bottom:15px;">
+                                <label style="font-weight:700; color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Select Employee</label>
+                                <select id="waEmpSelect" onchange="generateWAPayslip()" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--border-color); background:var(--input-bg); color:var(--text-main); font-family:inherit; font-size:14px; font-weight:700; margin-top:6px;">
+                                    <option value="">-- Choose Employee --</option>
+                                </select>
+                            </div>
+                            <div id="waMessage" style="display:none;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                    <span style="font-size:11px; color:var(--text-muted); font-weight:700;">PREVIEW (click text to select all)</span>
+                                    <button onclick="sendAllWhatsApp()" style="background:linear-gradient(135deg,#25D366,#128C7E); color:white; border:none; border-radius:10px; padding:10px 18px; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;">📤 Send All</button>
+                                </div>
+                                <textarea id="waText" readonly style="width:100%; min-height:280px; background:#0b141a; color:#e9edef; border:2px solid #25D366; border-radius:14px; padding:16px; font-family:'Segoe UI',sans-serif; font-size:13px; line-height:1.6; resize:vertical; white-space:pre-wrap;" onclick="this.select()"></textarea>
+                                <div style="display:flex; gap:10px; margin-top:12px;">
+                                    <button onclick="copyWAText()" style="flex:1; background:linear-gradient(135deg,#25D366,#128C7E); color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;">📋 Copy</button>
+                                    <button onclick="waShareNative()" style="flex:1; background:linear-gradient(135deg,#128C7E,#075E54); color:white; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:800; cursor:pointer; font-family:inherit;">📲 WhatsApp</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div style="overflow-x: auto; border-radius: 10px; border: 1px solid var(--border-color);">
                         <table id="salaryTable" style="margin-top: 0; min-width: 1200px; font-size: 11px;">
@@ -1281,6 +1433,7 @@
             bindCloudSync();
             applyFormulaLabels();
             renderTravelLegs();
+            renderTPFullUI();
             loadExtrasTable();
             populateExtrasDropdown();
 
@@ -2990,6 +3143,168 @@ ${html}
             }, 50);
         }
 
+        // === WHATSAPP PAYSLIP FUNCTIONS ===
+        function showWhatsAppModal() {
+            if (!window.currentSalaryData || !window.currentSalaryData.length) {
+                alert('Please calculate salaries first.');
+                return;
+            }
+            const sel = document.getElementById('waEmpSelect');
+            sel.innerHTML = '<option value="">-- Choose Employee --</option>';
+            window.currentSalaryData.forEach((d, i) => {
+                sel.innerHTML += `<option value="${i}">${d.name.toUpperCase()} (Final: ₹${d.final.toLocaleString('en-IN')})</option>`;
+            });
+            document.getElementById('waMessage').style.display = 'none';
+            const modal = document.getElementById('waModal');
+            modal.style.display = 'flex';
+        }
+
+        function generateWAPayslip() {
+            const sel = document.getElementById('waEmpSelect');
+            const idx = sel.value;
+            if (idx === '') {
+                document.getElementById('waMessage').style.display = 'none';
+                return;
+            }
+            const data = window.currentSalaryData[parseInt(idx)];
+            const monthVal = document.getElementById('calcMonth').value;
+            let monthLabel = '';
+            if (monthVal) {
+                const md = new Date(monthVal + '-01');
+                monthLabel = md.toLocaleString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+            }
+
+            // Build event breakdown lines
+            let eventLines = '';
+            if (data.eventBreakdown && data.eventBreakdown.length > 0) {
+                eventLines = '\n*Work Details:*\n';
+                data.eventBreakdown.forEach((line, i) => {
+                    eventLines += `  ${i+1}. ${line}\n`;
+                });
+            } else {
+                eventLines = '\n*Work Details:* No events this month\n';
+            }
+
+            // Loan EMI for this month
+            const empId = (window.sortedEmployees && window.sortedEmployees.find(e => e.name === data.name))?.id;
+            let loanEMI = 0;
+            if (empId && monthVal) {
+                loanEMI = advances
+                    .filter(a => a.empId === empId && a.type === 'loan_repay' && a.date && a.date.startsWith(monthVal))
+                    .reduce((s, a) => s + (Number(a.amount) || 0), 0);
+            }
+
+            const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧' };
+            const emoji = catEmoji[data.category] || '👤';
+
+            const msg = `${emoji} *CARNIVAL ENTERTAINMENTS*
+📋 *MONTHLY PAYSLIP*
+━━━━━━━━━━━━━━━━━━━━
+
+📅 *Period:* ${monthLabel}
+👤 *Employee:* ${data.name.toUpperCase()}
+🏷️ *Category:* ${data.category.toUpperCase()}
+📊 *Events Worked:* ${data.events}
+
+━━━━━━━━━━━━━━━━━━━━
+*EARNINGS*
+━━━━━━━━━━━━━━━━━━━━
+  💰 Work Amount    ₹${data.workAmount.toLocaleString('en-IN')}
+  🚆 Travel         ₹${data.travelAmount.toLocaleString('en-IN')}
+  💵 Salary         ₹${data.salary.toLocaleString('en-IN')}
+  📱 Mobile         ₹${data.mobile.toLocaleString('en-IN')}
+  🎫 Pass/Travel    ₹${data.pass.toLocaleString('en-IN')}
+${eventLines}
+━━━━━━━━━━━━━━━━━━━━
+*TOTAL EARNINGS*    *₹${data.total.toLocaleString('en-IN')}*
+━━━━━━━━━━━━━━━━━━━━
+
+*DEDUCTIONS*
+━━━━━━━━━━━━━━━━━━━━
+  🏦 On Account     -₹${data.onAccount.toLocaleString('en-IN')}
+  🏠 Rent           -₹${data.rent.toLocaleString('en-IN')}
+  💡 Light Bill     -₹${data.lightBill.toLocaleString('en-IN')}
+  ✋ Fine           -₹${data.fine.toLocaleString('en-IN')}`;
+            
+            let dedTotal = data.onAccount + data.rent + data.lightBill + data.fine;
+            
+            const msg2 = `  ─────────────────────
+  *Total Deductions* *-₹${dedTotal.toLocaleString('en-IN')}*
+━━━━━━━━━━━━━━━━━━━━
+
+✅ *NET PAY*  =  ₹${data.total.toLocaleString('en-IN')} - ₹${dedTotal.toLocaleString('en-IN')}
+━━━━━━━━━━━━━━━━━━━━
+
+🟢 *FINAL SALARY: ₹${data.final.toLocaleString('en-IN')}*
+━━━━━━━━━━━━━━━━━━━━
+
+_Generated on ${new Date().toLocaleString('en-IN')}_`;
+
+            document.getElementById('waText').value = msg + '\n' + msg2;
+            document.getElementById('waMessage').style.display = 'block';
+        }
+
+        function copyWAText() {
+            const ta = document.getElementById('waText');
+            ta.select();
+            ta.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(ta.value).then(() => {
+                const btn = event.target;
+                const orig = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => btn.textContent = orig, 2000);
+            }).catch(() => {
+                document.execCommand('copy');
+                alert('Copied!');
+            });
+        }
+
+        function waShareNative() {
+            const text = document.getElementById('waText').value;
+            if (!text) return;
+            // Open WhatsApp web with pre-filled text (URL encoded)
+            const waURL = 'https://wa.me/?text=' + encodeURIComponent(text);
+            window.open(waURL, '_blank');
+        }
+
+        function sendAllWhatsApp() {
+            if (!window.currentSalaryData || !window.currentSalaryData.length) {
+                alert('No salary data.');
+                return;
+            }
+            if (!confirm(`Generate payslips for ALL ${window.currentSalaryData.length} employees?\n\nThis will open WhatsApp for each employee one by one.\nClick OK to start.`)) return;
+
+            const monthVal = document.getElementById('calcMonth').value;
+            let monthLabel = '';
+            if (monthVal) {
+                const md = new Date(monthVal + '-01');
+                monthLabel = md.toLocaleString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+            }
+
+            // Generate text for first employee and open WhatsApp
+            let delay = 0;
+            window.currentSalaryData.forEach((data, i) => {
+                setTimeout(() => {
+                    const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧' };
+                    const emoji = catEmoji[data.category] || '👤';
+
+                    let eventLines = '';
+                    if (data.eventBreakdown && data.eventBreakdown.length > 0) {
+                        eventLines = '\n*Work Details:*\n';
+                        data.eventBreakdown.forEach((line, j) => {
+                            eventLines += `  ${j+1}. ${line}\n`;
+                        });
+                    }
+
+                    const dedTotal = data.onAccount + data.rent + data.lightBill + data.fine;
+                    const text = `${emoji} *CARNIVAL ENTERTAINMENTS*\n📋 *MONTHLY PAYSLIP*\n━━━━━━━━━━━━━━━━━━━━\n\n📅 *Period:* ${monthLabel}\n👤 *Employee:* ${data.name.toUpperCase()}\n🏷️ *Category:* ${data.category.toUpperCase()}\n📊 *Events Worked:* ${data.events}\n\n━━━━━━━━━━━━━━━━━━━━\n*EARNINGS*\n━━━━━━━━━━━━━━━━━━━━\n  💰 Work Amount    ₹${data.workAmount.toLocaleString('en-IN')}\n  🚆 Travel         ₹${data.travelAmount.toLocaleString('en-IN')}\n  💵 Salary         ₹${data.salary.toLocaleString('en-IN')}\n  📱 Mobile         ₹${data.mobile.toLocaleString('en-IN')}\n  🎫 Pass/Travel    ₹${data.pass.toLocaleString('en-IN')}\n${eventLines}\n━━━━━━━━━━━━━━━━━━━━\n*TOTAL EARNINGS*    *₹${data.total.toLocaleString('en-IN')}*\n━━━━━━━━━━━━━━━━━━━━\n\n*DEDUCTIONS*\n━━━━━━━━━━━━━━━━━━━━\n  🏦 On Account     -₹${data.onAccount.toLocaleString('en-IN')}\n  🏠 Rent           -₹${data.rent.toLocaleString('en-IN')}\n  💡 Light Bill     -₹${data.lightBill.toLocaleString('en-IN')}\n  ✋ Fine           -₹${data.fine.toLocaleString('en-IN')}\n  ─────────────────────\n  *Total Deductions* *-₹${dedTotal.toLocaleString('en-IN')}*\n━━━━━━━━━━━━━━━━━━━━\n\n✅ *NET PAY: ₹${data.final.toLocaleString('en-IN')}*\n━━━━━━━━━━━━━━━━━━━━\n\n_Generated on ${new Date().toLocaleString('en-IN')}_`;
+                    const waURL = 'https://wa.me/?text=' + encodeURIComponent(text);
+                    window.open(waURL, '_blank');
+                }, delay);
+                delay += 3000; // 3 second gap between each
+            });
+        }
+
         function exportFilteredLedgerExcel() {
             const filterId = document.getElementById('ledgerFilter').value;
             const filterSelect = document.getElementById('ledgerFilter');
@@ -3010,7 +3325,6 @@ ${html}
             const totalOnAcc = onAccEntries.reduce((s, a) => s + (Number(a.amount)||0), 0);
 
             let onAccRows = '';
-            // Header
             onAccRows += `<tr>
                 <td style="background:#00B0F0; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:6px;" colspan="2">
                     ${empName.toUpperCase()} &mdash; ON ACCOUNT (OFFICE ADVANCE)
@@ -3044,7 +3358,6 @@ ${html}
             const loanBalance = totalIssued - totalRepaid;
 
             let loanRows = '';
-            // Header
             loanRows += `<tr>
                 <td style="background:#FFC000; color:#000; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; text-align:left; padding:6px;">${empName.toUpperCase()} PERSONAL LOAN</td>
                 <td style="background:#FFC000; color:#FF0000; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; text-align:right; padding:6px;">${totalIssued.toLocaleString()}</td>
@@ -3054,7 +3367,6 @@ ${html}
             if (loanIssues.length === 0 && repayments.length === 0) {
                 loanRows += `<tr><td colspan="3" style="text-align:center; color:#999; padding:10px; border:1px solid #ccc;">No personal loan entries found.</td></tr>`;
             } else {
-                // Loan issue rows
                 loanIssues.forEach(adv => {
                     const monthLabel = new Date(adv.date).toLocaleString('en-IN', {month:'long', year:'numeric'}).toUpperCase();
                     loanRows += `<tr>
@@ -3063,8 +3375,6 @@ ${html}
                         <td style="font-family:Calibri; font-size:10pt; border:1px solid #ccc;"></td>
                     </tr>`;
                 });
-
-                // EMI repayment rows
                 repayments.forEach(adv => {
                     const d = new Date(adv.date);
                     const monthLabel = d.toLocaleString('en-IN', {month:'long'}).toUpperCase();
@@ -3077,11 +3387,9 @@ ${html}
                 });
             }
 
-            // Spacer rows
             for (let i = 0; i < 3; i++) {
                 loanRows += `<tr><td style="border:1px solid #eee; height:18px;"></td><td style="border:1px solid #eee;"></td><td style="border:1px solid #eee;"></td></tr>`;
             }
-            // BAL row
             loanRows += `<tr>
                 <td style="color:#FF0000; font-weight:bold; font-family:Calibri; font-size:12pt; border:1px solid #000; text-align:right; padding:6px;">BAL</td>
                 <td style="color:#FF0000; font-weight:bold; font-family:Calibri; font-size:12pt; border:1px solid #000; text-align:right; padding:6px;">${loanBalance.toLocaleString()}</td>
@@ -3090,7 +3398,8 @@ ${html}
 
             const loanTable = `<table style="border-collapse:collapse; width:380px;">${loanRows}</table>`;
 
-            const bodyHTML = `
+            // === SHEET 1: LEDGER ===
+            const bodyHTML1 = `
                 <p style="font-family:Calibri; font-size:14pt; font-weight:bold; color:#00B0F0;">1. ON ACCOUNT ADVANCES</p>
                 ${onAccTable}
                 <br/><br/>
@@ -3098,9 +3407,216 @@ ${html}
                 ${loanTable}
             `;
 
-            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"></head>
-<body>${bodyHTML}</body></html>`;
+            // === SHEET 2: TRAVEL DATA (WHOLE LEDGER) ===
+            // Show ALL travel advances (type=trv) for this employee as a full ledger
+            const travelEntries = filtered.filter(a => a.type === 'trv');
+            // Also collect legs from current travelLegs and tpParsedLegs for completeness
+            let extraLegs = [];
+            if (typeof travelLegs !== 'undefined' && travelLegs.length > 0) {
+                const empNameLC = empName.toLowerCase();
+                travelLegs.forEach(leg => {
+                    const legSender = (leg.notes || '').toLowerCase();
+                    if (legSender.includes(empNameLC) || empNameLC.includes(legSender) || legSender === '') {
+                        extraLegs.push(leg);
+                    }
+                });
+            }
+            if (typeof tpParsedLegs !== 'undefined' && tpParsedLegs.length > 0) {
+                const empNameLC = empName.toLowerCase();
+                tpParsedLegs.forEach(leg => {
+                    const legSender = (leg.sender || '').toLowerCase();
+                    if (legSender.includes(empNameLC) || empNameLC.includes(legSender) || legSender === '') {
+                        extraLegs.push(leg);
+                    }
+                });
+            }
+
+            let travelSheetHTML = '';
+            let grandTravelTotal = 0;
+            let totalLegCount = 0;
+            let entryCount = 0;
+
+            if (travelEntries.length === 0 && extraLegs.length === 0) {
+                travelSheetHTML = `<p style="font-family:Calibri; font-size:12pt; color:#999;">No travel entries found for ${escapeHtml(empName)}.</p>`;
+            } else {
+                let allRows = '';
+                // Header row
+                allRows += `<tr>
+                    <td style="background:#4472C4; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">#</td>
+                    <td style="background:#4472C4; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">DATE</td>
+                    <td style="background:#4472C4; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">FROM</td>
+                    <td style="background:#4472C4; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">TO</td>
+                    <td style="background:#4472C4; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">MODE</td>
+                    <td style="background:#4472C4; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">AMOUNT</td>
+                    <td style="background:#4472C4; color:#fff; font-weight:bold; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">DESCRIPTION</td>
+                </tr>`;
+
+                const rowColors = ['#D6E4F0','#FFFFFF'];
+                let legNum = 0;
+
+                // --- Part A: Saved travel advances (type=trv) — expand each entry with its legs ---
+                travelEntries.forEach((adv, advIdx) => {
+                    const d = adv.date ? new Date(adv.date) : new Date();
+                    const dateStr = isNaN(d.getTime()) ? (adv.date||'') : d.toLocaleString('en-IN', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
+                    const legs = adv.legs || [];
+                    entryCount++;
+                    grandTravelTotal += Number(adv.amount) || 0;
+
+                    if (legs.length > 0) {
+                        legs.forEach((leg, legIdx) => {
+                            legNum++;
+                            totalLegCount++;
+                            const legBg = rowColors[legNum % 2];
+                            const legDate = leg.date ? new Date(leg.date) : null;
+                            const legDateStr = legDate && !isNaN(legDate.getTime()) ? legDate.toLocaleString('en-IN', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase() : dateStr;
+                            allRows += `<tr>
+                                <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center; font-weight:bold;">${legNum}</td>
+                                <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center; color:#333;">${legDateStr || '-'}</td>
+                                <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#2E75B6; font-weight:bold;">${escapeHtml(leg.from || '-')}</td>
+                                <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#2E75B6; font-weight:bold;">${escapeHtml(leg.to || '-')}</td>
+                                <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center;">${escapeHtml((leg.mode || 'other').toUpperCase())}</td>
+                                <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:right; font-weight:bold; color:#00B050;">${Number(leg.amount).toLocaleString()}</td>
+                                <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#666;">${escapeHtml(adv.desc || '-')}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        // No legs — show as single summary row
+                        legNum++;
+                        totalLegCount++;
+                        const legBg = rowColors[legNum % 2];
+                        allRows += `<tr>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center; font-weight:bold;">${legNum}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center; color:#333;">${dateStr}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#666;" colspan="3">${escapeHtml(adv.desc || 'Travel')}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:right; font-weight:bold; color:#00B050;">${Number(adv.amount).toLocaleString()}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#666;">-</td>
+                        </tr>`;
+                    }
+                });
+
+                // --- Part B: Extra legs from travelLegs / tpParsedLegs (not yet saved as advance) ---
+                if (extraLegs.length > 0) {
+                    // Separator header for unsaved legs
+                    allRows += `<tr>
+                        <td colspan="7" style="background:#FFC000; color:#000; font-weight:bold; font-family:Calibri; font-size:10pt; border:1px solid #000; padding:6px; text-align:center;">UNSAVED TRAVEL LEGS (from calculator / parser)</td>
+                    </tr>`;
+                    const seenKeys = new Set();
+                    extraLegs.forEach(leg => {
+                        const key = `${leg.date||''}|${leg.from}|${leg.to}|${leg.amount}|${leg.mode}`;
+                        if (seenKeys.has(key)) return;
+                        seenKeys.add(key);
+                        legNum++;
+                        totalLegCount++;
+                        grandTravelTotal += Number(leg.amount) || 0;
+                        const legBg = rowColors[legNum % 2];
+                        let legDateStr = '-';
+                        if (leg.date) {
+                            try { const ld = new Date(leg.date); legDateStr = isNaN(ld.getTime()) ? leg.date : ld.toLocaleString('en-IN', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase(); } catch(e) { legDateStr = leg.date; }
+                        }
+                        allRows += `<tr>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center; font-weight:bold;">${legNum}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center; color:#333;">${legDateStr}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#2E75B6; font-weight:bold;">${escapeHtml(leg.from || '-')}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#2E75B6; font-weight:bold;">${escapeHtml(leg.to || '-')}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:center;">${escapeHtml((leg.mode || 'other').toUpperCase())}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; text-align:right; font-weight:bold; color:#00B050;">${Number(leg.amount).toLocaleString()}</td>
+                            <td style="background:${legBg}; font-family:Calibri; font-size:10pt; border:1px solid #B4C6E7; padding:6px; color:#666;">Not yet saved</td>
+                        </tr>`;
+                    });
+                }
+
+                // Grand total row
+                allRows += `<tr>
+                    <td colspan="5" style="background:#2E75B6; color:#fff; font-weight:bold; font-family:Calibri; font-size:12pt; border:1px solid #000; padding:8px; text-align:right;">GRAND TOTAL</td>
+                    <td style="background:#2E75B6; color:#fff; font-weight:bold; font-family:Calibri; font-size:12pt; border:1px solid #000; padding:8px; text-align:right;">${grandTravelTotal.toLocaleString()}</td>
+                    <td style="background:#2E75B6; color:#fff; font-family:Calibri; font-size:11pt; border:1px solid #000; padding:8px; text-align:center;">${totalLegCount} legs</td>
+                </tr>`;
+
+                travelSheetHTML = `
+                    <p style="font-family:Calibri; font-size:16pt; font-weight:bold; color:#2E75B6;">${empName.toUpperCase()} &mdash; TRAVEL DATA (FULL LEDGER)</p>
+                    <p style="font-family:Calibri; font-size:10pt; color:#666;">Generated: ${new Date().toLocaleString('en-IN')} | Travel Entries: ${entryCount} | Total Legs: ${totalLegCount}</p>
+                    <table style="border-collapse:collapse; width:100%; margin-top:12px;">
+                        ${allRows}
+                    </table>
+                    <br/>
+                    <p style="font-family:Calibri; font-size:9pt; color:#999;">Note: Amounts are in Indian Rupees. GRAND TOTAL = sum of all saved travel advances + unsaved legs.</p>
+                `;
+            }
+
+            // === SHEET 3: TRAVEL TOTAL (summary only) ===
+            const travelTotalSheetHTML = `
+                <br/><br/>
+                <table style="border-collapse:collapse; width:500px; margin:40px auto;">
+                    <tr>
+                        <td style="background:#2E75B6; color:#fff; font-weight:bold; font-family:Calibri; font-size:14pt; border:1px solid #000; padding:14px; text-align:left;" colspan="2">
+                            ${empName.toUpperCase()} &mdash; TRAVEL TOTAL
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#D6E4F0; font-family:Calibri; font-size:12pt; font-weight:bold; border:1px solid #B4C6E7; padding:12px; color:#333;">Total Travel Entries</td>
+                        <td style="background:#D6E4F0; font-family:Calibri; font-size:12pt; font-weight:bold; border:1px solid #B4C6E7; padding:12px; text-align:center; color:#2E75B6;">${entryCount}</td>
+                    </tr>
+                    <tr>
+                        <td style="background:#FFFFFF; font-family:Calibri; font-size:12pt; font-weight:bold; border:1px solid #B4C6E7; padding:12px; color:#333;">Total Travel Legs</td>
+                        <td style="background:#FFFFFF; font-family:Calibri; font-size:12pt; font-weight:bold; border:1px solid #B4C6E7; padding:12px; text-align:center; color:#2E75B6;">${totalLegCount}</td>
+                    </tr>
+                    <tr>
+                        <td style="background:#D6E4F0; font-family:Calibri; font-size:12pt; font-weight:bold; border:1px solid #B4C6E7; padding:12px; color:#333;">Total Travel Amount</td>
+                        <td style="background:#D6E4F0; font-family:Calibri; font-size:16pt; font-weight:900; border:1px solid #B4C6E7; padding:12px; text-align:center; color:#00B050;">&#8377;${grandTravelTotal.toLocaleString()}</td>
+                    </tr>
+                    <tr>
+                        <td style="background:#2E75B6; color:#fff; font-weight:bold; font-family:Calibri; font-size:14pt; border:1px solid #000; padding:14px; text-align:right;" colspan="2">
+                            TOTAL: &#8377;${grandTravelTotal.toLocaleString()}
+                        </td>
+                    </tr>
+                </table>
+                <p style="font-family:Calibri; font-size:10pt; color:#999; text-align:center; margin-top:20px;">Generated: ${new Date().toLocaleString('en-IN')}</p>
+            `;
+
+            // === BUILD MULTI-SHEET EXCEL (3 sheets) ===
+            const template = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8">
+<!--[if gte mso 9]><xml>
+<x:ExcelWorkbook>
+<x:ExcelWorksheets>
+<x:ExcelWorksheet>
+<x:Name>Advance & Loan Ledger</x:Name>
+<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+</x:ExcelWorksheet>
+<x:ExcelWorksheet>
+<x:Name>Travel Data</x:Name>
+<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+</x:ExcelWorksheet>
+<x:ExcelWorksheet>
+<x:Name>Travel Total</x:Name>
+<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+</x:ExcelWorksheet>
+</x:ExcelWorksheets>
+</x:ExcelWorkbook>
+</xml><![endif]-->
+</head>
+<body>
+<!-- SHEET 1: Advance & Loan Ledger (DO NOT TOUCH) -->
+<div style="mso-page-orientation:landscape;">
+<h2 style="font-family:Calibri; font-size:18pt; color:#00B0F0; margin-bottom:5px;">${empName.toUpperCase()} &mdash; ADVANCE & LOAN LEDGER</h2>
+<p style="font-family:Calibri; font-size:10pt; color:#666; margin-bottom:20px;">Generated: ${new Date().toLocaleString('en-IN')}</p>
+${bodyHTML1}
+</div>
+<!-- SHEET 2: Travel Data (Page break) -->
+<br clear="all" style="page-break-before:always;" mso-break-type="section"/>
+<div>
+<h2 style="font-family:Calibri; font-size:18pt; color:#2E75B6; margin-bottom:5px;">${empName.toUpperCase()} &mdash; TRAVEL DATA</h2>
+<p style="font-family:Calibri; font-size:10pt; color:#666; margin-bottom:20px;">Generated: ${new Date().toLocaleString('en-IN')}</p>
+${travelSheetHTML}
+</div>
+<!-- SHEET 3: Travel Total (Page break) -->
+<br clear="all" style="page-break-before:always;" mso-break-type="section"/>
+<div>
+${travelTotalSheetHTML}
+</div>
+</body></html>`;
 
             const blob = new Blob(['\ufeff', template], { type: 'application/vnd.ms-excel' });
             const url = window.URL.createObjectURL(blob);
@@ -4037,6 +4553,564 @@ deleteAdvance = function(index) {
         refreshAllEmployeeOnAccounts();
     }, 100);
 };
+
+
+// ==================== WHATSAPP TRAVEL PARSER (MERGED) ====================
+// Phone number -> name mapping (roles come from employees[] array, NOT hardcoded)
+const TP_PHONE_DIR = [
+    {digits:'919616125066',name:'GUL'},{digits:'919930696607',name:'NEETU'},
+    {digits:'917347852475',name:'ABHISHEK'},{digits:'916263573602',name:'SANJU'},
+    {digits:'917666413858',name:'IQBAL'},{digits:'918948886508',name:'AMIT'},
+    {digits:'917275222618',name:'AMAN'},{digits:'917021780942',name:'DEEPU'},
+    {digits:'919584863113',name:'GUDDA'},{digits:'919326671918',name:'VIDYAKANT'},
+    {digits:'919301673067',name:'PUSHPENDRA'},{digits:'917610492328',name:'NAVAL'},
+    {digits:'919594101668',name:'NEERAJ'},{digits:'918879103167',name:'PANKAJ'},
+    {digits:'919303877277',name:'ROHIT'},{digits:'918308412381',name:'SHIV'}
+];
+
+// Simplified mandate form for illiterate employees
+const TP_MANDATE = `Date: DD/MM/YY\nFrom: ___\nTo: ___\n\u20B9: ___\nTotal: \u20B9___`;
+
+// ---- Sync Advance Employee dropdown to Parser Employee dropdown ----
+function syncAdvanceEmployeeToParser(){
+    const advSel = document.getElementById('advanceEmployee');
+    const tpSel = document.getElementById('tpEmployeeSelect');
+    if(!advSel || !tpSel) return;
+    const empIdx = advSel.value;
+    if(empIdx === '' || empIdx === undefined || !employees[empIdx]) return;
+    const empName = employees[empIdx].name;
+    // Ensure the name exists in the parser dropdown
+    const opts = Array.from(tpSel.options).map(o => o.value);
+    if(!opts.includes(empName)){
+        const o = document.createElement('option');
+        o.value = empName; o.textContent = empName;
+        tpSel.appendChild(o);
+    }
+    tpSel.value = empName;
+}
+
+// Parser state
+let tpParsedLegs = [];
+let tpRawBlocks = [];
+let tpSelectedPersons = {};
+let tpFilterText = '';
+let tpFilterPerson = '';
+let tpFilterMode = '';
+let tpActiveTab = 'legs';
+let tpParsedMessageHashes = new Set(); // Track parsed message hashes to prevent duplicates
+
+// ---- Simple string hash for dedup ----
+function tpSimpleHash(str){
+    let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return h;
+}
+
+// ---- Helper: strip non-digit from phone ----
+function tpStripPhone(p){return (p||'').replace(/[^0-9]/g,'');}
+// ---- Helper: lookup name from phone ----
+function tpLookupName(raw){
+    const c=tpStripPhone(raw);if(c.length<10)return'';
+    const l10=c.length>10?c.slice(-10):c;const w91='91'+l10;
+    for(const e of TP_PHONE_DIR){if(e.digits===c||e.digits===w91||e.digits===l10)return e.name;}
+    return '';
+}
+// ---- Helper: lookup role from employees[] (NOT hardcoded) ----
+function tpLookupRole(name){
+    const u=(name||'').toUpperCase();
+    for(const emp of employees){if(emp.name&&emp.name.toUpperCase()===u)return emp.category||'helper';}
+    return 'unassigned';
+}
+// ---- Helper: role display info ----
+function tpRoleColor(cat){
+    if(cat==='operator')return{bg:'#F8CBAD',text:'#000',border:'#E67E22'};
+    if(cat==='semi-operator')return{bg:'#8EA9DB',text:'#000',border:'#6B8FC7'};
+    return{bg:'#AEAAAA',text:'#000',border:'#7F8C8D'};
+}
+function tpRoleLabel(cat){
+    if(cat==='operator')return'OPERATOR';
+    if(cat==='semi-operator')return'SOP';
+    return cat.toUpperCase();
+}
+
+// ---- Amount blacklist ----
+const TP_AMT_BL=[
+    /\b\d+\s*(?:person|people|man|men|boy|boys|ticket|tiket|item|bag|box|pc|nos?|unit|km|kg|hr|hrs?|min|day|days|month|year)\b/i,
+    /\b\d{4,}\b/
+];
+// ---- Date extract ----
+function tpExtractDate(line){
+    // Try DD/MM/YY, DD-MM-YY, DD.MM.YY, DD/MM/YYYY, DD-MM-YYYY formats
+    const m=line.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+    if(!m)return null;let d=parseInt(m[1]),mo=parseInt(m[2]),y=parseInt(m[3]);
+    if(d<1||d>31||mo<1||mo>12)return null;if(y<100)y+=2000;
+    if(y<2020||y>2099)return null;
+    return`${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+// ---- Amount extract (strict) ----
+function tpExtractAmount(text){
+    if(!text)return 0;const s=String(text).trim();
+    for(const bl of TP_AMT_BL){if(bl.test(s))return 0;}
+    let m;
+    if((m=s.match(/(\d{1,5})\s*\+\s*(\d{1,5})/)))return parseInt(m[1])+parseInt(m[2]);
+    if((m=s.match(/fix\s*\u20B9?\s*(\d{1,5})/i)))return parseInt(m[1]);
+    if((m=s.match(/\u20B9\s*(\d{1,5})/)))return parseInt(m[1]);
+    if((m=s.match(/Rs\.?\s*(\d{1,5})/i)))return parseInt(m[1]);
+    if((m=s.match(/(\d{1,5})\s*\/\s*$/)))return parseInt(m[1]);
+    if((m=s.match(/(?:total|totel|fare\s*amount|total\s*amount)\s*[.]*\s*(\d{1,5})/i)))return parseInt(m[1]);
+    if((m=s.match(/^(?:\s*)(\d{2,5})\s*$/)))return parseInt(m[1]);
+    if((m=s.match(/^(.+?)\s+(\d{1,5})\s*$/))){
+        const loc=m[1].trim(),num=parseInt(m[2]);
+        if(loc.length>=2&&loc.length<=30&&!/\d/.test(loc))return num;
+    }
+    return 0;
+}
+// ---- Clean location ----
+function tpCleanLoc(text){
+    if(!text)return'Unknown';
+    return text.replace(/^(?:from|form|frm|to|t[o0])\s*[.:]?\s*/i,'')
+        .replace(/\s*(?:auto|taxi|porter|portar|poter|tempo|train|bus|metro|bike|fix|return|Rs\.?|\u20B9|\/|\(.+?\))$/i,'')
+        .replace(/\b(ritarn|return|round\s*trip)\b\.?\s*/gi,'').replace(/\b(totel|total)\b.*$/i,'')
+        .replace(/\s*\d{1,5}\s*$/,'').replace(/\s*\+\s*\d+\s*$/,'').replace(/\s*[\/]\s*$/,'')
+        .trim().replace(/^\.\s*/,'').replace(/\s*\.$/,'').replace(/\s+/g,' ').trim()||'Unknown';
+}
+// ---- Mode detection ----
+function tpGuessMode(text){
+    const modes=[[/\b(auto|riksha|rickshaw)\b/i,'auto'],[/\b(taxi|cab|uber|ola)\b/i,'taxi'],
+        [/\b(porter|portar|potar|poter)\b/i,'porter'],[/\b(tempo|tempo\s*traveller)\b/i,'tempo'],
+        [/\b(train|local|tiket|ticket)\b/i,'train'],[/\bbus\b/i,'bus'],[/\b(metro)\b/i,'metro'],
+        [/\b(bike|scooty|activa)\b/i,'bike'],[/\b(paikap|pickup|pick\s*up)\b/i,'other']];
+    for(const[re,mode]of modes){if(re.test(text))return mode;}
+    if(/\bfix\b/i.test(text))return'taxi';return'other';
+}
+function tpConfidence(d,f,t,a){let s=0;if(d)s+=30;if(f&&f!=='Unknown')s+=20;if(t&&t!=='Unknown')s+=20;if(a>0)s+=25;if(a>100)s+=5;return Math.min(100,s);}
+let _tpIdSeq=0;
+function tpNewId(){return`L${Date.now()}_${++_tpIdSeq}`;}
+
+// ---- Block parser ----
+function tpSplitBlocks(text){
+    const lines=text.split(/\n/);const blocks=[];let curLines=[],curSender='';
+    for(const raw of lines){
+        const line=raw.trim();
+        if(!line){if(curLines.length){blocks.push({lines:curLines,sender:curSender});curLines=[];curSender='';}continue;}
+        const sm=line.match(/^(\w+(?:\s+\w+){0,2})\s+(91\d{10}|\d{10})$/);
+        if(sm){if(curLines.length)blocks.push({lines:curLines,sender:curSender});curLines=[];curSender=sm[1].trim();continue;}
+        curLines.push(line);
+    }
+    if(curLines.length)blocks.push({lines:curLines,sender:curSender});
+    return blocks;
+}
+function tpMakeLeg(date,from,to,amount,mode,sender,notes,raw){
+    return{id:tpNewId(),date,from:from||'Unknown',to:to||'Unknown',amount:amount||0,mode:mode||'other',sender,notes:notes||'',raw:raw||'',confidence:tpConfidence(date,from,to,amount)};
+}
+function tpParseBlock(block){
+    const lines=block.lines;const sender=block.sender||'';const legs=[];let curDate=null,curFrom=null,curTo=null,curMode='other',gReason='';
+    for(const line of lines){
+        const lower=line.toLowerCase();
+        if(/^(reason|reasone?)\b/i.test(lower)){const rm=line.match(/(?:reason|reasone?)\s*[.:]?\s*(.+)/i);if(rm)gReason=rm[1].trim();continue;}
+        if(/^\d+\s*(?:person|people|man|men|boy|boys|ticket|tiket|item|bag|box|pc|nos?|unit)\b/i.test(line))continue;
+        if(/^(?:tot\w+|fare\s*amount|total\s*amount)/.test(lower)){curFrom=null;curTo=null;curMode='other';continue;}
+        const date=tpExtractDate(line);if(date){curDate=date;continue;}
+        const fm=line.match(/^(?:from|form|frm)\s*[.:]?\s*(.+)/i);
+        if(fm){curFrom=tpCleanLoc(fm[1]);curMode=tpGuessMode(line);continue;}
+        const tm=line.match(/^(?:to|t[o0])\s*[.:]?\s*(.+)$/i);
+        if(tm&&!/^totel|^total/.test(lower)){
+            const locP=tm[1];const amt=tpExtractAmount(locP);
+            if(amt>0&&curFrom){const toL=tpCleanLoc(locP);legs.push(tpMakeLeg(curDate||'',curFrom,toL,amt,curMode||tpGuessMode(line),sender,gReason,line));curFrom=null;curTo=null;curMode='other';}
+            else{curTo=tpCleanLoc(locP);}continue;
+        }
+        const mh=line.match(/^(.+?)\s+to\s+(.+?)\s+to\s+(.+?)\s+(\d[\d\s+\-]*)\s*$/i);
+        if(mh){
+            const f1=tpCleanLoc(mh[1]),mid=tpCleanLoc(mh[2]),t2=tpCleanLoc(mh[3]),amt=tpExtractAmount(mh[4]);
+            if(amt>0){legs.push(tpMakeLeg(curDate||'',f1,mid,Math.round(amt/2),tpGuessMode(line),sender,gReason,line));legs.push(tpMakeLeg(curDate||'',mid,t2,amt-Math.round(amt/2),tpGuessMode(line),sender,gReason,line));}
+            curFrom=null;curTo=null;curMode='other';continue;
+        }
+        const imp=line.match(/^(.+?)\s+(?:to|t[o0])\s*[.:]?\s*(.+?)$/i);
+        if(imp&&!/^totel|^total/.test(lower)){
+            const fL=tpCleanLoc(imp[1]),restP=imp[2];const amt=tpExtractAmount(restP);
+            if(amt>0){const toL=tpCleanLoc(restP);legs.push(tpMakeLeg(curDate||'',fL,toL,amt,tpGuessMode(line),sender,gReason,line));curFrom=null;curTo=null;curMode='other';}
+            else{curFrom=fL;curTo=tpCleanLoc(restP);curMode=tpGuessMode(line);}continue;
+        }
+        const amt=tpExtractAmount(line);
+        if(amt>0){const mode=tpGuessMode(line);if(mode!=='other')curMode=mode;
+            if(curFrom&&curTo){legs.push(tpMakeLeg(curDate||'',curFrom,curTo,amt,curMode,sender,gReason,line));curFrom=null;curTo=null;curMode='other';}
+        }
+    }
+    return legs;
+}
+function tpDedup(legs){const seen=new Set();return legs.filter(l=>{const k=`${l.date}|${l.from}|${l.to}|${l.amount}|${l.mode}`;if(seen.has(k))return false;seen.add(k);return true;});}
+
+// ---- MAIN PARSER ----
+function parseWhatsAppText(rawText){
+    const raw=rawText.trim();if(!raw)return[];
+    // Try WhatsApp timestamp format: [HH:MM, DD/MM/YY]
+    const msgP=/\[(\d{1,2}:\d{2}),\s*(\d{1,2}\/\d{1,2}\/\d{2,4})\]\s*(?:([+]?[\d\s]{10,15})\s*:\s*|\s*)([\s\S]*?)(?=\[\d{1,2}:\d{2},\s*\d{1,2}\/\d{1,2}\/\d{2,4}\]|$)/g;
+    // Also try WhatsApp native export: "M/D/YY, H:MM PP - +911234567890: content"
+    const nativeP=/(?:\[\d{1,2}:\d{2},\s*\d{1,2}\/\d{1,2}\/\d{2,4}\]|(\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}\s*[AP]M))\s*[-]\s*(?:([+]?[\d\s]{10,15})\s*:\s*|\s*)([\s\S]*?)(?=(?:\[\d{1,2}:\d{2},\s*\d{1,2}\/\d{1,2}\/\d{2,4}\]|\d{1,2}\/\d{1,2}\/\d{2,4},\s*\d{1,2}:\d{2}\s*[AP]M)|$)/g;
+    let match;let allLegs=[];let found=false;
+
+    // Try WhatsApp bracket format first
+    while((match=msgP.exec(raw))!==null){
+        found=true;const phoneRaw=(match[3]||'').trim();const content=match[4].trim();if(!content)continue;
+        const sender=tpLookupName(phoneRaw);
+        const subBlocks=content.split(/\n\s*\n/).filter(b=>b.trim().length>0);
+        let runningDate=null;
+        for(const sub of subBlocks){
+            const lines=sub.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+            if(lines.length===1){const d=tpExtractDate(lines[0]);if(d){runningDate=d;continue;}}
+            let finalLines=lines;
+            if(runningDate){const dp=runningDate.split('-');finalLines=[parseInt(dp[2])+'/'+parseInt(dp[1])+'/'+dp[0].slice(-2),...lines];}
+            const legs=tpParseBlock({lines:finalLines,sender});
+            allLegs.push(...legs.map(l=>({...l,sender:sender||l.sender})));
+        }
+    }
+
+    // Try WhatsApp native export format if bracket format didn't match
+    if(!found){
+        while((match=nativeP.exec(raw))!==null){
+            found=true;const phoneRaw=(match[2]||'').trim();const content=match[3].trim();if(!content)continue;
+            const sender=tpLookupName(phoneRaw);
+            const subBlocks=content.split(/\n\s*\n/).filter(b=>b.trim().length>0);
+            let runningDate=null;
+            for(const sub of subBlocks){
+                const lines=sub.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+                if(lines.length===1){const d=tpExtractDate(lines[0]);if(d){runningDate=d;continue;}}
+                let finalLines=lines;
+                if(runningDate){const dp=runningDate.split('-');finalLines=[parseInt(dp[2])+'/'+parseInt(dp[1])+'/'+dp[0].slice(-2),...lines];}
+                const legs=tpParseBlock({lines:finalLines,sender});
+                allLegs.push(...legs.map(l=>({...l,sender:sender||l.sender})));
+            }
+        }
+    }
+
+    // Fallback: plain text format (no message wrappers)
+    if(!found){
+        const blocks=tpSplitBlocks(raw);
+        let runningDate=null;
+        for(const block of blocks){
+            let sender=block.sender;
+            if(!sender){const pm=block.lines[0]?.match(/([+]?\d[\d\s]{9,14})/);if(pm)sender=tpLookupName(pm[1]);}
+            // Check if this block is just a date line — carry date forward
+            if(block.lines.length===1){
+                const d=tpExtractDate(block.lines[0]);
+                if(d){runningDate=d;continue;}
+            }
+            // Prepend running date to block
+            let finalLines=block.lines;
+            if(runningDate){
+                const dp=runningDate.split('-');
+                finalLines=[parseInt(dp[2])+'/'+parseInt(dp[1])+'/'+dp[0].slice(-2),...block.lines];
+            }
+            const legs=tpParseBlock({lines:finalLines,sender:sender||block.sender});
+            allLegs.push(...legs);
+        }
+    }
+    return tpDedup(allLegs);
+}
+
+// ---- Summary functions ----
+function tpGetPersonDailySummary(legs){
+    const map=new Map();
+    for(const l of legs){const s=l.sender||'Unknown';const d=l.date||'No Date';const k=`${s}|||${d}`;
+        if(!map.has(k))map.set(k,{sender:s,date:d,legs:[],total:0,legCount:0});
+        const e=map.get(k);e.legs.push(l);e.total+=l.amount;e.legCount++;}
+    return Array.from(map.values()).sort((a,b)=>{const c=a.sender.localeCompare(b.sender);return c!==0?c:a.date.localeCompare(b.date);});
+}
+function tpGetGrandTotal(legs){return legs.reduce((s,l)=>s+l.amount,0);}
+function tpGetPersonTotals(legs){
+    const map=new Map();
+    for(const l of legs){const s=l.sender||'Unknown';if(!map.has(s))map.set(s,{total:0,legCount:0,days:new Set()});
+        const e=map.get(s);e.total+=l.amount;e.legCount++;if(l.date)e.days.add(l.date);}
+    return Array.from(map.entries()).map(([s,d])=>({sender:s,total:d.total,legCount:d.legCount,days:d.days.size})).sort((a,b)=>b.total-a.total);
+}
+function tpGetRawBlocks(raw){return tpSplitBlocks(raw.trim()).map(b=>({sender:b.sender||'',text:b.lines.join('\n')}));}
+
+// ---- Sample data ----
+const TP_SAMPLES={};
+TP_SAMPLES[1]=`[15:53, 24/04/2026] +91 96161 25066: 21/04/26\n\nOg to Ajanta \u20B994\n\nAjanta to Santacruz \u20B910\n\nSantacruz to Khar \u20B95\n\nTotal: \u20B9109\n\n[15:56, 24/04/2026] +91 96161 25066: 22/04/26\n\nKhar to Santacruz \u20B95 +5 return\n\nSantacruz to Ajanta \u20B910 +10 return\nTotal: \u20B930\n\n[16:30, 24/04/2026] +91 96161 25066: 22/04/26\n\nMick Lane to Og \u20B969\n\nOg to Santacruz \u20B972\n\nTotal: \u20B9141\n\n[16:32, 24/04/2026] +91 96161 25066: 22/04/26\n\nTaj Santacruz to Og\nAmount: \u20B9150\nMode: taxi\n\n[16:40, 24/04/2026] +91 96161 25066: 23/04/26\n\nKhar to Santacruz \u20B95\nSantacruz to Ajanta \u20B910\nTotal: \u20B915\n\n[16:48, 24/04/2026] +91 96161 25066: 24/04/26\n\nProjector pickup \u20B9130\nMode: other`;
+TP_SAMPLES[2]=`Date: 9/2/2026\nFrom: Kherwadi Office\nTo: St Regis Parel\nAmount: \u20B9602\nMode: porter\nParking toll extra: \u20B9100\nTotal: \u20B9702\nReason: Event Setup`;
+TP_SAMPLES[3]=`8/2/26\nThane to Satkar \u20B946\nSatkar to Mantra \u20B930\nMantra to Satkar \u20B935\nSatkar to Thane \u20B949\nTotal: \u20B9160\n\n9/2/26\nThane to Satkar \u20B945\nSatkar to Thane \u20B948\nTotal: \u20B993`;
+TP_SAMPLES[4]=`[15:30, 24/04/2026] +91 76664 13858: 08/02/2026\n\nOg to Kurla\nAmount: \u20B960\n\nKurla to Thane\nAmount: \u20B985\n\nThane to Pamclab\nAmount: \u20B990\n\nPamclab to Satkar\nMode: porter\nAmount: \u20B9385\n\nSatkar to Thane\nAmount: \u20B975`;
+
+// ==================== TRAVEL PARSER UI ====================
+function parseAndAppendTravel(){
+    const input=document.getElementById('wpTravelInput').value.trim();
+    if(!input){alert('Paste a WhatsApp message first');return;}
+    // Dedup: check if this exact message text has already been parsed
+    const msgHash=tpSimpleHash(input);
+    if(tpParsedMessageHashes.has(msgHash)){
+        alert('This exact message has already been parsed. Paste a different message or click Reset All.');
+        return;
+    }
+    tpParsedMessageHashes.add(msgHash);
+    // Get selected employee name
+    const empSel=document.getElementById('tpEmployeeSelect');
+    const empName=empSel?empSel.value:'';
+    const newLegs=parseWhatsAppText(input);
+    if(!newLegs.length){alert('No travel legs found in this message');return;}
+    // Override sender with selected employee name (fixes "Unknown" issue)
+    if(empName){newLegs.forEach(l=>{l.sender=empName;});}
+    const existing=new Set(tpParsedLegs.map(l=>`${l.date}|${l.from}|${l.to}|${l.amount}|${l.mode}`));
+    const unique=newLegs.filter(l=>!existing.has(`${l.date}|${l.from}|${l.to}|${l.amount}|${l.mode}`));
+    tpParsedLegs.push(...unique);
+    const blocks=tpGetRawBlocks(input);tpRawBlocks.push(...blocks);
+    document.getElementById('wpTravelInput').value='';
+
+    // === AUTO-FILL ADVANCE FORM ===
+    // 1. Set employee in Advance dropdown
+    const advSel=document.getElementById('advanceEmployee');
+    if(empName&&advSel){
+        for(let i=0;i<advSel.options.length;i++){
+            if(advSel.options[i].text.includes(empName)){
+                advSel.value=advSel.options[i].value;break;
+            }
+        }
+    }
+    // 2. Set Type to Travel / Pass
+    const advType=document.getElementById('advanceType');
+    if(advType)advType.value='trv';
+    // 3. Set Amount to total of all parsed legs
+    const total=tpGetGrandTotal(tpParsedLegs);
+    const advAmt=document.getElementById('advanceAmount');
+    if(advAmt)advAmt.value=total;
+    // 4. Set Date from the first leg's date (or today)
+    const firstDate=tpParsedLegs.find(l=>l.date);
+    const advDate=document.getElementById('advanceDate');
+    if(advDate)advDate.value=firstDate?firstDate.date:new Date().toISOString().split('T')[0];
+    // 5. Set Description from legs
+    const desc=tpParsedLegs.map(l=>`${l.from}-${l.to}`).join(', ');
+    const advDesc=document.getElementById('advanceDesc');
+    if(advDesc)advDesc.value=desc||'Travel';
+
+    renderTPFullUI();
+    tpSetTab('legs');
+    alert(`Added ${unique.length} leg${unique.length!==1?'s':''} for ${empName||'Unknown'}. Total: ${tpParsedLegs.length} legs, \u20B9${total.toLocaleString('en-IN')}\n\nAdvance form auto-filled: Employee=${empName||'(select)'}, Type=Travel/Pass, Date=${firstDate?firstDate.date:'today'}, Amount=\u20B9${total.toLocaleString('en-IN')}`);
+}
+function clearTravelInput(){document.getElementById('wpTravelInput').value='';tpRawBlocks=[];}
+function resetAllTravel(){
+    if(tpParsedLegs.length&&!confirm('Clear all parsed travel data?'))return;
+    tpParsedLegs=[];tpRawBlocks=[];tpSelectedPersons={};tpFilterText='';tpFilterPerson='';tpFilterMode='';tpActiveTab='legs';
+    tpParsedMessageHashes.clear();
+    document.getElementById('wpTravelInput').value='';renderTPFullUI();
+}
+function tpLoadSample(n){const txt=TP_SAMPLES[n]||'';if(!txt)return;const legs=parseWhatsAppText(txt);const blocks=tpGetRawBlocks(txt);tpParsedLegs.push(...legs);tpRawBlocks.push(...blocks);renderTPFullUI();tpSetTab('legs');}
+function tpTogglePerson(name){tpSelectedPersons[name]=!tpSelectedPersons[name];renderTPFullUI();}
+
+// ---- Push to Travel Calculator (with dedup) ----
+function pushParsedToTravelCalc(){
+    if(!tpParsedLegs.length){alert('No parsed legs to push');return;}
+    // Get selected employee name: try parser dropdown first, then advance dropdown
+    let empName='';
+    const tpSel=document.getElementById('tpEmployeeSelect');
+    if(tpSel&&tpSel.value) empName=tpSel.value;
+    if(!empName){
+        const advSel=document.getElementById('advanceEmployee');
+        if(advSel&&advSel.value!==''&&employees[advSel.value]) empName=employees[advSel.value].name;
+    }
+    // Dedup: check each parsed leg against existing travelLegs
+    const existingKeys=new Set(travelLegs.map(l=>`${l.date}|${l.from}|${l.to}|${l.amount}|${l.mode}`));
+    let dupCount=0, addCount=0;
+    tpParsedLegs.forEach(leg=>{
+        const key=`${leg.date||''}|${leg.from}|${leg.to}|${leg.amount}|${leg.mode}`;
+        if(existingKeys.has(key)){dupCount++;return;}
+        existingKeys.add(key);
+        const sender=empName||leg.sender||'';
+        travelLegs.push({id:Date.now()+Math.random(),from:leg.from,to:leg.to,mode:leg.mode,
+            amount:leg.amount,date:leg.date||new Date().toISOString().split('T')[0],
+            notes:sender,timestamp:new Date().toISOString()});
+        addCount++;
+    });
+    renderTravelLegs();updateTravelTotal();
+    // Clear parsed legs after push so re-push doesn't duplicate
+    tpParsedLegs=[];tpRawBlocks=[];tpParsedMessageHashes.clear();renderTPFullUI();
+    setTravelCalcMode('manual');
+    let msg=`${addCount} leg${addCount!==1?'s':''} pushed to Travel Legs!`;
+    if(dupCount>0)msg+=` (${dupCount} duplicate${dupCount!==1?'s':''} skipped)`;
+    alert(msg);
+}
+
+// ---- Travel Calc sub-tab switching (Manual vs Parser) ----
+function setTravelCalcMode(mode){
+    const manualDiv=document.getElementById('travelCalcManual');
+    const parserDiv=document.getElementById('travelCalcParser');
+    const tabManual=document.getElementById('tcTabManual');
+    const tabParser=document.getElementById('tcTabParser');
+    if(mode==='manual'){
+        manualDiv.style.display='block';
+        parserDiv.style.display='none';
+        tabManual.classList.add('active');
+        tabParser.classList.remove('active');
+    }else{
+        manualDiv.style.display='none';
+        parserDiv.style.display='block';
+        tabManual.classList.remove('active');
+        tabParser.classList.add('active');
+        // Populate employee dropdown from employees[] (same as Advance form)
+        tpPopulateEmployeeSelect();
+        // Auto-sync from advance employee dropdown
+        syncAdvanceEmployeeToParser();
+        renderTPFullUI();
+    }
+}
+// ---- Populate parser employee dropdown from employees[] ----
+function tpPopulateEmployeeSelect(){
+    const sel=document.getElementById('tpEmployeeSelect');
+    if(!sel)return;
+    const curVal=sel.value;
+    sel.innerHTML='<option value="">-- Select Employee --</option>';
+    if(typeof employees!=='undefined'&&employees.length){
+        const ops=['operator','semi-operator','helper'];
+        ops.forEach(cat=>{
+            const grp=employees.filter(e=>e.category===cat);
+            if(!grp.length)return;
+            const optgroup=document.createElement('optgroup');
+            optgroup.label=cat==='operator'?'Operators':cat==='semi-operator'?'Semi-Operators':'Helpers';
+            grp.forEach(emp=>{
+                const o=document.createElement('option');
+                o.value=emp.name;o.textContent=emp.name;
+                optgroup.appendChild(o);
+            });
+            sel.appendChild(optgroup);
+        });
+    }
+    sel.value=curVal;
+}
+
+// ---- Filtered legs ----
+function tpGetFiltered(){
+    return tpParsedLegs.filter(l=>{
+        const mt=!tpFilterText||[l.from,l.to,l.notes,l.raw].some(f=>(f||'').toLowerCase().includes(tpFilterText.toLowerCase()));
+        const mm=!tpFilterMode||l.mode===tpFilterMode;
+        const mp=!tpFilterPerson||l.sender===tpFilterPerson;
+        const mc=Object.keys(tpSelectedPersons).length===0||tpSelectedPersons[l.sender];
+        return mt&&mm&&mp&&mc;
+    });
+}
+
+// ---- Render functions ----
+function renderTPFullUI(){renderTPStats();renderTPPersonTotals();renderTPTabs();}
+function renderTPStats(){
+    const bar=document.getElementById('tpStatsBar');const acc=document.getElementById('travelAccumulator');
+    if(!tpParsedLegs.length){bar.style.display='none';acc.style.display='none';return;}
+    bar.style.display='flex';acc.style.display='flex';
+    const total=tpGetGrandTotal(tpParsedLegs);
+    const avgConf=tpParsedLegs.length?Math.round(tpParsedLegs.reduce((s,l)=>s+l.confidence,0)/tpParsedLegs.length):0;
+    const persons=new Set(tpParsedLegs.map(l=>l.sender||'Unknown')).size;
+    const days=new Set(tpParsedLegs.map(l=>l.date||'No Date')).size;
+    bar.innerHTML=`<div class="tp-stat-pill"><div class="tp-label">Legs</div><div class="tp-value">${tpParsedLegs.length}</div></div>
+        <div class="tp-stat-pill"><div class="tp-label">Total</div><div class="tp-value" style="color:var(--success);">\u20B9${total.toLocaleString('en-IN')}</div></div>
+        <div class="tp-stat-pill"><div class="tp-label">People</div><div class="tp-value">${persons}</div></div>
+        <div class="tp-stat-pill"><div class="tp-label">Days</div><div class="tp-value">${days}</div></div>
+        <div class="tp-stat-pill"><div class="tp-label">Confidence</div><div class="tp-value" style="color:${avgConf>=80?'var(--success)':avgConf>=50?'var(--warning)':'var(--danger)'}">${avgConf}%</div></div>`;
+    acc.innerHTML=`<span>Accumulated: <strong style="color:var(--success);">${tpParsedLegs.length} legs</strong> from <strong style="color:var(--success);">${persons} people</strong></span><span class="tp-acc-total">\u20B9${total.toLocaleString('en-IN')}</span>`;
+}
+function renderTPPersonTotals(){
+    const card=document.getElementById('tpPersonTotalsCard');
+    if(!tpParsedLegs.length){card.style.display='none';return;}
+    card.style.display='block';
+    const totals=tpGetPersonTotals(tpParsedLegs);
+    const grand=tpGetGrandTotal(tpParsedLegs);
+    const persons=new Set(tpParsedLegs.map(l=>l.sender||'Unknown')).size;
+    const days=new Set(tpParsedLegs.map(l=>l.date||'No Date')).size;
+    document.getElementById('tpPersonTotalsList').innerHTML=totals.map(pt=>{
+        const role=tpLookupRole(pt.sender);const c=tpRoleColor(role);
+        const pct=grand>0?((pt.total/grand)*100).toFixed(1):0;
+        return`<div class="tp-person-card" style="border-left:4px solid ${c.bg};"><div class="tp-pname"><span>${escapeHtml(pt.sender)}</span><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:800;background:${c.bg};color:${c.text};border:1px solid ${c.border};">${tpRoleLabel(role)}</span><div class="tp-ptotal">\u20B9${pt.total.toLocaleString('en-IN')}</div><div class="tp-pshare">${pct}% of \u20B9${grand.toLocaleString('en-IN')}</div></div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${pt.legCount} legs \u2022 ${pt.days} day${pt.days!==1?'s':''}</div><div class="tp-pbar-wrap"><div class="tp-pbar" style="width:${pct}%;"></div></div></div>`;
+    }).join('');
+    document.getElementById('tpGrandTotalBar').innerHTML=`<div class="tp-grand-bar"><div><div class="tp-gt-label">GRAND TOTAL</div><div class="tp-gt-sub">${tpParsedLegs.length} legs \u2022 ${persons} people \u2022 ${days} days</div></div><div class="tp-gt-value">\u20B9${grand.toLocaleString('en-IN')}</div></div>`;
+}
+function tpSetTab(tab){tpActiveTab=tab;renderTPTabs();}
+function renderTPTabs(){
+    const card=document.getElementById('tpParsedLegsCard');
+    const tabBar=document.getElementById('tpTabBar');
+    const legsDiv=document.getElementById('tpLegsContent');
+    const sumDiv=document.getElementById('tpSummaryContent');
+    if(!tpParsedLegs.length){card.style.display='none';return;}
+    card.style.display='block';
+    const filtered=tpGetFiltered();
+    tabBar.innerHTML=`<button class="tp-tab-btn ${tpActiveTab==='legs'?'active':''}" onclick="tpSetTab('legs')">\u2705 Parsed Legs (${filtered.length})</button>
+        <button class="tp-tab-btn ${tpActiveTab==='summary'?'active':''}" onclick="tpSetTab('summary')">\uD83D\uDCCA Person & Day Summary</button>`;
+    legsDiv.style.display=tpActiveTab==='legs'?'block':'none';
+    sumDiv.style.display=tpActiveTab==='summary'?'block':'none';
+    if(tpActiveTab==='legs')renderTPLegsTable(filtered);
+    else renderTPDaySummary();
+}
+function renderTPLegsTable(filtered){
+    const container=document.getElementById('tpLegsContent');
+    const uniquePersons=[...new Set(tpParsedLegs.map(l=>l.sender).filter(Boolean))].sort();
+    const modes=['auto','taxi','porter','train','bus','bike','tempo','metro','other'];
+    let html=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <h3 style="margin:0;font-size:14px;">\u2705 All Travel Legs <span class="report-pill">${filtered.length} shown</span></h3>
+        <div class="tp-filter-bar" style="margin-bottom:0;">
+            <input type="text" placeholder="Filter location..." value="${escapeHtml(tpFilterText)}" oninput="tpFilterText=this.value;renderTPTabs();" style="width:140px;">
+            ${uniquePersons.length?`<select onchange="tpFilterPerson=this.value;renderTPTabs();"><option value="">All People</option>${uniquePersons.map(p=>`<option value="${escapeHtml(p)}"${tpFilterPerson===p?' selected':''}>${escapeHtml(p)}</option>`).join('')}</select>`:''}
+            <select onchange="tpFilterMode=this.value;renderTPTabs();"><option value="">All Modes</option>${modes.map(m=>`<option value="${m}"${tpFilterMode===m?' selected':''}>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('')}</select>
+            <button class="btn btn-danger btn-sm" onclick="tpDeleteSelected()" id="tpDeleteSelBtn" style="display:none;">\uD83D\uDDD1 Delete (0)</button>
+        </div></div>`;
+    if(!filtered.length){html+=`<div class="tp-empty-state"><div class="tp-big-icon">\uD83D\uDD0D</div>No travel legs match your filter.</div>`;
+    }else{
+        html+=`<div class="tp-scroll-box"><table><thead><tr><th style="width:36px;"><input type="checkbox" onchange="tpToggleAllLegs(this.checked)"></th><th>Date</th><th>From</th><th>To</th><th>Mode</th><th style="width:80px;">\u20B9</th><th>Person</th><th>Notes</th><th style="width:40px;"></th></tr></thead><tbody>`;
+        filtered.forEach(leg=>{
+            const cc=leg.confidence>=80?'tp-conf-high':leg.confidence>=50?'tp-conf-med':'tp-conf-low';
+            const role=tpLookupRole(leg.sender);const rc=tpRoleColor(role);
+            html+=`<tr class="${cc}" data-leg-id="${escapeHtml(leg.id)}"><td><input type="checkbox" class="tp-leg-cb" value="${escapeHtml(leg.id)}"></td>
+                <td><input class="tp-editable" value="${escapeHtml(leg.date)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','date',this.value)" style="width:100px;"></td>
+                <td><input class="tp-editable" value="${escapeHtml(leg.from)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','from',this.value)"></td>
+                <td><input class="tp-editable" value="${escapeHtml(leg.to)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','to',this.value)"></td>
+                <td><select class="tp-editable" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','mode',this.value)">${['auto','taxi','porter','train','bus','bike','tempo','metro','other'].map(m=>`<option value="${m}"${leg.mode===m?' selected':''}>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('')}</select></td>
+                <td><input class="tp-editable" type="number" value="${leg.amount}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','amount',parseInt(this.value)||0)"></td>
+                <td><div style="display:flex;align-items:center;gap:4px;"><input class="tp-editable" value="${escapeHtml(leg.sender)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','sender',this.value)" style="flex:1;"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:800;background:${rc.bg};color:${rc.text};border:1px solid ${rc.border};">${tpRoleLabel(role)}</span></div></td>
+                <td><input class="tp-editable" value="${escapeHtml(leg.notes)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','notes',this.value)"></td>
+                <td><button class="tp-remove-btn" onclick="tpRemoveLeg('${escapeHtml(leg.id)}')">\u2715</button></td></tr>`;
+        });
+        html+=`</tbody></table></div>`;
+        html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;"><span style="font-size:12px;color:var(--text-muted);">Click any cell to edit</span><button class="btn btn-success btn-sm" onclick="tpAddManualLeg()">\u2795 Add Leg</button></div>`;
+    }
+    container.innerHTML=html;
+    // Bind checkboxes for delete count
+    document.querySelectorAll('.tp-leg-cb').forEach(cb=>{cb.addEventListener('change',function(){const checked=document.querySelectorAll('.tp-leg-cb:checked').length;const btn=document.getElementById('tpDeleteSelBtn');if(checked){btn.style.display='inline-flex';btn.textContent=`\uD83D\uDDD1 Delete (${checked})`;}else{btn.style.display='none';}});});
+}
+function renderTPDaySummary(){
+    const container=document.getElementById('tpSummaryContent');
+    const daily=tpGetPersonDailySummary(tpParsedLegs);
+    const totals=tpGetPersonTotals(tpParsedLegs);
+    const grand=tpGetGrandTotal(tpParsedLegs);
+    if(!daily.length){container.innerHTML=`<div class="tp-empty-state"><div class="tp-big-icon">\uD83D\uDCCA</div>No data yet.</div>`;return;}
+    let html='';
+    daily.forEach((ds,idx)=>{
+        const showHeader=idx===0||daily[idx-1].sender!==ds.sender;
+        const role=tpLookupRole(ds.sender);const c=tpRoleColor(role);
+        if(showHeader){
+            const pt=totals.find(p=>p.sender===ds.sender);
+            html+=`<div class="tp-person-header" style="background:${c.bg}22;border:1px solid ${c.bg}44;"><div style="font-weight:800;font-size:14px;color:${c.bg};">\uD83D\uDC64 ${escapeHtml(ds.sender)} <span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:800;background:${c.bg};color:${c.text};border:1px solid ${c.border};">${tpRoleLabel(role)}</span></div><div style="font-weight:800;font-size:13px;color:var(--text-muted);">Total: <span style="color:var(--success);">\u20B9${pt?pt.total.toLocaleString('en-IN'):0}</span></div></div>`;
+        }
+        html+=`<div class="tp-day-row"><div class="tp-day-date">${ds.date}</div><div class="tp-day-legs">${ds.legCount} leg${ds.legCount!==1?'s':''}</div><div class="tp-day-total">\u20B9${ds.total.toLocaleString('en-IN')}</div></div>`;
+    });
+    const persons=new Set(tpParsedLegs.map(l=>l.sender||'Unknown')).size;
+    const days=new Set(tpParsedLegs.map(l=>l.date||'No Date')).size;
+    html+=`<div class="tp-grand-bar" style="margin-top:18px;"><div><div class="tp-gt-label">GRAND TOTAL</div><div class="tp-gt-sub">${tpParsedLegs.length} legs \u2022 ${persons} people \u2022 ${days} days</div></div><div class="tp-gt-value">\u20B9${grand.toLocaleString('en-IN')}</div></div>`;
+    container.innerHTML=html;
+}
+
+// ---- Leg CRUD ----
+function tpUpdateLeg(id,field,value){const leg=tpParsedLegs.find(l=>l.id===id);if(leg){leg[field]=value;if(field==='amount')leg.amount=Number(value)||0;renderTPFullUI();}}
+function tpRemoveLeg(id){tpParsedLegs=tpParsedLegs.filter(l=>l.id!==id);renderTPFullUI();}
+function tpAddManualLeg(){const today=new Date().toISOString().split('T')[0];tpParsedLegs.push({id:tpNewId(),date:today,from:'',to:'',amount:0,mode:'auto',sender:'',notes:'',raw:'',confidence:30});tpSetTab('legs');renderTPFullUI();}
+function tpToggleAllLegs(checked){document.querySelectorAll('.tp-leg-cb').forEach(cb=>{cb.checked=checked;});const btn=document.getElementById('tpDeleteSelBtn');if(btn){btn.style.display=checked?'inline-flex':'none';btn.textContent=checked?`\uD83D\uDDD1 Delete (${document.querySelectorAll('.tp-leg-cb:checked').length})`:'';}}
+function tpDeleteSelected(){const ids=[...document.querySelectorAll('.tp-leg-cb:checked')].map(cb=>cb.value);if(!ids.length)return;tpParsedLegs=tpParsedLegs.filter(l=>!ids.includes(l.id));renderTPFullUI();}
+
+// ---- Exports ----
+function tpExportCSV(){
+    const legs=tpGetFiltered();if(!legs.length){alert('No legs to export');return;}
+    const csv=['Date,From,To,Mode,Amount,Sender,Notes',...legs.map(l=>`"${l.date}","${l.from}","${l.to}","${l.mode}",${l.amount},"${l.sender}","${l.notes}"`).join('\n')];
+    const blob=new Blob([csv.join('\n')],{type:'text/csv'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='travel_legs.csv';a.click();URL.revokeObjectURL(url);
+}
+function tpExportJSON(){
+    const legs=tpGetFiltered();if(!legs.length){alert('No legs to export');return;}
+    const json=JSON.stringify(legs.map(l=>({date:l.date,from:l.from,to:l.to,mode:l.mode,amount:l.amount,sender:l.sender,notes:l.notes})),null,2);
+    const blob=new Blob([json],{type:'application/json'});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='travel_legs.json';a.click();URL.revokeObjectURL(url);
+}
+// Initialize (nothing needed on page load for parser — it initializes when user opens parser tab)
 
 // ==================== KEYBOARD SUPPORT FOR CALCULATOR ====================
 document.addEventListener('keydown', function(e) {
