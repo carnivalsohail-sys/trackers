@@ -547,6 +547,7 @@
         }
 
         @media print { 
+            @page { size: A4 landscape; margin: 8mm; }
             .nav-tabs,.btn,.no-print,.theme-toggle { display:none !important; } 
             body { background:white; color:black; padding:0; } 
             .container { box-shadow:none; border:none; width:100%; max-width:100%; } 
@@ -556,6 +557,69 @@
             .bg-operator, .bg-semi, .bg-helper, .bg-final, .bg-balance, .bg-work, .bg-travel, .bg-salary, .bg-deduction, .bg-onacc {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+            }
+            body.salary-print-mode {
+                --card-bg:#ffffff;
+                --input-bg:#ffffff;
+                --text-main:#000000;
+                --text-muted:#333333;
+                --border-color:#999999;
+                --stat-card-bg:#ffffff;
+            }
+            body.salary-print-mode * { visibility:hidden !important; }
+            body.salary-print-mode #salaryPrintSheet,
+            body.salary-print-mode #salaryPrintSheet * { visibility:visible !important; }
+            body.salary-print-mode #salaryPrintSheet {
+                display:block !important;
+                position:absolute;
+                left:0;
+                top:0;
+                width:100%;
+                background:#ffffff;
+                color:#000000;
+                padding:0;
+                margin:0;
+            }
+            body.salary-print-mode #salaryPrintSheet .salary-print-header {
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-end;
+                gap:12px;
+                margin-bottom:10px;
+                padding-bottom:8px;
+                border-bottom:2px solid #7030A0;
+            }
+            body.salary-print-mode #salaryPrintSheet .salary-print-title {
+                font-size:18px;
+                font-weight:800;
+                color:#111827;
+                margin:0;
+            }
+            body.salary-print-mode #salaryPrintSheet .salary-print-subtitle,
+            body.salary-print-mode #salaryPrintSheet .salary-print-meta,
+            body.salary-print-mode #salaryPrintSheet .salary-print-note {
+                color:#374151;
+                font-size:10px;
+                margin-top:4px;
+            }
+            body.salary-print-mode #salaryPrintSheet .print-table-wrap {
+                overflow:visible !important;
+                border:none !important;
+                border-radius:0 !important;
+            }
+            body.salary-print-mode #salaryPrintSheet table {
+                width:100% !important;
+                min-width:0 !important;
+                margin-top:0 !important;
+                border-collapse:collapse !important;
+            }
+            body.salary-print-mode #salaryPrintSheet th,
+            body.salary-print-mode #salaryPrintSheet td {
+                font-size:8px !important;
+                line-height:1.15 !important;
+                padding:3px !important;
+                white-space:normal !important;
+                word-break:break-word !important;
             }
         }
     </style>
@@ -1001,7 +1065,7 @@
                 <div id="salaryResults" style="display: none; margin-top: 20px;">
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                         <button class="btn btn-primary" onclick="exportSalaryExcel()">Excel</button>
-                        <button class="btn btn-success" onclick="window.print()">Print</button>
+                        <button class="btn btn-success" onclick="printSalaryReport()">Print</button>
                     </div>
                     <div style="overflow-x: auto; border-radius: 10px; border: 1px solid var(--border-color);">
                         <table id="salaryTable" style="margin-top: 0; min-width: 1200px; font-size: 11px;">
@@ -1009,6 +1073,7 @@
                             <tbody id="salaryTableBody"></tbody>
                         </table>
                     </div>
+                    <div id="salaryPrintSheet" class="no-print" style="display:none"></div>
                 </div>
             </div>
 
@@ -2849,6 +2914,80 @@ ${html}
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
+        }
+
+        function printSalaryReport() {
+            const table = document.getElementById('salaryTable');
+            if (!table || !window.currentSalaryData || !window.currentSalaryData.length) {
+                alert('Please calculate salaries first.');
+                return;
+            }
+
+            const printSheet = document.getElementById('salaryPrintSheet');
+            if (!printSheet) return;
+
+            const monthVal = document.getElementById('calcMonth').value;
+            let monthLabel = 'Monthly Salary Report';
+            if (monthVal) {
+                const monthDate = new Date(monthVal + '-01');
+                monthLabel = monthDate.toLocaleString('en-IN', {
+                    month: 'long',
+                    year: 'numeric'
+                }).toUpperCase();
+            }
+
+            const clonedTable = table.cloneNode(true);
+            clonedTable.removeAttribute('id');
+            clonedTable.querySelectorAll('[data-formula]').forEach(cell => cell.removeAttribute('data-formula'));
+
+            const employeeCount = Array.isArray(window.sortedEmployees) ? window.sortedEmployees.length : 0;
+            const eventCount = Array.isArray(window.currentMonthEvents) ? window.currentMonthEvents.length : 0;
+
+            printSheet.innerHTML = `
+                <div class="salary-print-header">
+                    <div>
+                        <h1 class="salary-print-title">Carnival Entertainments Payroll</h1>
+                        <div class="salary-print-subtitle">Salary Calculation Report</div>
+                        <div class="salary-print-meta">Month: ${escapeHtml(monthLabel)}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="salary-print-meta">Employees: ${employeeCount}</div>
+                        <div class="salary-print-meta">Events: ${eventCount}</div>
+                        <div class="salary-print-meta">Generated: ${new Date().toLocaleString('en-IN')}</div>
+                    </div>
+                </div>
+                <div class="salary-print-note">Use browser Save as PDF from this print dialog for a clean payroll export.</div>
+                <div class="print-table-wrap"></div>
+            `;
+            printSheet.querySelector('.print-table-wrap').appendChild(clonedTable);
+            printSheet.style.display = 'block';
+
+            const cleanup = () => {
+                document.body.classList.remove('salary-print-mode');
+                printSheet.innerHTML = '';
+                printSheet.style.display = 'none';
+            };
+
+            const handleAfterPrint = () => {
+                cleanup();
+                window.removeEventListener('afterprint', handleAfterPrint);
+            };
+
+            window.addEventListener('afterprint', handleAfterPrint);
+            document.body.classList.add('salary-print-mode');
+
+            setTimeout(() => {
+                try {
+                    window.print();
+                } finally {
+                    setTimeout(() => {
+                        if (document.body.classList.contains('salary-print-mode')) {
+                            cleanup();
+                            window.removeEventListener('afterprint', handleAfterPrint);
+                        }
+                    }, 1000);
+                }
+            }, 50);
         }
 
         function exportFilteredLedgerExcel() {
