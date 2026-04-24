@@ -21,6 +21,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
@@ -344,6 +345,18 @@ tr:hover{background:var(--primary-glow)}
 .close-btn:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .form-grid .input-group.full-width{grid-column:1/-1}
+.pdf-parser-box{background:var(--surface-2);border:2px dashed var(--border-light);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;cursor:pointer;transition:all 0.2s}
+.pdf-parser-box:hover,.pdf-parser-box.drag{border-color:var(--primary);background:var(--primary-glow)}
+.pdf-parser-box.parsing{border-color:var(--accent);background:rgba(245,158,11,0.08)}
+.pdf-parser-box.success{border-color:var(--success);background:var(--success-glow)}
+.pdf-parser-box.error{border-color:var(--danger);background:rgba(239,68,68,0.08)}
+.pdf-parser-icon{font-size:1.6em;margin-bottom:4px;display:block}
+.pdf-parser-text{font-weight:700;font-size:0.88em;color:var(--text)}
+.pdf-parser-sub{font-size:0.7em;color:var(--text-dim);margin-top:3px}
+.pdf-parser-tabs{display:flex;gap:6px;margin-bottom:12px;background:var(--surface-2);padding:4px;border-radius:10px;border:1px solid var(--border)}
+.pdf-parser-tab{flex:1;padding:8px 10px;border:none;background:transparent;color:var(--text-dim);font-weight:700;font-size:0.78em;border-radius:7px;cursor:pointer;transition:all 0.2s;font-family:inherit}
+.pdf-parser-tab.active{background:var(--primary);color:#fff}
+.pdf-autofilled{border-color:var(--success) !important;background:rgba(16,185,129,0.06) !important;transition:background 0.4s,border-color 0.4s}
 
 /* ─── LEDGER ─── */
 .ledger-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
@@ -849,6 +862,16 @@ tr:hover{background:var(--primary-glow)}
       <button class="close-btn" onclick="closeModal('addModal')">&times;</button>
     </div>
     <form id="paymentForm" onsubmit="savePayment(event)">
+      <div class="pdf-parser-tabs" id="pdfParserTabs">
+        <button type="button" class="pdf-parser-tab active" data-pp-tab="manual" onclick="ppSwitchTab('manual')">Manual Entry</button>
+        <button type="button" class="pdf-parser-tab" data-pp-tab="upload" onclick="ppSwitchTab('upload')">Upload Invoice PDF</button>
+      </div>
+      <div id="pdfParserBox" class="pdf-parser-box" style="display:none" onclick="document.getElementById('pdfParserInput').click()">
+        <span class="pdf-parser-icon">PDF</span>
+        <div class="pdf-parser-text">Drop PDF here or tap to browse</div>
+        <div class="pdf-parser-sub">Carnival Entertainments • Carnival Foodcraft • RK Gulab</div>
+        <input type="file" id="pdfParserInput" accept="application/pdf,.pdf" hidden>
+      </div>
       <div class="form-grid">
         <div class="input-group">
           <label>Company *</label>
@@ -3010,6 +3033,360 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
     ensureLastUpdatedBar();
     boot();
   }
+})();
+(function(){
+  function ppSetTab(tab){
+    document.querySelectorAll('.pdf-parser-tab').forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.ppTab === tab);
+    });
+    var box = document.getElementById('pdfParserBox');
+    if (box) box.style.display = tab === 'upload' ? 'block' : 'none';
+  }
+
+  function ppResetUi(){
+    var box = document.getElementById('pdfParserBox');
+    var input = document.getElementById('pdfParserInput');
+    if (input) input.value = '';
+    if (box) {
+      box.className = 'pdf-parser-box';
+      var textEl = box.querySelector('.pdf-parser-text');
+      var subEl = box.querySelector('.pdf-parser-sub');
+      if (textEl) textEl.textContent = 'Drop PDF here or tap to browse';
+      if (subEl) subEl.textContent = 'Carnival Entertainments • Carnival Foodcraft • RK Gulab';
+    }
+    ppSetTab('manual');
+  }
+
+  window.ppSwitchTab = ppSetTab;
+
+  function initBaseUi(){
+    var addModal = document.getElementById('addModal');
+    if (!addModal || addModal.dataset.ppObserved === '1') return;
+    addModal.dataset.ppObserved = '1';
+    ppResetUi();
+    if (window.MutationObserver) {
+      new MutationObserver(function(){
+        if (!addModal.classList.contains('active')) ppResetUi();
+      }).observe(addModal, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initBaseUi);
+  else initBaseUi();
+
+  if (typeof pdfjsLib === 'undefined') {
+    console.warn('PDF.js not loaded');
+    return;
+  }
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  var COMPANIES = [
+    { name: 'Carnival Entertainments', gstin: /27AEIPT1126N1Z4/i, brand: /carnival\s+entertainments/i },
+    { name: 'Carnival Foodcraft', gstin: /27ABCPT6426E1ZM/i, brand: /carnival\s+foodcraft/i },
+    { name: 'RK Gulab', pan: /AABPT7113L/i, brand: /\brk\s*gulab\b/i },
+    { name: 'Mahek Arts', brand: /\bmahek\s*arts\b/i }
+  ];
+  var SELLER_EMAILS = /(carnival(entertainments|\.sohail)|santoshdjaxis)@/i;
+
+  async function extractStructuredText(file){
+    var ab = await file.arrayBuffer();
+    var pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    var fullLines = [];
+    var leftLines = [];
+    for (var p = 1; p <= pdf.numPages; p++) {
+      var page = await pdf.getPage(p);
+      var vp = page.getViewport({ scale: 1 });
+      var midX = vp.width * 0.55;
+      var tc = await page.getTextContent();
+      var rows = {};
+      tc.items.forEach(function(it){
+        if (!it.str || !it.str.trim()) return;
+        var yKey = Math.round(it.transform[5] / 2) * 2;
+        if (!rows[yKey]) rows[yKey] = [];
+        rows[yKey].push({ x: it.transform[4], str: it.str });
+      });
+      Object.keys(rows).map(Number).sort(function(a, b){ return b - a; }).forEach(function(y){
+        var sorted = rows[y].sort(function(a, b){ return a.x - b.x; });
+        var full = sorted.map(function(item){ return item.str; }).join(' ').replace(/\s+/g, ' ').trim();
+        var left = sorted.filter(function(item){ return item.x < midX; }).map(function(item){ return item.str; }).join(' ').replace(/\s+/g, ' ').trim();
+        if (full) fullLines.push(full);
+        if (left) leftLines.push(left);
+      });
+    }
+    return { full: fullLines.join('\n'), left: leftLines.join('\n') };
+  }
+
+  function ddmmISO(d, m, y){
+    return String(y) + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  }
+
+  function dateAfter(text, label){
+    var match = text.match(new RegExp(label + '\\s*:?\\s*(\\d{1,2})[\\/\\-](\\d{1,2})[\\/\\-](\\d{4})', 'i'));
+    return match ? ddmmISO(match[1], match[2], match[3]) : '';
+  }
+
+  function detectCompany(text){
+    for (var i = 0; i < COMPANIES.length; i++) {
+      var company = COMPANIES[i];
+      if ((company.gstin && company.gstin.test(text)) || (company.pan && company.pan.test(text))) return company.name;
+    }
+    for (var j = 0; j < COMPANIES.length; j++) {
+      var brandCompany = COMPANIES[j];
+      if (brandCompany.brand && brandCompany.brand.test(text)) return brandCompany.name;
+    }
+    return '';
+  }
+
+  function extractInvoiceNo(text){
+    var match = text.match(/Invoice\s*No\.?\s*:?\s*([A-Z0-9][A-Z0-9\-\/]*)/i);
+    return match ? match[1].trim() : '';
+  }
+
+  function extractTotal(text){
+    var matches = Array.from(text.matchAll(/(^|[^A-Za-z])(Total)\s*[^\dA-Za-z]?\s*([\d,]+(?:\.\d+)?)/gi)).filter(function(match){
+      return !/sub\s*$/i.test(match[1]);
+    });
+    return matches.length ? matches[matches.length - 1][3].replace(/,/g, '') : '';
+  }
+
+  function extractReceived(text){
+    var match = text.match(/Received\s*[^\dA-Za-z]?\s*([\d,]+(?:\.\d+)?)/i);
+    return match ? match[1].replace(/,/g, '') : '';
+  }
+
+  function extractPhone(text){
+    var match = text.match(/Contact\s*No\.?\s*:?\s*\+?\s*(?:91)?[\s\-]*([\d][\d\s\-]{8,16})/i);
+    if (!match) return '';
+    var digits = match[1].replace(/\D/g, '');
+    return digits.length >= 10 ? digits.slice(-10) : digits;
+  }
+
+  function extractEmail(text){
+    var matches = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g) || [];
+    for (var i = 0; i < matches.length; i++) {
+      if (!SELLER_EMAILS.test(matches[i])) return matches[i];
+    }
+    return '';
+  }
+
+  function extractClientName(left){
+    var lines = left.split('\n').map(function(line){ return line.trim(); }).filter(Boolean);
+    var idx = lines.findIndex(function(line){ return /^Bill\s*To\b/i.test(line); });
+    if (idx < 0) return '';
+    for (var i = idx + 1; i < lines.length; i++) {
+      if (/^(invoice\s*details|tax\s*invoice|bill\s*to)/i.test(lines[i])) continue;
+      return lines[i];
+    }
+    return '';
+  }
+
+  function extractDescription(left){
+    var lines = left.split('\n').map(function(line){ return line.trim(); }).filter(Boolean);
+    var idx = lines.findIndex(function(line){ return /^Description\b/i.test(line); });
+    if (idx < 0) return '';
+    var stop = /^(Invoice\s*Amount\s*In\s*Words|Terms|Pay\s*To|Thanks|Bank|Authorized|For\s*:|Sub\s*Total|Total|SGST|CGST|Received|Balance|Payment\s*Mode|GSTIN)/i;
+    var out = [];
+    for (var i = idx + 1; i < lines.length; i++) {
+      if (stop.test(lines[i])) break;
+      out.push(lines[i]);
+      if (out.length >= 2) break;
+    }
+    return out.join(' ').trim();
+  }
+
+  function extractEventTitle(text){
+    var match = text.match(/Event\s*Title\s*:?\s*([^\n]+?)(?=\s+(?:HSN|Activity|Place|Due|$))/i);
+    return match ? match[1].trim() : '';
+  }
+
+  function cleanVenue(desc){
+    return desc ? desc.replace(/^\s*\d+(?:st|nd|rd|th)?\s*(?:&|and)?\s*\d*(?:st|nd|rd|th)?\s*(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*\.?\s+/i, '').trim() : '';
+  }
+
+  function parseFilenameHints(filename){
+    var out = { invoiceNo: '', venue: '', clientName: '' };
+    if (!filename) return out;
+    var name = filename.replace(/\.pdf$/i, '').replace(/_\d{10,}$/, '').replace(/\s+-\s+/g, '_-_');
+    var parts = name.split('_-_').map(function(part){ return part.trim(); }).filter(Boolean);
+    if (parts.length < 2) return out;
+    out.clientName = parts[parts.length - 1].replace(/_+/g, ' ').trim();
+
+    var isBrandPrefixed = /^(RK[_\s]?GULAB|CARNIVAL|MAHEK[_\s]?ARTS)/i.test(parts[0]);
+    var dateVenuePart = '';
+
+    if (isBrandPrefixed && parts.length >= 3) {
+      var invoiceMatch = parts[1].match(/^([A-Z]*-?\d+[A-Z0-9-]*)_/i);
+      if (invoiceMatch) {
+        out.invoiceNo = invoiceMatch[1];
+        dateVenuePart = parts[1].slice(invoiceMatch[0].length);
+      } else {
+        dateVenuePart = parts[1];
+      }
+    } else {
+      out.invoiceNo = parts[0].replace(/_/g, '');
+      dateVenuePart = parts.length >= 3 ? parts[1] : '';
+    }
+
+    if (dateVenuePart) {
+      var datePrefix = /^(\d{1,2}(?:st|nd|rd|th)?(?:[\s_]+\d{1,2}(?:st|nd|rd|th)?)?[\s_]+(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)[A-Z]*)[\s_]*/i;
+      out.venue = dateVenuePart.replace(datePrefix, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    return out;
+  }
+
+  function normalizeForCompare(value){
+    return (value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function looksLikeClientName(candidate, clientName){
+    var a = normalizeForCompare(candidate);
+    var b = normalizeForCompare(clientName);
+    if (!a || !b) return false;
+    return a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0;
+  }
+
+  function pickVenue(description, eventTitle, clientName, filenameHints){
+    var candidates = [filenameHints.venue, cleanVenue(description), eventTitle];
+    for (var i = 0; i < candidates.length; i++) {
+      var candidate = (candidates[i] || '').trim();
+      if (!candidate) continue;
+      if (looksLikeClientName(candidate, clientName)) continue;
+      if (/^(bill\s*to|invoice\s*details|tax\s*invoice|description|activity\s*date|due\s*date|contact|email)\b/i.test(candidate)) continue;
+      return candidate;
+    }
+    return '';
+  }
+
+  function parseInvoice(text, filename){
+    var description = extractDescription(text.left);
+    var eventTitle = extractEventTitle(text.full);
+    var filenameHints = parseFilenameHints(filename);
+    var clientName = extractClientName(text.left) || filenameHints.clientName;
+    var notes = [];
+    if (eventTitle) notes.push('Event: ' + eventTitle);
+    if (description) notes.push(description);
+    return {
+      company: detectCompany(text.full),
+      eventDate: dateAfter(text.full, 'Activity\\s*Date'),
+      clientName: clientName,
+      newVenue: pickVenue(description, eventTitle, clientName, filenameHints),
+      invoiceNo: extractInvoiceNo(text.full) || filenameHints.invoiceNo,
+      invoiceAmount: extractTotal(text.full),
+      amountReceived: extractReceived(text.full),
+      dueDate: dateAfter(text.full, 'Due\\s*Date'),
+      phone: extractPhone(text.full),
+      email: extractEmail(text.full),
+      notes: notes.join(' | ')
+    };
+  }
+
+  function flashField(el){
+    if (!el) return;
+    el.style.borderColor = '';
+    el.classList.add('pdf-autofilled');
+    setTimeout(function(){ el.classList.remove('pdf-autofilled'); }, 4000);
+  }
+
+  function setField(form, key, value){
+    if (value === '' || value == null) return;
+    var el = form.querySelector('[name="' + key + '"]') || document.getElementById(key);
+    if (!el) return;
+    el.value = value;
+    flashField(el);
+  }
+
+  function applyToForm(data){
+    var form = document.getElementById('paymentForm');
+    if (!form) return;
+
+    setField(form, 'company', data.company);
+    setField(form, 'eventDate', data.eventDate);
+    setField(form, 'clientName', data.clientName);
+    setField(form, 'invoiceNo', data.invoiceNo);
+    setField(form, 'invoiceAmount', data.invoiceAmount);
+    setField(form, 'amountReceived', data.amountReceived);
+    setField(form, 'dueDate', data.dueDate);
+    setField(form, 'phone', data.phone);
+    setField(form, 'email', data.email);
+    setField(form, 'notes', data.notes);
+
+    var venueSelect = document.getElementById('venueSelect');
+    var newVenueInput = document.getElementById('newVenue');
+    if (venueSelect) venueSelect.style.borderColor = '';
+    if (newVenueInput) {
+      newVenueInput.style.borderColor = '';
+      newVenueInput.placeholder = 'Type if not in list';
+    }
+
+    if (data.newVenue && venueSelect && newVenueInput) {
+      var match = Array.from(venueSelect.options).find(function(option){
+        return option.value && option.value.toLowerCase() === data.newVenue.toLowerCase();
+      });
+      if (match) {
+        venueSelect.value = match.value;
+        newVenueInput.value = '';
+        flashField(venueSelect);
+      } else {
+        venueSelect.value = '';
+        flashField(venueSelect);
+        setField(form, 'newVenue', data.newVenue);
+      }
+    }
+  }
+
+  async function handlePdf(file){
+    var box = document.getElementById('pdfParserBox');
+    if (!box || !file) return;
+    box.className = 'pdf-parser-box parsing';
+    box.querySelector('.pdf-parser-text').textContent = 'Parsing ' + file.name + '...';
+    try {
+      var text = await extractStructuredText(file);
+      var data = parseInvoice(text, file.name);
+      applyToForm(data);
+      box.className = 'pdf-parser-box success';
+      box.querySelector('.pdf-parser-text').textContent = 'Parsed. Review fields below.';
+      box.querySelector('.pdf-parser-sub').textContent = file.name;
+      if (typeof showToast === 'function') showToast('Invoice auto-filled. Please verify.', 'success');
+    } catch (err) {
+      console.error(err);
+      box.className = 'pdf-parser-box error';
+      box.querySelector('.pdf-parser-text').textContent = 'Could not parse PDF';
+      box.querySelector('.pdf-parser-sub').textContent = err && err.message ? err.message : 'Unknown error';
+      if (typeof showToast === 'function') showToast('PDF parse failed', 'error');
+    }
+  }
+
+  function init(){
+    var box = document.getElementById('pdfParserBox');
+    var input = document.getElementById('pdfParserInput');
+    if (!box || !input || input.dataset.ppBound === '1') return;
+    input.dataset.ppBound = '1';
+    input.addEventListener('change', function(e){
+      if (e.target.files && e.target.files[0]) handlePdf(e.target.files[0]);
+      input.value = '';
+    });
+    ['dragenter', 'dragover'].forEach(function(ev){
+      box.addEventListener(ev, function(e){
+        e.preventDefault();
+        box.classList.add('drag');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function(ev){
+      box.addEventListener(ev, function(e){
+        e.preventDefault();
+        box.classList.remove('drag');
+      });
+    });
+    box.addEventListener('drop', function(e){
+      var file = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+      if (file) handlePdf(file);
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>
 
