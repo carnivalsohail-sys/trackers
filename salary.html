@@ -4633,8 +4633,9 @@ function tpRoleLabel(cat){
 
 // ---- Amount blacklist ----
 const TP_AMT_BL=[
-    /\b\d+\s*(?:person|people|man|men|boy|boys|ticket|tiket|item|bag|box|pc|nos?|unit|km|kg|hr|hrs?|min|day|days|month|year)\b/i,
-    /\b\d{4,}\b/
+    /\b\d+\s*(?:person|people|man|men|ticket|tiket|item|bag|box|pc|nos?|unit|km|kg|hr|hrs?|min|day|days|month|year)\b/i,
+    /\b\d{4,}\b/,
+    /^(?:boy|boys)\s+[A-Za-z]/i
 ];
 // ---- Date extract ----
 function tpExtractDate(line){
@@ -4653,8 +4654,10 @@ function tpExtractAmount(text){
     if((m=s.match(/(\d{1,5})\s*\+\s*(\d{1,5})/)))return parseInt(m[1])+parseInt(m[2]);
     if((m=s.match(/fix\s*\u20B9?\s*(\d{1,5})/i)))return parseInt(m[1]);
     if((m=s.match(/\u20B9\s*(\d{1,5})/)))return parseInt(m[1]);
+    if((m=s.match(/(\d{1,5})\s*\u20B9/)))return parseInt(m[1]);
     if((m=s.match(/Rs\.?\s*(\d{1,5})/i)))return parseInt(m[1]);
     if((m=s.match(/(\d{1,5})\s*\/\s*$/)))return parseInt(m[1]);
+    if((m=s.match(/(\d{1,5})\s*\/\s/)))return parseInt(m[1]);
     if((m=s.match(/(?:total|totel|fare\s*amount|total\s*amount)\s*[.]*\s*(\d{1,5})/i)))return parseInt(m[1]);
     if((m=s.match(/^(?:\s*)(\d{2,5})\s*$/)))return parseInt(m[1]);
     if((m=s.match(/^(.+?)\s+(\d{1,5})\s*$/))){
@@ -4667,10 +4670,19 @@ function tpExtractAmount(text){
 function tpCleanLoc(text){
     if(!text)return'Unknown';
     return text.replace(/^(?:from|form|frm|to|t[o0])\s*[.:]?\s*/i,'')
-        .replace(/\s*(?:auto|taxi|porter|portar|poter|tempo|train|bus|metro|bike|fix|return|Rs\.?|\u20B9|\/|\(.+?\))$/i,'')
-        .replace(/\b(ritarn|return|round\s*trip)\b\.?\s*/gi,'').replace(/\b(totel|total)\b.*$/i,'')
-        .replace(/\s*\d{1,5}\s*$/,'').replace(/\s*\+\s*\d+\s*$/,'').replace(/\s*[\/]\s*$/,'')
-        .trim().replace(/^\.\s*/,'').replace(/\s*\.$/,'').replace(/\s+/g,' ').trim()||'Unknown';
+        // Remove amount patterns (digits with ₹/Rs symbols) — consume leading space but not trailing
+        .replace(/\s*[\u20B9Rs.]*\d{1,5}[\u20B9Rs.]*/gi,'')
+        // Remove "+ N" return surcharge patterns
+        .replace(/\s*\+\s*\d+\s*/g,'')
+        // Remove mode keywords anywhere (not just at end)
+        .replace(/\s*(?:auto|taxi|porter|portar|poter|tempo|train|bus|metro|bike|fix)\b[\.]?\s*/gi,'')
+        // Remove "return" word (but not inside other words)
+        .replace(/\s*return\b\.?\s*/gi,'')
+        // Remove trailing punctuation
+        .replace(/\s*[\/]\s*$/,'')
+        .replace(/\s*\(.+?\)\s*$/,'')
+        .replace(/\b(ritarn|round\s*trip)\b\.?\s*/gi,'').replace(/\b(totel|total)\b.*$/i,'')
+        .trim().replace(/^\.\s*/,'').replace(/\s*\.$/,'').replace(/:+$/,'').replace(/\s*\+\s*$/,'').replace(/\s+/g,' ').trim()||'Unknown';
 }
 // ---- Mode detection ----
 function tpGuessMode(text){
@@ -4686,6 +4698,26 @@ let _tpIdSeq=0;
 function tpNewId(){return`L${Date.now()}_${++_tpIdSeq}`;}
 
 // ---- Block parser ----
+// ---- Split compact single-line messages into multiple lines at statement boundaries ----
+function tpSplitCompactLine(line){
+    // If line is short or has no key boundary markers, return as-is
+    if(line.length<15)return[line];
+    const markers=[
+        /(?=(?:Date|Date\.)\s*[.:]?\s*\d)/gi,
+        /(?=(?:Form|Form\.|From|From\.)\s*[.:]?\s)/gi,
+        /(?=\bTo\b\.?\s)/gi,
+        /(?=(?:Poter|Poter\.|Porter|Porter\.)\s*[.:]?\s)/gi,
+        /(?=(?:Reason|Reason\.?)\s)/gi,
+        /(?=(?:Boy|Boys)\s+[A-Za-z])/gi
+    ];
+    // Check if any marker fires more than once (meaning compact multi-statement line)
+    let matchCount=0;
+    for(const re of markers){re.lastIndex=0;const m=line.match(re);if(m&&m.length>0)matchCount+=m.length;}
+    if(matchCount<=1)return[line];
+    // Split at boundaries — use word boundary \b for To to avoid matching inside "Auto"
+    const parts=line.split(/(?=(?:Date|Date\.)\s*[.:]?\s*\d|(?:Form|Form\.|From|From\.)\s*[.:]?\s|\bTo\b\.?\s|(?:Poter|Poter\.|Porter|Porter\.)\s*[.:]?\s|(?:Reason|Reason\.?)\s|(?:Boy|Boys)\s+[A-Za-z])/i);
+    return parts.map(p=>p.trim()).filter(p=>p.length>0);
+}
 function tpSplitBlocks(text){
     const lines=text.split(/\n/);const blocks=[];let curLines=[],curSender='';
     for(const raw of lines){
@@ -4693,6 +4725,9 @@ function tpSplitBlocks(text){
         if(!line){if(curLines.length){blocks.push({lines:curLines,sender:curSender});curLines=[];curSender='';}continue;}
         const sm=line.match(/^(\w+(?:\s+\w+){0,2})\s+(91\d{10}|\d{10})$/);
         if(sm){if(curLines.length)blocks.push({lines:curLines,sender:curSender});curLines=[];curSender=sm[1].trim();continue;}
+        // Handle compact single-line messages (multiple statements on one line)
+        const subLines=tpSplitCompactLine(line);
+        if(subLines.length>1){curLines.push(...subLines);continue;}
         curLines.push(line);
     }
     if(curLines.length)blocks.push({lines:curLines,sender:curSender});
@@ -4702,11 +4737,24 @@ function tpMakeLeg(date,from,to,amount,mode,sender,notes,raw){
     return{id:tpNewId(),date,from:from||'Unknown',to:to||'Unknown',amount:amount||0,mode:mode||'other',sender,notes:notes||'',raw:raw||'',confidence:tpConfidence(date,from,to,amount)};
 }
 function tpParseBlock(block){
-    const lines=block.lines;const sender=block.sender||'';const legs=[];let curDate=null,curFrom=null,curTo=null,curMode='other',gReason='';
+    // Pre-process: expand any compact single lines into multiple lines
+    const expandedLines=[];
+    for(const l of block.lines){
+        const sub=tpSplitCompactLine(l);
+        if(sub.length>1)expandedLines.push(...sub);
+        else expandedLines.push(l);
+    }
+    const lines=expandedLines;const sender=block.sender||'';const legs=[];let curDate=null,curFrom=null,curTo=null,curMode='other',gReason='';let lastTo=null; // track last 'to' for round-trip detection
     for(const line of lines){
         const lower=line.toLowerCase();
-        if(/^(reason|reasone?)\b/i.test(lower)){const rm=line.match(/(?:reason|reasone?)\s*[.:]?\s*(.+)/i);if(rm)gReason=rm[1].trim();continue;}
+        if(/^(reason|reasone?)\b/i.test(lower)){const rm=line.match(/(?:reason|reasone?)\s*[.:]?\s*(.+)/i);if(rm){
+            const newReason=rm[1].trim();
+            // Retroactively apply reason to recent legs that have no reason or empty reason
+            for(let i=legs.length-1;i>=0;i--){if(legs[i].notes||legs[i].notes===newReason)break;legs[i].notes=newReason;}
+            gReason=newReason;}continue;}
         if(/^\d+\s*(?:person|people|man|men|boy|boys|ticket|tiket|item|bag|box|pc|nos?|unit)\b/i.test(line))continue;
+        // Skip "Boy Neeraj. Aman." style person lists (no leading number)
+        if(/^(?:boy|boys)\s+[A-Za-z]/i.test(line))continue;
         if(/^(?:tot\w+|fare\s*amount|total\s*amount)/.test(lower)){curFrom=null;curTo=null;curMode='other';continue;}
         const date=tpExtractDate(line);if(date){curDate=date;continue;}
         const fm=line.match(/^(?:from|form|frm)\s*[.:]?\s*(.+)/i);
@@ -4714,24 +4762,54 @@ function tpParseBlock(block){
         const tm=line.match(/^(?:to|t[o0])\s*[.:]?\s*(.+)$/i);
         if(tm&&!/^totel|^total/.test(lower)){
             const locP=tm[1];const amt=tpExtractAmount(locP);
-            if(amt>0&&curFrom){const toL=tpCleanLoc(locP);legs.push(tpMakeLeg(curDate||'',curFrom,toL,amt,curMode||tpGuessMode(line),sender,gReason,line));curFrom=null;curTo=null;curMode='other';}
-            else{curTo=tpCleanLoc(locP);}continue;
+            if(amt>0&&curFrom){
+                const toL=tpCleanLoc(locP);legs.push(tpMakeLeg(curDate||'',curFrom,toL,amt,curMode||tpGuessMode(line),sender,gReason,line));lastTo=toL;curFrom=null;curTo=null;curMode='other';
+            } else if(amt>0&&!curFrom&&lastTo){
+                // Round trip: "To X 100" without a preceding "From" — use lastTo as from
+                const toL=tpCleanLoc(locP);legs.push(tpMakeLeg(curDate||'',lastTo,toL,amt,tpGuessMode(line),sender,gReason,line));lastTo=toL;curMode='other';
+            } else {curTo=tpCleanLoc(locP);if(curTo&&curTo!=='Unknown')lastTo=curTo;}continue;
         }
         const mh=line.match(/^(.+?)\s+to\s+(.+?)\s+to\s+(.+?)\s+(\d[\d\s+\-]*)\s*$/i);
         if(mh){
             const f1=tpCleanLoc(mh[1]),mid=tpCleanLoc(mh[2]),t2=tpCleanLoc(mh[3]),amt=tpExtractAmount(mh[4]);
-            if(amt>0){legs.push(tpMakeLeg(curDate||'',f1,mid,Math.round(amt/2),tpGuessMode(line),sender,gReason,line));legs.push(tpMakeLeg(curDate||'',mid,t2,amt-Math.round(amt/2),tpGuessMode(line),sender,gReason,line));}
+            if(amt>0){legs.push(tpMakeLeg(curDate||'',f1,mid,Math.round(amt/2),tpGuessMode(line),sender,gReason,line));legs.push(tpMakeLeg(curDate||'',mid,t2,amt-Math.round(amt/2),tpGuessMode(line),sender,gReason,line));lastTo=t2;}
             curFrom=null;curTo=null;curMode='other';continue;
         }
         const imp=line.match(/^(.+?)\s+(?:to|t[o0])\s*[.:]?\s*(.+?)$/i);
         if(imp&&!/^totel|^total/.test(lower)){
             const fL=tpCleanLoc(imp[1]),restP=imp[2];const amt=tpExtractAmount(restP);
-            if(amt>0){const toL=tpCleanLoc(restP);legs.push(tpMakeLeg(curDate||'',fL,toL,amt,tpGuessMode(line),sender,gReason,line));curFrom=null;curTo=null;curMode='other';}
+            if(amt>0){const toL=tpCleanLoc(restP);legs.push(tpMakeLeg(curDate||'',fL,toL,amt,tpGuessMode(line),sender,gReason,line));lastTo=toL;curFrom=null;curTo=null;curMode='other';}
             else{curFrom=fL;curTo=tpCleanLoc(restP);curMode=tpGuessMode(line);}continue;
+        }
+        // Porter/Poter standalone charge — treat as separate cost item, NOT a travel leg using pending from/to
+        const porterM=line.match(/^(?:poter|potar|porter|portar)\s*[.:]?\s*(.+)/i);
+        if(porterM){
+            const pText=porterM[1];const pAmt=tpExtractAmount(pText);
+            if(pAmt>0){
+                const fromL=curFrom||lastTo||gReason||'Unknown';
+                legs.push(tpMakeLeg(curDate||'',fromL,gReason||'porter charge',pAmt,'porter',sender,gReason,line));
+            } else {
+                // Porter line without amount (e.g. just name) — treat as standalone porter note
+                const fromL=curFrom||lastTo||'Unknown';
+                legs.push(tpMakeLeg(curDate||'',fromL,gReason||'porter',0,'porter',sender,gReason,line));
+            }
+            continue;
         }
         const amt=tpExtractAmount(line);
         if(amt>0){const mode=tpGuessMode(line);if(mode!=='other')curMode=mode;
-            if(curFrom&&curTo){legs.push(tpMakeLeg(curDate||'',curFrom,curTo,amt,curMode,sender,gReason,line));curFrom=null;curTo=null;curMode='other';}
+            if(curFrom&&curTo){legs.push(tpMakeLeg(curDate||'',curFrom,curTo,amt,curMode,sender,gReason,line));lastTo=curTo;curFrom=null;curTo=null;curMode='other';}
+            else if(amt>0&&(curFrom||lastTo)){
+                // Standalone charge (auto fix, etc.) — use available context
+                const fromL=curFrom||lastTo||'Unknown';
+                const toL=curTo||gReason||mode;
+                const desc=fromL+' - '+(gReason||mode||'charge');
+                legs.push(tpMakeLeg(curDate||'',fromL,toL==='Unknown'?gReason||mode||'Unknown':toL,amt,mode,sender,gReason,line));
+                lastTo=fromL;
+            } else {
+                // Standalone charge with no From/To context (e.g. "Projector pickup ₹130")
+                const desc=tpCleanLoc(line);
+                legs.push(tpMakeLeg(curDate||'',desc,gReason||mode||'charge',amt,mode,sender,gReason,line));
+            }
         }
     }
     return legs;
@@ -4751,14 +4829,10 @@ function parseWhatsAppText(rawText){
     while((match=msgP.exec(raw))!==null){
         found=true;const phoneRaw=(match[3]||'').trim();const content=match[4].trim();if(!content)continue;
         const sender=tpLookupName(phoneRaw);
-        const subBlocks=content.split(/\n\s*\n/).filter(b=>b.trim().length>0);
-        let runningDate=null;
-        for(const sub of subBlocks){
-            const lines=sub.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
-            if(lines.length===1){const d=tpExtractDate(lines[0]);if(d){runningDate=d;continue;}}
-            let finalLines=lines;
-            if(runningDate){const dp=runningDate.split('-');finalLines=[parseInt(dp[2])+'/'+parseInt(dp[1])+'/'+dp[0].slice(-2),...lines];}
-            const legs=tpParseBlock({lines:finalLines,sender});
+        // Merge ALL lines (including date-only lines) into one block — tpParseBlock handles dates internally
+        const allLines=content.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+        if(allLines.length>0){
+            const legs=tpParseBlock({lines:allLines,sender});
             allLegs.push(...legs.map(l=>({...l,sender:sender||l.sender})));
         }
     }
@@ -4768,14 +4842,10 @@ function parseWhatsAppText(rawText){
         while((match=nativeP.exec(raw))!==null){
             found=true;const phoneRaw=(match[2]||'').trim();const content=match[3].trim();if(!content)continue;
             const sender=tpLookupName(phoneRaw);
-            const subBlocks=content.split(/\n\s*\n/).filter(b=>b.trim().length>0);
-            let runningDate=null;
-            for(const sub of subBlocks){
-                const lines=sub.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
-                if(lines.length===1){const d=tpExtractDate(lines[0]);if(d){runningDate=d;continue;}}
-                let finalLines=lines;
-                if(runningDate){const dp=runningDate.split('-');finalLines=[parseInt(dp[2])+'/'+parseInt(dp[1])+'/'+dp[0].slice(-2),...lines];}
-                const legs=tpParseBlock({lines:finalLines,sender});
+            // Merge ALL lines into one block
+            const allLines=content.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+            if(allLines.length>0){
+                const legs=tpParseBlock({lines:allLines,sender});
                 allLegs.push(...legs.map(l=>({...l,sender:sender||l.sender})));
             }
         }
@@ -4784,22 +4854,22 @@ function parseWhatsAppText(rawText){
     // Fallback: plain text format (no message wrappers)
     if(!found){
         const blocks=tpSplitBlocks(raw);
-        let runningDate=null;
+        // Merge all same-sender blocks into one continuous block
+        // (empty lines in plain text create separate blocks — but curFrom/curTo/lastTo must flow across them)
+        let mergedSender='';let mergedLines=[];
         for(const block of blocks){
             let sender=block.sender;
             if(!sender){const pm=block.lines[0]?.match(/([+]?\d[\d\s]{9,14})/);if(pm)sender=tpLookupName(pm[1]);}
-            // Check if this block is just a date line — carry date forward
-            if(block.lines.length===1){
-                const d=tpExtractDate(block.lines[0]);
-                if(d){runningDate=d;continue;}
+            const curSender=sender||block.sender;
+            // If sender changes, flush accumulated lines first
+            if(curSender!==mergedSender&&mergedLines.length>0){
+                const legs=tpParseBlock({lines:mergedLines,sender:mergedSender});
+                allLegs.push(...legs);mergedLines=[];
             }
-            // Prepend running date to block
-            let finalLines=block.lines;
-            if(runningDate){
-                const dp=runningDate.split('-');
-                finalLines=[parseInt(dp[2])+'/'+parseInt(dp[1])+'/'+dp[0].slice(-2),...block.lines];
-            }
-            const legs=tpParseBlock({lines:finalLines,sender:sender||block.sender});
+            mergedLines.push(...block.lines);mergedSender=curSender;
+        }
+        if(mergedLines.length>0){
+            const legs=tpParseBlock({lines:mergedLines,sender:mergedSender});
             allLegs.push(...legs);
         }
     }
