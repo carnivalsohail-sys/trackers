@@ -572,7 +572,7 @@
         .tp-day-row .tp-day-date { color: var(--text-muted); font-weight: 600; }
         .tp-day-row .tp-day-total { font-weight: 800; color: #10b981; }
         .tp-day-row .tp-day-legs { font-size: 11px; color: var(--text-muted); }
-        .tp-scroll-box { max-height: 500px; overflow-y: auto; border-radius: 14px; border: 1px solid var(--border-color); }
+        .tp-scroll-box { max-height: 500px; overflow-x: auto; overflow-y: auto; border-radius: 14px; border: 1px solid var(--border-color); }
         .tp-filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
         .tp-filter-bar input, .tp-filter-bar select { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 13px; }
         .tp-filter-bar input:focus, .tp-filter-bar select:focus { outline: none; border-color: var(--accent-primary); }
@@ -5117,7 +5117,7 @@ function renderTPLegsTable(filtered){
         </div></div>`;
     if(!filtered.length){html+=`<div class="tp-empty-state"><div class="tp-big-icon">\uD83D\uDD0D</div>No travel legs match your filter.</div>`;
     }else{
-        html+=`<div class="tp-scroll-box"><table><thead><tr><th style="width:36px;"><input type="checkbox" onchange="tpToggleAllLegs(this.checked)"></th><th>Date</th><th>From</th><th>To</th><th>Mode</th><th style="width:80px;">\u20B9</th><th>Person</th><th>Notes</th><th style="width:40px;"></th></tr></thead><tbody>`;
+        html+=`<div class="tp-scroll-box"><table><thead><tr><th style="width:36px;"><input type="checkbox" onchange="tpToggleAllLegs(this.checked)"></th><th>Date</th><th>From</th><th>To</th><th>Mode</th><th style=width:120px;min-width:120px;">\u20B9</th><th>Person</th><th>Notes</th><th style="width:40px;"></th></tr></thead><tbody>`;
         filtered.forEach(leg=>{
             const cc=leg.confidence>=80?'tp-conf-high':leg.confidence>=50?'tp-conf-med':'tp-conf-low';
             const role=tpLookupRole(leg.sender);const rc=tpRoleColor(role);
