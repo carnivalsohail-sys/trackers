@@ -1218,6 +1218,29 @@ function updateInsights(){
   ).join('');
 }
 
+// ─── REMINDER HELPERS ─────────────────────────────────────────────────────────
+function getReminderText(p) {
+  const isPaid = parseFloat(p.balance||0) <= 0;
+  if (isPaid) {
+    return `Hi ${p.clientName},\r\n\r\nThank you so much for your prompt payment! We truly appreciate your support and trust in Carnival. It's always a joy working with you, and we can't wait for more wonderful opportunities together in the future.\r\n\r\nWarm regards,\r\nCarnival Team`;
+  } else {
+    const bal = FC(parseFloat(p.balance||0));
+    return `Hi ${p.clientName},\r\n\r\nHope you're having a wonderful day! 🌟\r\n\r\nThis is just a sweet little reminder regarding a pending payment of ${bal} for Invoice ${p.invoiceNo||'N/A'}.\r\n\r\nWhenever you have a moment, we'd be so grateful if you could process it. Please let us know if you need anything from our side.\r\n\r\nThank you so much for your continued support!\r\n\r\nWarm regards,\r\nCarnival Team`;
+  }
+}
+function getEmailLink(p) {
+  const isPaid = parseFloat(p.balance||0) <= 0;
+  const subjectText = isPaid ? `Thank You! : Carnival Vendor Services - ${p.invoiceNo||'Invoice'}` : `Gentle Reminder: Carnival Vendor Services - ${p.invoiceNo||'Invoice'}`;
+  const subject = encodeURIComponent(subjectText);
+  const body = encodeURIComponent(getReminderText(p));
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${p.email}&su=${subject}&body=${body}`;
+}
+function getWaLink(p) {
+  const ph = cleanPhone(p.phone);
+  const text = encodeURIComponent(getReminderText(p));
+  return `https://wa.me/91${ph}?text=${text}`;
+}
+
 // ─── LATEST BILLS PANEL ────────────────────────────────────────────────────────
 function updateLatestBills(){
   // Sort by event date descending — newest always at top
@@ -1249,10 +1272,11 @@ function updateLatestBills(){
         <span class="status-badge ${s.status==='Paid'?'status-paid':s.status==='Critical'?'status-critical':s.status==='Overdue'?'status-overdue':'status-unpaid'}" style="font-size:0.6em;padding:1px 6px">${s.status}</span>
         ${s.daysOverdue>0?`<span class="bill-days">${s.daysOverdue}d</span>`:''}
       </div>
-      ${!isPaid&&bal>0?`<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap" onclick="event.stopPropagation()">
-        ${cleanPhone(p.phone)?`<a class="act-btn act-wa" href="https://wa.me/91${cleanPhone(p.phone)}" target="_blank" style="font-size:0.65em;padding:3px 7px">💬</a>`:''}
-        <button class="act-btn act-pay" onclick="openPayModal(${ri})" style="font-size:0.65em;padding:3px 7px">✅ Pay</button>
-      </div>`:''}
+      <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap" onclick="event.stopPropagation()">
+        ${cleanPhone(p.phone)?`<a class="act-btn act-wa" href="${getWaLink(p)}" target="_blank" style="font-size:0.65em;padding:3px 7px" title="${isPaid?'Thank You Note':'WhatsApp Reminder'}">💬</a>`:''}
+        ${p.email?`<a class="act-btn act-call" href="${getEmailLink(p)}" target="_blank" style="font-size:0.65em;padding:3px 7px" title="${isPaid?'Thank You Note':'Email Reminder'}">✉️</a>`:''}
+        ${!isPaid&&bal>0?`<button class="act-btn act-pay" onclick="openPayModal(${ri})" style="font-size:0.65em;padding:3px 7px">✅ Pay</button>`:''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -1301,9 +1325,9 @@ function renderFollowups(){
       <div class="followup-details">Inv: ${p.invoiceNo||'N/A'} &bull; Due: ${FD(p.dueDate)}</div>
       <div class="followup-amount">${FC(p.balance)}</div>
       <div class="followup-actions">
-        ${ph?`<a class="btn btn-xs act-wa" href="https://wa.me/91${ph}" target="_blank">💬 WhatsApp</a>`:''}
+        ${ph?`<a class="btn btn-xs act-wa" href="${getWaLink(p)}" target="_blank" title="WhatsApp Reminder">💬 WhatsApp</a>`:''}
+        ${p.email?`<a class="btn btn-xs act-call" href="${getEmailLink(p)}" target="_blank" title="Email Reminder">✉️ Email</a>`:''}
         ${ph?`<a class="btn btn-xs act-call" href="tel:${p.phone}">📞 Call</a>`:''}
-        ${p.email?`<a class="btn btn-xs act-call" href="mailto:${p.email}">✉️ Email</a>`:''}
         <button class="btn btn-xs act-pay" onclick="openPayModal(${idx})">✅ Mark Paid</button>
         <button class="btn btn-xs act-ledger" onclick="openLedger('${esc(p.clientName)}')">📋 Ledger</button>
       </div>
@@ -1315,8 +1339,9 @@ function renderFollowups(){
 function buildActions(p,idx){
   const ph=cleanPhone(p.phone),bal=parseFloat(p.balance)>0;
   let h='<div class="action-group">';
-  if(ph)h+=`<a class="act-btn act-wa" href="https://wa.me/91${ph}" target="_blank"><span>💬</span><span>WA</span></a>`;
-  if(ph)h+=`<a class="act-btn act-call" href="tel:${p.phone}"><span>📞</span></a>`;
+  if(ph)h+=`<a class="act-btn act-wa" href="${getWaLink(p)}" target="_blank" title="${bal?'WhatsApp Reminder':'Thank You Note'}"><span>💬</span><span>WA</span></a>`;
+  if(p.email)h+=`<a class="act-btn act-call" href="${getEmailLink(p)}" target="_blank" title="${bal?'Email Reminder':'Thank You Note'}"><span>✉️</span><span>Email</span></a>`;
+  if(ph)h+=`<a class="act-btn act-call" href="tel:${p.phone}" title="Call"><span>📞</span></a>`;
   if(bal)h+=`<button class="act-btn act-pay" onclick="openPayModal(${idx})"><span>✅</span><span>Pay</span></button>`;
   h+=`<button class="act-btn act-ledger" onclick="openLedger('${esc(p.clientName)}')"><span>📋</span></button>`;
   h+=`<button class="act-btn act-edit" onclick="editPayment(${idx})" title="Edit"><span>✏️</span></button>`;
@@ -1397,8 +1422,9 @@ function renderMobileCards(){
       </div>
       ${p.notes?`<div style="font-size:0.63em;color:var(--text-faint);font-style:italic;padding:3px 7px;background:var(--surface-2);border-radius:5px;border-left:2px solid var(--border);margin-bottom:4px">${p.notes}</div>`:''}
       <div class="mc-actions" style="margin-top:5px">
-        ${ph?`<a class="btn btn-xs act-wa" href="https://wa.me/91${ph}" target="_blank" style="font-size:0.66em;padding:4px 8px">💬</a>`:''}
-        ${ph?`<a class="btn btn-xs act-call" href="tel:${p.phone}" style="font-size:0.66em;padding:4px 8px">📞</a>`:''}
+        ${ph?`<a class="btn btn-xs act-wa" href="${getWaLink(p)}" target="_blank" style="font-size:0.66em;padding:4px 8px" title="${bal?'WhatsApp Reminder':'Thank You Note'}">💬</a>`:''}
+        ${p.email?`<a class="btn btn-xs act-call" href="${getEmailLink(p)}" target="_blank" style="font-size:0.66em;padding:4px 8px" title="${bal?'Email Reminder':'Thank You Note'}">✉️</a>`:''}
+        ${ph?`<a class="btn btn-xs act-call" href="tel:${p.phone}" style="font-size:0.66em;padding:4px 8px" title="Call">📞</a>`:''}
         ${bal?`<button class="btn btn-xs act-pay" onclick="openPayModal(${ri})" style="font-size:0.66em;padding:4px 8px">✅ Pay</button>`:''}
         <button class="btn btn-xs act-ledger" onclick="openLedger('${esc(p.clientName)}')" style="font-size:0.66em;padding:4px 8px;flex:1">📋 Ledger</button>
         <button class="btn btn-xs act-edit" onclick="editPayment(${ri})" style="font-size:0.66em;padding:4px 8px">✏️ Edit</button>
