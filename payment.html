@@ -3041,6 +3041,22 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
     if (booted) { pollNow(); return; }
     try {
       await findOrCreateGist();
+      // IMPORTANT: Push local data to cloud FIRST before pulling.
+      // This ensures local changes (mark paid, delete, edit) are never
+      // overwritten by stale cloud data on page reload.
+      let localPushed = false;
+      SYNC_KEYS.forEach(key => {
+        const localVal = localStorage.getItem(key);
+        if (localVal && localVal !== '[]') {
+          pendingFiles[key + '.json'] = { content: localVal };
+          localPushed = true;
+        }
+      });
+      if (localPushed) {
+        await doPush();
+        // Clear etag after push so pollNow fetches fresh state
+        lastEtag = '';
+      }
       await pollNow();
       ensureDailyBackup();
       setInterval(pollNow, POLL_MS);
