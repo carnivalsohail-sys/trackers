@@ -953,9 +953,9 @@ function savePaymentsToStorage(){
 function loadPaymentsFromStorage(){
   try {
     const raw = localStorage.getItem('pt_payments');
-    if(!raw) return;
+    if(raw === null) return; // No key at all — keep initialData as first-run seed
     const loaded = JSON.parse(raw);
-    if(!Array.isArray(loaded) || !loaded.length) return;
+    if(!Array.isArray(loaded)) return; // Corrupt data — skip
     payments.length = 0;
     loaded.forEach(p => {
       p.clientName = (p.clientName||'').trim();
@@ -3047,8 +3047,8 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
       let localPushed = false;
       SYNC_KEYS.forEach(key => {
         const localVal = localStorage.getItem(key);
-        if (localVal && localVal !== '[]') {
-          pendingFiles[key + '.json'] = { content: localVal };
+        if (localVal !== null) {          // Push even empty arrays so deletions reach the cloud
+          pendingFiles[key + '.json'] = { content: localVal || '[]' };
           localPushed = true;
         }
       });
