@@ -531,6 +531,8 @@ tr:hover{background:var(--primary-glow)}
       <button class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px" onclick="exportCurrentPDF();closeModal('exportSheet')">🔎 Current View (PDF)</button>
       <button class="btn btn-danger" style="width:100%;justify-content:center;padding:12px" onclick="exportRedFlagsExcel();closeModal('exportSheet')">🚩 Red Flags (Excel)</button>
       <button class="btn btn-danger" style="width:100%;justify-content:center;padding:12px" onclick="exportRedFlagsPDF();closeModal('exportSheet')">🔴 Red Flags (PDF)</button>
+      <div style="height:1px;background:var(--border);margin:4px 0"></div>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px;border-color:var(--primary);color:var(--primary-light)" onclick="closeModal('exportSheet');openImportModal()">📥 Import JSON</button>
     </div>
   </div>
 </div>
@@ -721,6 +723,7 @@ tr:hover{background:var(--primary-glow)}
       <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply</button>
       <button class="btn btn-secondary btn-sm" onclick="clearFilters()">Clear All</button>
       <button class="btn btn-primary btn-sm" onclick="openModal()">+ Add Invoice</button>
+      <button class="btn btn-secondary btn-sm" onclick="openImportModal()" style="border-color:var(--primary);color:var(--primary-light)">📥 Import JSON</button>
       <div class="export-dropdown" id="exportDropdown">
         <button class="btn btn-success btn-sm" onclick="toggleExportMenu(event)">📤 Export ▾</button>
         <div class="export-dropdown-menu" id="exportMenu">
@@ -3460,6 +3463,261 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+</script>
+
+<!-- ==================== JSON IMPORT MODAL ==================== -->
+<div class="modal" id="importModal" style="z-index:600">
+  <div class="modal-content" style="max-width:680px">
+    <div class="modal-header">
+      <h2>📥 Import Payments from JSON</h2>
+      <button class="close-btn" onclick="closeImportModal()">&times;</button>
+    </div>
+
+    <!-- STEP 1: DROP ZONE -->
+    <div id="importStep1">
+      <div id="importDropZone" style="
+        border:2px dashed var(--border-light);border-radius:14px;padding:40px 20px;
+        text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:16px;
+        background:var(--surface-2)
+      " onclick="document.getElementById('importFileInput').click()"
+         ondragover="event.preventDefault();this.style.borderColor='var(--primary)'"
+         ondragleave="this.style.borderColor='var(--border-light)'"
+         ondrop="importHandleDrop(event)">
+        <div style="font-size:2.5em;margin-bottom:8px">📂</div>
+        <div style="font-weight:700;color:var(--text);margin-bottom:4px">Drop your JSON file here</div>
+        <div style="font-size:0.8em;color:var(--text-dim)">or click to browse · accepts <code>import_payments.json</code></div>
+      </div>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importHandleFile(this.files[0])">
+    </div>
+
+    <!-- STEP 2: PREVIEW -->
+    <div id="importStep2" style="display:none">
+      <div id="importSummaryBar" style="
+        display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px
+      "></div>
+
+      <!-- Mode toggle -->
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button id="importModeMerge" class="btn btn-primary btn-sm" onclick="importSetMode('merge')" style="flex:1;justify-content:center">
+          🔀 Merge — Add new only
+        </button>
+        <button id="importModeReplace" class="btn btn-secondary btn-sm" onclick="importSetMode('replace')" style="flex:1;justify-content:center">
+          🔄 Replace — Overwrite all
+        </button>
+      </div>
+      <div id="importModeNote" style="font-size:0.75em;color:var(--text-dim);margin-bottom:12px;padding:8px 12px;background:var(--surface-2);border-radius:8px"></div>
+
+      <!-- Preview table -->
+      <div style="max-height:300px;overflow-y:auto;border-radius:10px;border:1px solid var(--border)">
+        <table style="width:100%;border-collapse:collapse;font-size:0.75em;min-width:0">
+          <thead style="position:sticky;top:0;background:var(--surface-2)">
+            <tr>
+              <th style="padding:8px;text-align:left;color:var(--text-dim);font-size:0.75em;text-transform:uppercase">Status</th>
+              <th style="padding:8px;text-align:left;color:var(--text-dim);font-size:0.75em;text-transform:uppercase">Inv#</th>
+              <th style="padding:8px;text-align:left;color:var(--text-dim);font-size:0.75em;text-transform:uppercase">Client</th>
+              <th style="padding:8px;text-align:left;color:var(--text-dim);font-size:0.75em;text-transform:uppercase">Co.</th>
+              <th style="padding:8px;text-align:right;color:var(--text-dim);font-size:0.75em;text-transform:uppercase">Balance</th>
+              <th style="padding:8px;text-align:left;color:var(--text-dim);font-size:0.75em;text-transform:uppercase">Action</th>
+            </tr>
+          </thead>
+          <tbody id="importPreviewBody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-secondary btn-sm" onclick="importReset()" style="flex:0 0 auto">← Change File</button>
+        <button class="btn btn-primary" id="importConfirmBtn" onclick="importConfirm()" style="flex:1;justify-content:center;font-size:0.9em">
+          ✅ Import Now
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: DONE -->
+    <div id="importStep3" style="display:none;text-align:center;padding:24px 0">
+      <div style="font-size:3em;margin-bottom:12px">✅</div>
+      <div id="importDoneMsg" style="font-weight:700;font-size:1.05em;color:var(--success-light);margin-bottom:6px"></div>
+      <div style="font-size:0.8em;color:var(--text-dim);margin-bottom:20px">Data saved and syncing to cloud…</div>
+      <button class="btn btn-primary" onclick="closeImportModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  let importData = [];
+  let importMode = 'merge'; // 'merge' | 'replace'
+
+  window.openImportModal = function(){
+    importReset();
+    document.getElementById('importModal').style.display = 'flex';
+  };
+  window.closeImportModal = function(){
+    document.getElementById('importModal').style.display = 'none';
+    importReset();
+  };
+
+  window.importHandleDrop = function(e){
+    e.preventDefault();
+    document.getElementById('importDropZone').style.borderColor = 'var(--border-light)';
+    const file = e.dataTransfer && e.dataTransfer.files[0];
+    if (file) importHandleFile(file);
+  };
+
+  window.importHandleFile = function(file){
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try {
+        const raw = JSON.parse(e.target.result);
+        const arr = Array.isArray(raw) ? raw : null;
+        if (!arr || !arr.length) throw new Error('JSON must be an array of payment records.');
+        // basic validation
+        const req = ['clientName','invoiceAmount'];
+        const sample = arr[0];
+        for (const k of req) {
+          if (!(k in sample)) throw new Error('Missing field: ' + k);
+        }
+        importData = arr;
+        importSetMode('merge');
+        showStep(2);
+      } catch(err){
+        alert('❌ Could not read file:\n' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  window.importSetMode = function(mode){
+    importMode = mode;
+    document.getElementById('importModeMerge').className = 'btn btn-sm' + (mode==='merge' ? ' btn-primary' : ' btn-secondary');
+    document.getElementById('importModeReplace').className = 'btn btn-sm' + (mode==='replace' ? ' btn-danger' : ' btn-secondary');
+    document.getElementById('importModeNote').innerHTML = mode === 'merge'
+      ? '🔀 <b>Merge:</b> Records with the same Invoice # and Company already in the app will be <b>skipped</b>. Only new records will be added.'
+      : '🔄 <b>Replace:</b> <span style="color:var(--danger-light)">All existing data will be deleted</span> and replaced with this file. Use only if you want a full reset.';
+    renderPreview();
+  };
+
+  function getExistingKeys(){
+    const raw = localStorage.getItem('pt_payments');
+    if (!raw) return new Set();
+    try {
+      const existing = JSON.parse(raw);
+      return new Set(existing.map(p => String(p.invoiceNo) + '|' + (p.company||'')));
+    } catch(e){ return new Set(); }
+  }
+
+  function renderPreview(){
+    const existing = getExistingKeys();
+    const fc = p => {
+      const n = parseFloat(p.balance || (parseFloat(p.invoiceAmount||0) - parseFloat(p.amountReceived||0)));
+      return '₹' + (isNaN(n)?0:n).toLocaleString('en-IN');
+    };
+    const coShort = c => c === 'Carnival Entertainments' ? 'CE' : c === 'Carnival Foodcraft' ? 'CF' : c === 'RK Gulab' ? 'RK' : (c||'').substring(0,6);
+
+    let newCount = 0, skipCount = 0, totalNew = 0;
+    const rows = importData.map(p => {
+      const key = String(p.invoiceNo||'') + '|' + (p.company||'');
+      const isDup = existing.has(key);
+      const willSkip = importMode === 'merge' && isDup;
+      if (!willSkip) { newCount++; totalNew += parseFloat(p.balance || (parseFloat(p.invoiceAmount||0)-parseFloat(p.amountReceived||0))); }
+      else skipCount++;
+      const actionTxt = importMode === 'replace'
+        ? (isDup ? '<span style="color:var(--accent-light)">↻ Update</span>' : '<span style="color:var(--success-light)">+ Add</span>')
+        : (willSkip ? '<span style="color:var(--text-faint)">— Skip</span>' : '<span style="color:var(--success-light)">+ Add</span>');
+      const rowBg = willSkip ? 'opacity:0.45' : '';
+      return `<tr style="${rowBg};border-bottom:1px solid var(--border)">
+        <td style="padding:7px 8px"><span style="font-size:0.8em;font-weight:700;color:${p.status==='Overdue'||p.status==='Critical'?'var(--accent-light)':p.status==='Unpaid'?'var(--text-muted)':p.status==='Partial'?'#c084fc':'var(--success-light)'}">${p.status||'?'}</span></td>
+        <td style="padding:7px 8px;font-family:monospace;color:var(--text-dim)">${p.invoiceNo||'—'}</td>
+        <td style="padding:7px 8px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)" title="${p.clientName||''}">${(p.clientName||'').substring(0,28)}${(p.clientName||'').length>28?'…':''}</td>
+        <td style="padding:7px 8px"><span style="font-size:0.75em;font-weight:700;color:var(--primary-light)">${coShort(p.company)}</span></td>
+        <td style="padding:7px 8px;text-align:right;font-family:monospace;color:var(--danger-light)">${fc(p)}</td>
+        <td style="padding:7px 8px">${actionTxt}</td>
+      </tr>`;
+    });
+    document.getElementById('importPreviewBody').innerHTML = rows.join('');
+
+    // Summary bar
+    document.getElementById('importSummaryBar').innerHTML = `
+      <span style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:0.78em;font-weight:700;color:var(--text)">📄 ${importData.length} records in file</span>
+      <span style="background:var(--success-glow);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:5px 12px;font-size:0.78em;font-weight:700;color:var(--success-light)">✅ ${newCount} will be ${importMode==='replace'?'imported':'added'}</span>
+      ${skipCount ? `<span style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:0.78em;font-weight:700;color:var(--text-faint)">⏭ ${skipCount} skipped (already exist)</span>` : ''}
+      <span style="background:var(--danger-glow);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:5px 12px;font-size:0.78em;font-weight:700;color:var(--danger-light)">💰 ₹${Math.round(totalNew).toLocaleString('en-IN')} outstanding</span>
+    `;
+
+    document.getElementById('importConfirmBtn').textContent = importMode === 'replace'
+      ? `🔄 Replace All & Import ${importData.length} Records`
+      : `✅ Add ${newCount} New Record${newCount!==1?'s':''}`;
+  }
+
+  window.importConfirm = function(){
+    try {
+      let finalData;
+      if (importMode === 'replace') {
+        finalData = importData.map(normalise);
+      } else {
+        const raw = localStorage.getItem('pt_payments');
+        const existing = raw ? JSON.parse(raw) : [];
+        const existingKeys = new Set(existing.map(p => String(p.invoiceNo||'') + '|' + (p.company||'')));
+        const toAdd = importData.filter(p => !existingKeys.has(String(p.invoiceNo||'') + '|' + (p.company||'')));
+        finalData = [...existing, ...toAdd.map(normalise)];
+      }
+      localStorage.setItem('pt_payments', JSON.stringify(finalData));
+      // Refresh the app UI
+      try { if (typeof loadPaymentsFromStorage === 'function') loadPaymentsFromStorage(); } catch(e){}
+      try { if (typeof populateFilters === 'function') populateFilters(); } catch(e){}
+      try { if (typeof setFilterCard === 'function') setFilterCard(typeof activeFilterCard !== 'undefined' ? activeFilterCard : 'all'); } catch(e){}
+      try { if (typeof updateStats === 'function') updateStats(); } catch(e){}
+      try { if (typeof renderFollowups === 'function') renderFollowups(); } catch(e){}
+      const added = importMode === 'replace' ? importData.length : (function(){
+        const raw = localStorage.getItem('pt_payments');
+        const ex = raw ? JSON.parse(raw) : [];
+        return ex.length;
+      })();
+      document.getElementById('importDoneMsg').textContent = importMode === 'replace'
+        ? `Replaced all data — ${importData.length} records loaded.`
+        : `Done! ${finalData.length} total records now in the app.`;
+      showStep(3);
+      if (typeof showToast === 'function') showToast('Import complete — data syncing…', 'success');
+    } catch(err){
+      alert('Import failed: ' + err.message);
+    }
+  };
+
+  function normalise(p){
+    const inv = parseFloat(p.invoiceAmount||0);
+    const rec = parseFloat(p.amountReceived||0);
+    return {
+      eventDate: p.eventDate || '',
+      clientName: (p.clientName||'').trim(),
+      venue: p.venue || '',
+      company: p.company || '',
+      invoiceNo: p.invoiceNo || '',
+      invoiceAmount: isNaN(inv) ? 0 : inv,
+      amountReceived: isNaN(rec) ? 0 : rec,
+      balance: parseFloat(p.balance) || (isNaN(inv-rec) ? 0 : inv-rec),
+      status: p.status || 'Unpaid',
+      dueDate: p.dueDate || '',
+      phone: (p.phone||'').trim(),
+      email: (p.email||'').trim(),
+      reference: p.reference || '',
+      notes: p.notes || ''
+    };
+  }
+
+  function showStep(n){
+    document.getElementById('importStep1').style.display = n===1 ? '' : 'none';
+    document.getElementById('importStep2').style.display = n===2 ? '' : 'none';
+    document.getElementById('importStep3').style.display = n===3 ? '' : 'none';
+  }
+
+  window.importReset = function(){
+    importData = [];
+    importMode = 'merge';
+    const fi = document.getElementById('importFileInput');
+    if (fi) fi.value = '';
+    showStep(1);
+  };
 })();
 </script>
 
