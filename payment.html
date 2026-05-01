@@ -2535,6 +2535,7 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
   let lastUpdatedTimer = null;
   let knownBackups = [];      // [{name, date}]  populated from latest pull
   let booted = false;         // prevent double polling intervals
+  let localWriteTs = parseInt(localStorage.getItem('pt_local_ts') || '0', 10); // tracks last local save time
   const incomingMark = {};     // suppress echo loop on cloud→local writes
   const origSet = Storage.prototype.setItem;
   const origRemove = Storage.prototype.removeItem;
@@ -2763,6 +2764,8 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
 
   // ===== PUSH (debounced) =====
   function schedulePush(key, value){
+    localWriteTs = Date.now();
+    origSet.call(localStorage, 'pt_local_ts', String(localWriteTs)); // raw set — not in SYNC_KEYS, no push loop
     pendingFiles[key + ".json"] = { content: String(value == null ? "" : value) };
     // Always update meta on every push
     pendingFiles[META_FILE] = { content: JSON.stringify({
@@ -2887,7 +2890,7 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
     if (localStorage.getItem(key) === value) return false;
     incomingMark[key] = true;
     try { origSet.call(localStorage, key, value); }
-    finally { setTimeout(() => { incomingMark[key] = false; }, 200); }
+    finally { setTimeout(() => { incomingMark[key] = false; }, 1500); }
     return true;
   }
 
@@ -3001,7 +3004,7 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
         const val = snap.data[k] != null ? String(snap.data[k]) : "[]";
         incomingMark[k] = true;
         try { origSet.call(localStorage, k, val); }
-        finally { setTimeout(() => { incomingMark[k] = false; }, 200); }
+        finally { setTimeout(() => { incomingMark[k] = false; }, 1500); }
         filesPatch[k + ".json"] = { content: val };
       });
       filesPatch[META_FILE] = { content: JSON.stringify({
@@ -3041,23 +3044,51 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
     if (booted) { pollNow(); return; }
     try {
       await findOrCreateGist();
-      // IMPORTANT: Push local data to cloud FIRST before pulling.
-      // This ensures local changes (mark paid, delete, edit) are never
-      // overwritten by stale cloud data on page reload.
-      let localPushed = false;
-      SYNC_KEYS.forEach(key => {
-        const localVal = localStorage.getItem(key);
-        if (localVal !== null) {          // Push even empty arrays so deletions reach the cloud
-          pendingFiles[key + '.json'] = { content: localVal || '[]' };
-          localPushed = true;
+
+      // ── PULL FIRST: fetch cloud state and check timestamps before touching anything ──
+      let cloudTs = 0;
+      try {
+        const bootRes = await fetch(API + "/gists/" + gistId, { headers: ghHeaders(), cache: "no-store" });
+        if (bootRes.ok) {
+          const et = bootRes.headers.get("ETag");
+          if (et) lastEtag = et;
+          const bootData = await bootRes.json();
+          // Read cloud meta timestamp
+          const mf = bootData.files && bootData.files[META_FILE];
+          if (mf && typeof mf.content === "string") {
+            try { const m = JSON.parse(mf.content); if (m && m.lastUpdated) { cloudTs = m.lastUpdated; lastMeta = m; renderLastUpdated(); } } catch(e){}
+          }
+          // If cloud is newer than last local save → apply cloud data, skip push
+          if (cloudTs >= localWriteTs) {
+            let updated = 0;
+            SYNC_KEYS.forEach(key => {
+              const f = bootData.files && bootData.files[key + ".json"];
+              if (!f) return;
+              let content = f.content;
+              if (f.truncated && f.raw_url) {
+                fetch(f.raw_url).then(r => r.text()).then(txt => applyCloudValue(key, txt)).catch(()=>{});
+                return;
+              }
+              if (typeof content === "string" && applyCloudValue(key, content)) updated++;
+            });
+            if (updated) refreshUI();
+            setBadge("Synced", "#10b981");
+          } else {
+            // Local is newer — push local data up to cloud
+            SYNC_KEYS.forEach(key => {
+              const localVal = localStorage.getItem(key);
+              if (localVal !== null) pendingFiles[key + '.json'] = { content: localVal || '[]' };
+            });
+            if (Object.keys(pendingFiles).length) {
+              await doPush();
+              lastEtag = '';
+            }
+          }
         }
-      });
-      if (localPushed) {
-        await doPush();
-        // Clear etag after push so pollNow fetches fresh state
-        lastEtag = '';
+      } catch(bootErr) {
+        console.warn("Boot fetch failed, falling back to local data", bootErr);
+        setBadge("Offline", "#ef4444");
       }
-      await pollNow();
       ensureDailyBackup();
       setInterval(pollNow, POLL_MS);
       setInterval(ensureDailyBackup, 60 * 60 * 1000);
