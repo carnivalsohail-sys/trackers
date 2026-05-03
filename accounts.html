@@ -565,8 +565,27 @@ function toast(msg, t='ok') {
 }
 
 function upChip() {
-  const d = G().filter(r=>r.cb!=null).sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('hv').textContent = d.length ? fn(d[0].cb) : '₹ —';
+  const all = G().sort((a,b) => a.date.localeCompare(b.date) || a.id - b.id);
+  if (!all.length) { document.getElementById('hv').textContent = '₹ —'; return; }
+  let bal = 0;
+  const lastCb = [...all].reverse().find(r => r.cb != null);
+  if (lastCb) {
+    bal = lastCb.cb;
+    const after = all.filter(r => r.date > lastCb.date || (r.date === lastCb.date && r.id > lastCb.id));
+    for (const r of after) {
+      if (r.ob != null) bal = r.ob;
+      if (r.debit)  bal -= r.debit;
+      if (r.credit) bal += r.credit;
+      if (r.cb != null) bal = r.cb;
+    }
+  } else {
+    for (const r of all) {
+      if (r.ob != null) bal = r.ob;
+      if (r.debit)  bal -= r.debit;
+      if (r.credit) bal += r.credit;
+    }
+  }
+  document.getElementById('hv').textContent = fn(bal);
 }
 
 function rfDL() {
@@ -632,6 +651,8 @@ function autoDetectDate() {
 // ══════════════════════════════════════════
 const SKIP = new Set(['total','opening','closing','bal','balance','date','location','grand total']);
 function isSkipName(n) { return SKIP.has(n.toLowerCase()) || /^\d/.test(n); }
+// Names that are always credits regardless of position in the message
+function isForcedCredit(n) { return /\b(client|mam|maam|ma'am|madam|transfer)\b/i.test(n); }
 function parseWA(raw, date, source) {
   const R = { date, source, openBal:null, closeBal:null, debits:[], credits:[], rawLines:[] };
   const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
@@ -681,7 +702,8 @@ function parseWA(raw, date, source) {
       const amt = +ma[2].replace(/,/g,'');
       const desc = (ma[3]||'').replace(/^\/?-?\s*/,'').trim();
       if (!amt || amt <= 0 || isSkipName(nm)) continue;
-      if (phase === 'credits') R.credits.push({name:nm, amount:amt, details:desc});
+      const isCredit = phase === 'credits' || isForcedCredit(nm);
+      if (isCredit) R.credits.push({name:nm, amount:amt, details:desc});
       else R.debits.push({staff:nm, amount:amt, details:desc});
       continue;
     }
@@ -692,7 +714,8 @@ function parseWA(raw, date, source) {
       const amt = +mb[2];
       const desc = (mb[3]||'').trim();
       if (!amt || isSkipName(nm)) continue;
-      if (phase === 'credits') R.credits.push({name:nm, amount:amt, details:desc});
+      const isCredit2 = phase === 'credits' || isForcedCredit(nm);
+      if (isCredit2) R.credits.push({name:nm, amount:amt, details:desc});
       else R.debits.push({staff:nm, amount:amt, details:desc});
     }
   }
@@ -836,7 +859,7 @@ function saveParsed() {
   });
   credits.forEach((e,i) => {
     d.push({ id:ts+idx++, date,
-      category: e.name.toUpperCase().includes('CLIENT') ? 'CLIENT' : 'ADV',
+      category: /\b(client)\b/i.test(e.name) ? 'CLIENT' : /\b(mam|maam|ma'am|madam|transfer)\b/i.test(e.name) ? 'CLIENT' : 'ADV',
       staff:e.name, details:e.details||'', debit:0, credit:e.amount, source,
       ob: debits.length===0&&i===0 ? openBal : null,
       cb: i===credits.length-1 ? closeBal : null });
