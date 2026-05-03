@@ -933,12 +933,12 @@ function addEntry() {
   const ob   = +document.getElementById('mob').value  || null;
   const cb   = +document.getElementById('mcb').value  || null;
   if (!date)        { toast('Select a date','er'); return; }
-  if (!staff&&!det) { toast('Enter staff name or details','er'); return; }
-  if (!deb&&!crd)   { toast('Enter debit or credit amount','er'); return; }
+  if (!ob && !staff && !det) { toast('Enter staff name, details, or opening balance','er'); return; }
+  if (!ob && !deb && !crd)   { toast('Enter debit, credit, or opening balance','er'); return; }
   const d = G();
-  d.push({id:Date.now(),date,category:cat,staff,details:det,debit:deb,credit:crd,source:'MANUAL',ob,cb});
+  d.push({id:Date.now(),date,category:ob?'OTHER':cat,staff,details:ob?'Opening Balance Entry':det,debit:deb,credit:crd,source:'MANUAL',ob,cb});
   Ps(d);
-  toast(crd>0 ? `Credit ${fn(crd)} added` : `Debit ${fn(deb)} added`,'ok');
+  toast(ob ? `Opening Balance ${fn(ob)} saved` : crd>0 ? `Credit ${fn(crd)} added` : `Debit ${fn(deb)} added`,'ok');
   ['mdeb','mcr','ms','mdet','mob','mcb'].forEach(id=>document.getElementById(id).value='');
   renderM(); upChip(); rfDL();
 }
@@ -1329,21 +1329,6 @@ function exportPDF() {
   if(st) d=d.filter(r=>r.staff===st);
   d.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
 
-  // Compute opening balance before filter period (same logic as renderL)
-  let runBal = null;
-  if (mo) {
-    const allSorted = G().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
-    const before = allSorted.filter(r => !r.date.startsWith(mo));
-    runBal = liveBalance(before);
-  }
-  // If still null (no data before filter OR no filter), seed from first ob in filtered data
-  if (runBal === null) {
-    const firstOb = d.find(r=>r.ob!=null);
-    if (firstOb) runBal = firstOb.ob;
-  }
-  // CRITICAL: if still null (no ob in any entry), start from 0 so balance still computes
-  if (runBal === null) runBal = 0;
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
   const W=297, M=12;
@@ -1402,37 +1387,22 @@ function exportPDF() {
     y = doc.lastAutoTable.finalY + 10;
   }
 
-  // Main ledger table — with closing balance per row
+  // Main ledger table
   doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...PDF_COLORS.text1);
   doc.text('Full Transaction Ledger', M, y+6); y+=10;
 
-  // Build body rows with running closing balance
-  let runBalPdf = runBal;
-  // Add opening balance as first row so user sees the seed
-  const pdfBody = [];
-  pdfBody.push([
-    mo || d.length ? fd(d[0].date) : '—', '—', '—',
-    'OPENING BALANCE', '—', '—',
-    runBalPdf !== null ? 'Rs.'+runBalPdf.toLocaleString('en-IN') : 'Rs.0',
+  const pdfBody = d.map(r => [
+    fd(r.date), r.category||'—', r.staff||'—',
+    (r.details||'—').substring(0,40),
+    r.debit  ? r.debit.toLocaleString('en-IN')  : '—',
+    r.credit ? r.credit.toLocaleString('en-IN') : '—',
   ]);
-  d.forEach(r => {
-    if (r.ob!=null && !mo) runBalPdf = r.ob;
-    if (runBalPdf!==null) { runBalPdf -= (r.debit||0); runBalPdf += (r.credit||0); }
-    pdfBody.push([
-      fd(r.date), r.category||'—', r.staff||'—',
-      (r.details||'—').substring(0,40),
-      r.debit  ? r.debit.toLocaleString('en-IN')  : '—',
-      r.credit ? r.credit.toLocaleString('en-IN') : '—',
-      runBalPdf !== null ? 'Rs.'+runBalPdf.toLocaleString('en-IN') : '—',
-    ]);
-  });
-  const pdfClosingBal = runBalPdf;
 
   doc.autoTable({
     startY:y,
-    head:[['Date','Category','Staff / Name','Details','Debit (Rs.)','Credit (Rs.)','Closing (Rs.)']],
+    head:[['Date','Category','Staff / Name','Details','Debit (Rs.)','Credit (Rs.)']],
     body:pdfBody,
-    foot:[['','','','TOTALS',totD.toLocaleString('en-IN'),totC.toLocaleString('en-IN'),pdfClosingBal!==null?'Rs.'+pdfClosingBal.toLocaleString('en-IN'):'—']],
+    foot:[['','','','TOTALS',totD.toLocaleString('en-IN'),totC.toLocaleString('en-IN')]],
     theme:'grid',
     styles:{fontSize:10,cellPadding:5,font:'helvetica',textColor:PDF_COLORS.text1},
     headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:10,lineColor:PDF_COLORS.line,lineWidth:.3},
@@ -1441,23 +1411,15 @@ function exportPDF() {
       0:{cellWidth:28,fontStyle:'bold'},
       1:{cellWidth:22},
       2:{cellWidth:32,fontStyle:'bold'},
-      3:{cellWidth:55},
+      3:{cellWidth:90},
       4:{cellWidth:32,halign:'right',textColor:PDF_COLORS.red,fontStyle:'bold'},
       5:{cellWidth:32,halign:'right',textColor:PDF_COLORS.green,fontStyle:'bold'},
-      6:{cellWidth:34,halign:'right',textColor:PDF_COLORS.blue,fontStyle:'bold'},
     },
     didParseCell(data){
       if(data.section==='body'){
-        // Highlight the OPENING BALANCE row
-        if(data.row.index===0){
-          data.cell.styles.fillColor=[232,240,254];
-          data.cell.styles.fontStyle='bold';
-          data.cell.styles.textColor=[41,98,178];
-          return;
-        }
         if(data.column.index===1){
           const cat=(data.cell.raw||'').toLowerCase().replace(/\s/g,'');
-          const catColors={'onacc':PDF_COLORS.blue,'client':PDF_COLORS.amber,'salary':PDF_COLORS.green,'adv':PDF_COLORS.purple};
+          const catColors={'onacc':PDF_COLORS.blue,'client':PDF_COLORS.amber,'salary':PDF_COLORS.green,'adv':PDF_COLORS.purple,'other':PDF_COLORS.text3};
           const cc=catColors[cat];
           if(cc) data.cell.styles.textColor=cc;
         }
