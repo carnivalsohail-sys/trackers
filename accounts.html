@@ -1362,20 +1362,20 @@ function exportPDF() {
     {label:'Net Flow', val:`${net>=0?'+':''}Rs.${net.toLocaleString('en-IN')}`, col:net>=0?PDF_COLORS.green:PDF_COLORS.red},
     {label:'Entries', val:`${d.length}`, col:PDF_COLORS.blue},
   ];
-  const bw=55, bh=22, bx=M;
+  const bw=50, bh=18, bx=M;
   statBoxes.forEach((sb,i)=>{
-    const x=bx+i*(bw+6);
+    const x=bx+i*(bw+7);
     // Light box with colored top border
     doc.setFillColor(255,255,255); doc.roundedRect(x,y,bw,bh,2,2,'FD');
     doc.setDrawColor(...sb.col); doc.setLineWidth(2); doc.line(x+2,y+1,x+bw-2,y+1);
     // Label
-    doc.setTextColor(...PDF_COLORS.text2); doc.setFontSize(9.5); doc.setFont('helvetica','bold');
-    doc.text(sb.label.toUpperCase(), x+5, y+8);
+    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text(sb.label.toUpperCase(), x+5, y+7);
     // Value
-    doc.setTextColor(...sb.col); doc.setFontSize(15); doc.setFont('helvetica','bold');
-    doc.text(sb.val, x+5, y+18);
+    doc.setTextColor(...sb.col); doc.setFontSize(14); doc.setFont('helvetica','bold');
+    doc.text(sb.val, x+5, y+15);
   });
-  y += 28;
+  y += 24;
 
   // Staff breakdown mini-table
   const staffMap={};
@@ -1384,7 +1384,7 @@ function exportPDF() {
   });
   const staffSorted=Object.entries(staffMap).sort((a,b)=>b[1].t-a[1].t);
   if(staffSorted.length>0){
-    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...PDF_COLORS.text1);
     doc.text('Staff Summary', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1392,9 +1392,9 @@ function exportPDF() {
       body:staffSorted.map(([nm,info])=>[nm,info.t.toLocaleString('en-IN'),info.c,Math.round(info.t/info.c).toLocaleString('en-IN')]),
       foot:[['TOTAL',totD.toLocaleString('en-IN'),d.filter(r=>r.debit>0).length,'']],
       theme:'grid',
-      styles:{fontSize:11,cellPadding:6,font:'helvetica',textColor:PDF_COLORS.text1,fillColor:[255,255,255]},
-      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:11,lineColor:PDF_COLORS.line,lineWidth:.4},
-      footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold',fontSize:11},
+      styles:{fontSize:10,cellPadding:5,font:'helvetica',textColor:PDF_COLORS.text1,fillColor:[255,255,255]},
+      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:10,lineColor:PDF_COLORS.line,lineWidth:.3},
+      footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold',fontSize:10},
       columnStyles:{0:{cellWidth:60},1:{cellWidth:50,halign:'right',textColor:PDF_COLORS.red,fontStyle:'bold'},2:{cellWidth:24,halign:'center'},3:{cellWidth:40,halign:'right'}},
       alternateRowStyles:{fillColor:PDF_COLORS.rowAlt},
       margin:{left:M,right:M}
@@ -1403,7 +1403,7 @@ function exportPDF() {
   }
 
   // Main ledger table — with closing balance per row
-  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...PDF_COLORS.text1);
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...PDF_COLORS.text1);
   doc.text('Full Transaction Ledger', M, y+6); y+=10;
 
   // Build body rows with running closing balance
@@ -1434,9 +1434,9 @@ function exportPDF() {
     body:pdfBody,
     foot:[['','','','TOTALS',totD.toLocaleString('en-IN'),totC.toLocaleString('en-IN'),pdfClosingBal!==null?'Rs.'+pdfClosingBal.toLocaleString('en-IN'):'—']],
     theme:'grid',
-    styles:{fontSize:11,cellPadding:6,font:'helvetica',textColor:PDF_COLORS.text1,lineWidth:.3,lineColor:PDF_COLORS.line},
-    headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:11,lineColor:[255,255,255],lineWidth:.5},
-    footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold',fontSize:11},
+    styles:{fontSize:10,cellPadding:5,font:'helvetica',textColor:PDF_COLORS.text1},
+    headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:10,lineColor:PDF_COLORS.line,lineWidth:.3},
+    footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold',fontSize:10},
     columnStyles:{
       0:{cellWidth:28,fontStyle:'bold'},
       1:{cellWidth:22},
@@ -1471,8 +1471,8 @@ function exportPDF() {
   const pages = doc.getNumberOfPages();
   for(let i=1;i<=pages;i++){
     doc.setPage(i);
-    doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(...PDF_COLORS.text3);
-    doc.text(`Carnival Entertainments | Page ${i} of ${pages}`, W/2, 198, {align:'center'});
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...PDF_COLORS.text3);
+    doc.text(`Carnival Entertainments | Page ${i} of ${pages}`, W/2, 200, {align:'center'});
     doc.setDrawColor(...PDF_COLORS.line); doc.setLineWidth(.3);
     doc.line(M,197,W-M,197);
   }
@@ -1510,11 +1510,11 @@ function exportReportPDF() {
     // Light card with colored top border
     doc.setFillColor(255,255,255); doc.roundedRect(x,y,bw,bh,2,2,'FD');
     doc.setDrawColor(...b.c); doc.setLineWidth(2); doc.line(x+2,y+1,x+bw-2,y+1);
-    doc.setTextColor(...PDF_COLORS.text2); doc.setFontSize(9.5); doc.setFont('helvetica','bold');
+    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
     doc.text(b.l.toUpperCase(), x+4, y+6);
-    doc.setTextColor(...b.c); doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.setTextColor(...b.c); doc.setFontSize(12); doc.setFont('helvetica','bold');
     doc.text(b.v, x+4, y+14);
-    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(9); doc.setFont('helvetica','normal');
+    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(8); doc.setFont('helvetica','normal');
     doc.text(b.s, x+4, y+20);
   });
   y+=28;
@@ -1528,7 +1528,7 @@ function exportReportPDF() {
   const srt=Object.entries(staffMap).sort((a,b)=>b[1].t-a[1].t);
 
   if(srt.length){
-    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...PDF_COLORS.text1);
     doc.text('Staff-wise Payment Analysis', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1541,8 +1541,8 @@ function exportReportPDF() {
       ]),
       foot:[['','TOTAL','Rs.'+totD.toLocaleString('en-IN'),srt.reduce((s,[,v])=>s+v.c,0),'','','100%']],
       theme:'grid',
-      styles:{fontSize:10.5,cellPadding:5.5,lineWidth:.3,lineColor:PDF_COLORS.line},
-      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:10.5,lineColor:[255,255,255],lineWidth:.4},
+      styles:{fontSize:10,cellPadding:4.5},
+      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:9.5},
       footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold'},
       columnStyles:{
         0:{cellWidth:8,halign:'center'},1:{cellWidth:42,fontStyle:'bold'},
@@ -1560,7 +1560,7 @@ function exportReportPDF() {
   const credE=d.filter(r=>r.credit>0);
   if(credE.length){
     if(y>220){doc.addPage();y=20;}
-    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...PDF_COLORS.text1);
     doc.text('Credits Received', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1568,8 +1568,8 @@ function exportReportPDF() {
       body:credE.map(r=>[fd(r.date),r.staff||r.category||'—','Rs.'+r.credit.toLocaleString('en-IN'),(r.details||'—').substring(0,45)]),
       foot:[['','TOTAL','Rs.'+totC.toLocaleString('en-IN'),'']],
       theme:'grid',
-      styles:{fontSize:10.5,cellPadding:5.5,lineWidth:.3,lineColor:PDF_COLORS.line},
-      headStyles:{fillColor:[34,120,80],textColor:[255,255,255],fontStyle:'bold',fontSize:10.5,lineColor:[255,255,255],lineWidth:.4},
+      styles:{fontSize:10,cellPadding:4.5},
+      headStyles:{fillColor:[34,120,80],textColor:[255,255,255],fontStyle:'bold',fontSize:9.5},
       footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.green,fontStyle:'bold'},
       columnStyles:{0:{cellWidth:28},1:{cellWidth:40,fontStyle:'bold'},2:{cellWidth:38,halign:'right',textColor:PDF_COLORS.green,fontStyle:'bold'},3:{cellWidth:72}},
       didParseCell(data){if(data.section==='body'&&data.row.index%2!==0)data.cell.styles.fillColor=PDF_COLORS.rowAlt},
@@ -1586,7 +1586,7 @@ function exportReportPDF() {
   });
   if(Object.keys(bd).length){
     if(y>210){doc.addPage();y=20;}
-    doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...PDF_COLORS.text1);
     doc.text('Day-by-Day Summary', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1599,8 +1599,8 @@ function exportReportPDF() {
         return[fd(dt),g.ob!=null?'Rs.'+g.ob.toLocaleString('en-IN'):'—','Rs.'+dd.toLocaleString('en-IN'),'Rs.'+dc.toLocaleString('en-IN'),g.cb!=null?'Rs.'+g.cb.toLocaleString('en-IN'):'—',(n>=0?'+':'')+n.toLocaleString('en-IN'),g.e.length];
       }),
       theme:'grid',
-      styles:{fontSize:10.5,cellPadding:5.5,lineWidth:.3,lineColor:PDF_COLORS.line},
-      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:10.5,lineColor:[255,255,255],lineWidth:.4},
+      styles:{fontSize:10,cellPadding:4.5},
+      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:9.5,lineColor:PDF_COLORS.line,lineWidth:.3},
       columnStyles:{
         0:{cellWidth:28,fontStyle:'bold'},1:{cellWidth:26,halign:'right'},
         2:{cellWidth:26,halign:'right',textColor:PDF_COLORS.red},
