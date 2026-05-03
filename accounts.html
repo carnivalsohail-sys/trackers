@@ -444,17 +444,35 @@ Rohit 300</div></div>
       </div>
     </div>
     <div class="tw"><table>
-      <thead><tr><th>Date</th><th>Category</th><th>Staff / Name</th><th>Details</th><th>Debit</th><th>Credit</th><th>Running Bal</th><th></th></tr></thead>
+      <thead><tr><th>Date</th><th>Category</th><th>Staff / Name</th><th>Details</th><th>Debit</th><th>Credit</th><th>Closing Bal</th><th></th></tr></thead>
       <tbody id="ltb"><tr><td colspan="8"><div class="empty"><div class="ei">📒</div><div class="et">No entries</div></div></td></tr></tbody>
     </table></div>
-    <div id="ledger-foot" style="display:none;padding:10px 18px;border-top:1px solid var(--b1);display:none">
-      <div style="display:flex;gap:16px;justify-content:flex-end;font-size:13px;flex-wrap:wrap">
-        <span class="mono cr" id="lt-deb">Debits: ₹0</span>
-        <span style="color:var(--b2)">|</span>
-        <span class="mono cg" id="lt-cred">Credits: ₹0</span>
-        <span style="color:var(--b2)">|</span>
-        <span class="mono cb fw7" id="lt-net">Net: ₹0</span>
-        <span class="ct3" id="lt-cnt" style="font-size:12px"></span>
+    <div id="ledger-foot" style="display:none">
+      <!-- Opening / Closing summary bar -->
+      <div id="lt-ob-bar" style="display:none;padding:11px 18px;border-top:2px solid var(--b1);background:var(--s3)">
+        <div style="display:flex;gap:0;flex-wrap:wrap">
+          <div style="flex:1;min-width:150px;padding:6px 14px;border-right:1px solid var(--b1)">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t4);margin-bottom:3px">Opening Balance</div>
+            <div class="mono fw7 cg" id="lt-ob" style="font-size:17px">—</div>
+          </div>
+          <div style="flex:1;min-width:150px;padding:6px 14px;border-right:1px solid var(--b1)">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t4);margin-bottom:3px">Total Paid Out</div>
+            <div class="mono fw7 cr" id="lt-deb" style="font-size:17px">₹0</div>
+          </div>
+          <div style="flex:1;min-width:150px;padding:6px 14px;border-right:1px solid var(--b1)">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t4);margin-bottom:3px">Total Received</div>
+            <div class="mono fw7 cg" id="lt-cred" style="font-size:17px">₹0</div>
+          </div>
+          <div style="flex:1;min-width:150px;padding:6px 14px;border-right:1px solid var(--b1)">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--t4);margin-bottom:3px">Net</div>
+            <div class="mono fw7 cb" id="lt-net" style="font-size:17px">₹0</div>
+          </div>
+          <div style="flex:1;min-width:150px;padding:6px 14px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:0 0 var(--r) 0">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue2);margin-bottom:3px">Closing Balance</div>
+            <div class="mono fw7" id="lt-cb" style="font-size:17px;color:var(--blue2)">—</div>
+          </div>
+        </div>
+        <div style="padding:6px 14px 4px;font-size:12px;color:var(--t4)" id="lt-cnt"></div>
       </div>
     </div>
   </div>
@@ -946,38 +964,52 @@ function del(id) {
 }
 
 // ══════════════════════════════════════════
-// LEDGER with running balance
+// LEDGER with opening + closing balance
 // ══════════════════════════════════════════
 function renderL() {
-  let d = G();
+  const all = G().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
   const mo   = document.getElementById('fm').value;
   const st   = document.getElementById('fst').value;
   const ca   = document.getElementById('fca').value;
   const tp   = document.getElementById('ftype').value;
+
+  // Compute opening balance = live balance just BEFORE this filter period
+  let openingBal = null;
+  if (mo) {
+    const before = all.filter(r => !r.date.startsWith(mo));
+    openingBal = liveBalance(before);
+  }
+
+  let d = all.slice();
   if (mo) d = d.filter(r=>r.date.startsWith(mo));
   if (st) d = d.filter(r=>r.staff===st);
   if (ca) d = d.filter(r=>r.category===ca);
   if (tp==='debit')  d = d.filter(r=>r.debit>0);
   if (tp==='credit') d = d.filter(r=>r.credit>0);
-  d.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
 
   const allS = [...new Set(G().map(r=>r.staff).filter(Boolean))].sort();
   const sel  = document.getElementById('fst'); const cur = sel.value;
   sel.innerHTML = '<option value="">All Staff</option>' + allS.map(s=>`<option value="${s}"${s===cur?' selected':''}>${s}</option>`).join('');
 
   const tb = document.getElementById('ltb');
+  const lf = document.getElementById('ledger-foot');
   if (!d.length) {
     tb.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ei">📒</div><div class="et">No entries found</div></div></td></tr>`;
-    document.getElementById('ledger-foot').style.display='none'; return;
+    lf.style.display='none'; return;
   }
+
+  // Build per-date groups and compute row-level closing bal
+  // Use openingBal as seed (computed from all data before this period)
+  let runBal = openingBal;
+  // If no month filter, seed from first ob in data
+  if (!mo) {
+    const firstOb = d.find(r=>r.ob!=null);
+    if (firstOb) runBal = firstOb.ob;
+  }
+  const periodOpenBal = runBal; // capture before entries start
 
   const grp = {};
   d.forEach(r => { (grp[r.date]=grp[r.date]||[]).push(r); });
-
-  // compute running balance
-  let runBal = null;
-  const firstWithOb = d.find(r=>r.ob!=null);
-  if (firstWithOb) runBal = firstWithOb.ob;
 
   let html = '';
   Object.keys(grp).sort().forEach(dt => {
@@ -986,11 +1018,12 @@ function renderL() {
     const dc = rows.reduce((s,r)=>s+(r.credit||0),0);
     html += `<tr><td colspan="8" style="padding:0"><div class="dgh"><span>📅 ${fd(dt)}</span><div class="dgh-nums"><span class="cr">Out: ${fn(dd)}</span><span class="cg">In: ${fn(dc)}</span></div></div></td></tr>`;
     rows.forEach((r,idx) => {
-      // Get running balance from stored ob/cb or compute
-      if (r.ob != null) runBal = r.ob;
-      if (r.debit)  runBal = runBal !== null ? runBal - r.debit  : null;
-      if (r.credit) runBal = runBal !== null ? runBal + r.credit : null;
-      if (r.cb != null) runBal = r.cb;
+      // Only trust ob as anchor (not stored cb — may be Sanju's wrong number)
+      if (r.ob!=null && !mo) runBal = r.ob;
+      if (runBal!==null) {
+        runBal -= (r.debit||0);
+        runBal += (r.credit||0);
+      }
       const runStr = runBal !== null
         ? `<span class="mono ${runBal>=0?'cb':'cr'}" style="font-size:12px">${fn(runBal)}</span>`
         : '<span class="ct4">—</span>';
@@ -1011,13 +1044,24 @@ function renderL() {
   const totD = d.reduce((s,r)=>s+(r.debit||0),0);
   const totC = d.reduce((s,r)=>s+(r.credit||0),0);
   const net  = totC - totD;
-  const lf   = document.getElementById('ledger-foot');
+  const closingBal = runBal;
+
   lf.style.display = 'block';
-  document.getElementById('lt-deb').textContent  = `Debits: ${fn(totD)}`;
-  document.getElementById('lt-cred').textContent = `Credits: ${fn(totC)}`;
-  document.getElementById('lt-net').textContent  = `Net: ${fni(net)}`;
+  const obBar = document.getElementById('lt-ob-bar');
+  obBar.style.display = 'block';
+
+  if (periodOpenBal !== null) {
+    document.getElementById('lt-ob').textContent = fn(periodOpenBal);
+    document.getElementById('lt-ob').className   = `mono fw7 ${periodOpenBal>=0?'cg':'cr'}`;
+  } else {
+    document.getElementById('lt-ob').textContent = '—';
+  }
+  document.getElementById('lt-deb').textContent  = fn(totD);
+  document.getElementById('lt-cred').textContent = fn(totC);
+  document.getElementById('lt-net').textContent  = fni(net);
   document.getElementById('lt-net').className    = `mono fw7 ${net>=0?'cg':'cr'}`;
-  document.getElementById('lt-cnt').textContent  = `(${d.length} entries)`;
+  document.getElementById('lt-cb').textContent   = closingBal !== null ? fn(closingBal) : '—';
+  document.getElementById('lt-cnt').textContent  = `${d.length} entries${mo?' for '+document.getElementById('fm').value.replace('-',' / '):''}`;
 }
 
 function resetF() { ['fst','fca','ftype'].forEach(id=>document.getElementById(id).value=''); renderL(); }
@@ -1664,7 +1708,7 @@ async function buildAndDownloadXLSX(data, mo, isReport) {
   xlSetTitle(ws1, 'Carnival Entertainments — Full Ledger', `${label}  •  ${subtitle}`, 8);
 
   // Header row at row 4
-  ws1.getRow(4).values = ['Date','Category','Staff / Name','Details','Debit (₹)','Credit (₹)','Running Bal (₹)','Source'];
+  ws1.getRow(4).values = ['Date','Category','Staff / Name','Details','Debit (₹)','Credit (₹)','Closing Bal (₹)','Source'];
   xlStyleHeaderRow(ws1, 4, XL.navy);
 
   // Data rows starting row 5
