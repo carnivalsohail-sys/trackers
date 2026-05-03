@@ -400,17 +400,28 @@ Rohit 300</div></div>
   <div class="card mb14">
     <div class="card-head"><div class="card-title"><span class="mark" style="background:var(--amber)"></span>Add Entry</div></div>
     <div style="padding:16px 18px;border-bottom:1px solid var(--b1)">
+      <!-- Opening Balance — dedicated row -->
+      <div style="padding:10px 14px;margin-bottom:12px;border-radius:10px;background:var(--blue-bg);border:1px solid var(--blue-b)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:14px">🔑</span>
+          <span style="font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue2)">Set Opening Balance</span>
+        </div>
+        <div class="gr2">
+          <div class="fg"><label>Date</label><input type="date" id="md"/></div>
+          <div class="fg"><label>Opening Bal ₹</label><input type="number" id="mob" placeholder="e.g. 53713" style="font-weight:700;color:var(--green2)"/></div>
+        </div>
+        <div style="font-size:11px;color:var(--t4);margin-top:4px">Fill only the date + opening balance to set it. No debit/credit needed.</div>
+      </div>
+      <!-- Regular entry fields -->
       <div class="gr4 mb14">
-        <div class="fg"><label>Date</label><input type="date" id="md"/></div>
         <div class="fg"><label>Category</label><select id="mc"><option value="ON ACC">ON ACC</option><option value="CLIENT">CLIENT</option><option value="SALARY">SALARY</option><option value="ADV">ADV</option><option value="OTHER">OTHER</option></select></div>
         <div class="fg"><label>Staff / Name</label><input type="text" id="ms" placeholder="e.g. ROHIT" list="sdl"/><datalist id="sdl"></datalist></div>
         <div class="fg"><label>Details / Notes</label><input type="text" id="mdet" placeholder="e.g. 29APR MCA BANQUET"/></div>
+        <div class="fg"><label>Closing Bal ₹</label><input type="number" id="mcb" placeholder="end of day (optional)"/></div>
       </div>
-      <div class="gr4">
+      <div class="gr2">
         <div class="fg"><label>💸 Debit ₹ (paid out)</label><input type="number" id="mdeb" placeholder="0" min="0"/></div>
         <div class="fg"><label>💰 Credit ₹ (received)</label><input type="number" id="mcr" placeholder="0" min="0"/></div>
-        <div class="fg"><label>Opening Bal ₹</label><input type="number" id="mob" placeholder="start of day only"/></div>
-        <div class="fg"><label>Closing Bal ₹</label><input type="number" id="mcb" placeholder="end of day"/></div>
       </div>
     </div>
     <div class="act"><button class="btn btn-p" onclick="addEntry()" style="width:100%;justify-content:center;padding:12px">➕ Add Entry</button></div>
@@ -1274,51 +1285,39 @@ function hexToRgb(hex) {
   return [r,g,b];
 }
 const PDF_COLORS = {
-  // Bright print-friendly palette — NO dark backgrounds
-  hdrBg:    [41,65,148],    // deep navy for header bar
-  blue:     [41,98,178],    // strong blue
-  green:    [34,139,34],    // forest green — prints well
-  red:      [192,57,43],    // dark red — prints well
-  amber:    [181,137,0],    // dark gold — prints well
-  purple:   [120,81,169],   // readable purple
-  text1:    [33,37,41],     // near-black for body text
-  text2:    [55,60,65],     // dark gray for sub-text
-  text3:    [120,125,130],  // medium gray for labels
-  line:     [180,184,188],  // light gray borders
-  rowAlt:   [245,247,250],  // very light blue-gray alt rows
-  thBg:     [55,71,133],    // table header bg — dark enough for white text
-  tfBg:     [240,242,245],  // table footer bg — light
+  bg:     [10,11,16], surf:  [17,19,24], card:  [28,30,40],
+  blue:   [108,138,245], green: [45,212,160], red:   [245,96,90],
+  amber:  [245,166,35],  purple:[167,139,250], text1: [244,245,249],
+  text2:  [60,62,80],     text3: [100,102,120], line:  [46,49,64],
 };
 
 function buildPDFHeader(doc, title, subtitle, orient) {
   const W = orient==='landscape' ? 297 : 210;
   const M = orient==='landscape' ? 12 : 14;
-  // Navy header band
-  doc.setFillColor(...PDF_COLORS.hdrBg);
-  doc.rect(0,0,W,40,'F');
-  // Brand accent stripe
-  doc.setFillColor(255,255,255);
-  doc.rect(0,0,5,40,'F');
-  doc.setFillColor(...PDF_COLORS.amber);
-  doc.rect(0,0,5,8,'F');
-  // Title — white on navy
-  doc.setFont('helvetica','bold'); doc.setFontSize(18);
-  doc.setTextColor(255,255,255);
-  doc.text('Carnival Entertainments', M+8, 16);
-  doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
-  doc.setTextColor(220,225,230);
-  doc.text(title, M+8, 25);
-  doc.setFontSize(9);
-  doc.setTextColor(180,190,200);
-  doc.text(subtitle, M+8, 33);
+  // Dark header bg
+  doc.setFillColor(...PDF_COLORS.surf);
+  doc.rect(0,0,W,42,'F');
+  // Left accent bar
+  doc.setFillColor(...PDF_COLORS.blue);
+  doc.rect(0,0,4,42,'F');
+  // Title
+  doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.setTextColor(...PDF_COLORS.text1);
+  doc.text('Carnival Entertainments', M+6, 15);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  doc.setTextColor(...PDF_COLORS.text2);
+  doc.text(title, M+6, 24);
+  doc.setFontSize(9.5);
+  doc.setTextColor(...PDF_COLORS.text3);
+  doc.text(subtitle, M+6, 32);
   // Right: date
-  doc.setTextColor(255,255,255);
-  doc.setFont('helvetica','bold'); doc.setFontSize(9);
-  doc.text('Generated: '+new Date().toLocaleString('en-IN'), W-M, 16, {align:'right'});
-  // Bottom line
-  doc.setDrawColor(...PDF_COLORS.amber);
-  doc.setLineWidth(1.2);
-  doc.line(0,40,W,40);
+  doc.setTextColor(...PDF_COLORS.green);
+  doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
+  doc.text('Generated: '+new Date().toLocaleString('en-IN'), W-M, 24, {align:'right'});
+  // Horizontal separator
+  doc.setDrawColor(...PDF_COLORS.line);
+  doc.setLineWidth(.3);
+  doc.line(0,42,W,42);
 }
 
 function exportPDF() {
@@ -1328,6 +1327,19 @@ function exportPDF() {
   if(mo) d=d.filter(r=>r.date.startsWith(mo));
   if(st) d=d.filter(r=>r.staff===st);
   d.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+
+  // Compute opening balance before filter period (same logic as renderL)
+  let runBal = null;
+  if (mo) {
+    const allSorted = G().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+    const before = allSorted.filter(r => !r.date.startsWith(mo));
+    runBal = liveBalance(before);
+  }
+  if (runBal === null) {
+    const firstOb = d.find(r=>r.ob!=null);
+    if (firstOb) runBal = firstOb.ob;
+  }
+  if (runBal === null) runBal = 0;
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
@@ -1340,27 +1352,24 @@ function exportPDF() {
   const totC = d.reduce((s,r)=>s+(r.credit||0),0);
   const net  = totC - totD;
 
-  let y = 48;
+  let y = 50;
   const statBoxes = [
     {label:'Total Paid Out', val:`Rs.${totD.toLocaleString('en-IN')}`, col:PDF_COLORS.red},
     {label:'Total Received', val:`Rs.${totC.toLocaleString('en-IN')}`, col:PDF_COLORS.green},
     {label:'Net Flow', val:`${net>=0?'+':''}Rs.${net.toLocaleString('en-IN')}`, col:net>=0?PDF_COLORS.green:PDF_COLORS.red},
     {label:'Entries', val:`${d.length}`, col:PDF_COLORS.blue},
   ];
-  const bw=50, bh=18, bx=M;
+  const bw=48, bh=16, bx=M;
   statBoxes.forEach((sb,i)=>{
-    const x=bx+i*(bw+7);
-    // Light box with colored top border
-    doc.setFillColor(255,255,255); doc.roundedRect(x,y,bw,bh,2,2,'FD');
-    doc.setDrawColor(...sb.col); doc.setLineWidth(2); doc.line(x+2,y+1,x+bw-2,y+1);
-    // Label
+    const x=bx+i*(bw+6);
+    doc.setFillColor(...PDF_COLORS.card); doc.roundedRect(x,y,bw,bh,2,2,'F');
+    doc.setFillColor(...sb.col); doc.roundedRect(x,y,3,bh,1,1,'F');
     doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.text(sb.label.toUpperCase(), x+5, y+7);
-    // Value
-    doc.setTextColor(...sb.col); doc.setFontSize(14); doc.setFont('helvetica','bold');
-    doc.text(sb.val, x+5, y+15);
+    doc.text(sb.label, x+7, y+6);
+    doc.setTextColor(...sb.col); doc.setFontSize(13); doc.setFont('helvetica','bold');
+    doc.text(sb.val, x+7, y+13);
   });
-  y += 24;
+  y += 22;
 
   // Staff breakdown mini-table
   const staffMap={};
@@ -1369,7 +1378,7 @@ function exportPDF() {
   });
   const staffSorted=Object.entries(staffMap).sort((a,b)=>b[1].t-a[1].t);
   if(staffSorted.length>0){
-    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...PDF_COLORS.text2);
     doc.text('Staff Summary', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1377,53 +1386,62 @@ function exportPDF() {
       body:staffSorted.map(([nm,info])=>[nm,info.t.toLocaleString('en-IN'),info.c,Math.round(info.t/info.c).toLocaleString('en-IN')]),
       foot:[['TOTAL',totD.toLocaleString('en-IN'),d.filter(r=>r.debit>0).length,'']],
       theme:'grid',
-      styles:{fontSize:10,cellPadding:5,font:'helvetica',textColor:PDF_COLORS.text1,fillColor:[255,255,255]},
-      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:10,lineColor:PDF_COLORS.line,lineWidth:.3},
-      footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold',fontSize:10},
+      styles:{fontSize:9.5,cellPadding:4,font:'helvetica',textColor:[50,52,70],fillColor:[255,255,255]},
+      headStyles:{fillColor:PDF_COLORS.card,textColor:PDF_COLORS.text1,fontStyle:'bold',fontSize:9.5,lineColor:PDF_COLORS.line,lineWidth:.2},
+      footStyles:{fillColor:[240,240,250],textColor:PDF_COLORS.amber,fontStyle:'bold'},
       columnStyles:{0:{cellWidth:60},1:{cellWidth:50,halign:'right',textColor:PDF_COLORS.red,fontStyle:'bold'},2:{cellWidth:24,halign:'center'},3:{cellWidth:40,halign:'right'}},
-      alternateRowStyles:{fillColor:PDF_COLORS.rowAlt},
+      alternateRowStyles:{fillColor:[248,248,252]},
       margin:{left:M,right:M}
     });
     y = doc.lastAutoTable.finalY + 10;
   }
 
-  // Main ledger table
-  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...PDF_COLORS.text1);
+  // Main ledger table — with closing balance per row
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...PDF_COLORS.text2);
   doc.text('Full Transaction Ledger', M, y+6); y+=10;
 
-  const pdfBody = d.map(r => [
-    fd(r.date), r.category||'—', r.staff||'—',
-    (r.details||'—').substring(0,40),
-    r.debit  ? r.debit.toLocaleString('en-IN')  : '—',
-    r.credit ? r.credit.toLocaleString('en-IN') : '—',
-  ]);
+  // Build body rows with running closing balance
+  let runBalPdf = runBal;
+  const pdfBody = d.map(r => {
+    if (r.ob!=null && !mo) runBalPdf = r.ob;
+    if (runBalPdf!==null) { runBalPdf -= (r.debit||0); runBalPdf += (r.credit||0); }
+    return [
+      fd(r.date), r.category||'—', r.staff||'—',
+      (r.details||'—').substring(0,40),
+      r.debit  ? r.debit.toLocaleString('en-IN')  : '—',
+      r.credit ? r.credit.toLocaleString('en-IN') : '—',
+      runBalPdf !== null ? 'Rs.'+runBalPdf.toLocaleString('en-IN') : '—',
+    ];
+  });
+  const pdfClosingBal = runBalPdf;
 
   doc.autoTable({
     startY:y,
-    head:[['Date','Category','Staff / Name','Details','Debit (Rs.)','Credit (Rs.)']],
+    head:[['Date','Category','Staff / Name','Details','Debit (Rs.)','Credit (Rs.)','Closing (Rs.)']],
     body:pdfBody,
-    foot:[['','','','TOTALS',totD.toLocaleString('en-IN'),totC.toLocaleString('en-IN')]],
+    foot:[['','','','TOTALS',totD.toLocaleString('en-IN'),totC.toLocaleString('en-IN'),pdfClosingBal!==null?'Rs.'+pdfClosingBal.toLocaleString('en-IN'):'—']],
     theme:'grid',
-    styles:{fontSize:10,cellPadding:5,font:'helvetica',textColor:PDF_COLORS.text1},
-    headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:10,lineColor:PDF_COLORS.line,lineWidth:.3},
-    footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold',fontSize:10},
+    styles:{fontSize:9.5,cellPadding:4.5,font:'helvetica',textColor:[40,42,55]},
+    headStyles:{fillColor:PDF_COLORS.card,textColor:PDF_COLORS.text1,fontStyle:'bold',fontSize:9.5,lineColor:PDF_COLORS.line,lineWidth:.3},
+    footStyles:{fillColor:PDF_COLORS.card,textColor:PDF_COLORS.amber,fontStyle:'bold',fontSize:9.5},
     columnStyles:{
       0:{cellWidth:28,fontStyle:'bold'},
       1:{cellWidth:22},
       2:{cellWidth:32,fontStyle:'bold'},
-      3:{cellWidth:90},
+      3:{cellWidth:55,textColor:[60,62,80]},
       4:{cellWidth:32,halign:'right',textColor:PDF_COLORS.red,fontStyle:'bold'},
       5:{cellWidth:32,halign:'right',textColor:PDF_COLORS.green,fontStyle:'bold'},
+      6:{cellWidth:34,halign:'right',textColor:PDF_COLORS.amber,fontStyle:'bold'},
     },
     didParseCell(data){
       if(data.section==='body'){
         if(data.column.index===1){
           const cat=(data.cell.raw||'').toLowerCase().replace(/\s/g,'');
-          const catColors={'onacc':PDF_COLORS.blue,'client':PDF_COLORS.amber,'salary':PDF_COLORS.green,'adv':PDF_COLORS.purple,'other':PDF_COLORS.text3};
+          const catColors={'onacc':PDF_COLORS.blue,'client':PDF_COLORS.amber,'salary':PDF_COLORS.green,'adv':PDF_COLORS.purple};
           const cc=catColors[cat];
           if(cc) data.cell.styles.textColor=cc;
         }
-        data.row.index%2===0 ? data.cell.styles.fillColor=[255,255,255] : data.cell.styles.fillColor=PDF_COLORS.rowAlt;
+        data.row.index%2===0 ? data.cell.styles.fillColor=[255,255,255] : data.cell.styles.fillColor=[248,248,252];
       }
     },
     margin:{left:M,right:M}
@@ -1435,7 +1453,7 @@ function exportPDF() {
     doc.setPage(i);
     doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...PDF_COLORS.text3);
     doc.text(`Carnival Entertainments | Page ${i} of ${pages}`, W/2, 200, {align:'center'});
-    doc.setDrawColor(...PDF_COLORS.line); doc.setLineWidth(.3);
+    doc.setDrawColor(...PDF_COLORS.line); doc.setLineWidth(.2);
     doc.line(M,197,W-M,197);
   }
   doc.save(`Carnival_Ledger${mo?'_'+mo:''}.pdf`);
@@ -1459,27 +1477,26 @@ function exportReportPDF() {
   const net=totC-totD;
   const withCb=d.filter(r=>r.cb!=null).sort((a,b)=>b.date.localeCompare(a.date));
 
-  let y=48;
+  let y=50;
   const boxes=[
     {l:'Total Paid Out',v:`Rs.${totD.toLocaleString('en-IN')}`,s:`${d.filter(r=>r.debit>0).length} txns`,c:PDF_COLORS.red},
     {l:'Total Received',v:`Rs.${totC.toLocaleString('en-IN')}`,s:`${d.filter(r=>r.credit>0).length} credits`,c:PDF_COLORS.green},
     {l:'Net Flow',v:`${net>=0?'+':''}Rs.${Math.abs(net).toLocaleString('en-IN')}`,s:net>=0?'Surplus':'Deficit',c:net>=0?PDF_COLORS.green:PDF_COLORS.red},
     {l:'Closing Balance',v:withCb.length?`Rs.${withCb[0].cb.toLocaleString('en-IN')}`:'—',s:withCb.length?fd(withCb[0].date):'No closing bal',c:PDF_COLORS.amber},
   ];
-  const bw=44,bh=22,bx=M;
+  const bw=44,bh=20,bx=M;
   boxes.forEach((b,i)=>{
     const x=bx+i*(bw+2.5);
-    // Light card with colored top border
-    doc.setFillColor(255,255,255); doc.roundedRect(x,y,bw,bh,2,2,'FD');
-    doc.setDrawColor(...b.c); doc.setLineWidth(2); doc.line(x+2,y+1,x+bw-2,y+1);
-    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+    doc.setFillColor(...PDF_COLORS.card); doc.roundedRect(x,y,bw,bh,2,2,'F');
+    doc.setFillColor(...b.c); doc.roundedRect(x,y+bh-2,bw,2,1,1,'F');
+    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(9); doc.setFont('helvetica','bold');
     doc.text(b.l.toUpperCase(), x+4, y+6);
-    doc.setTextColor(...b.c); doc.setFontSize(12); doc.setFont('helvetica','bold');
-    doc.text(b.v, x+4, y+14);
-    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text(b.s, x+4, y+20);
+    doc.setTextColor(...b.c); doc.setFontSize(12.5); doc.setFont('helvetica','bold');
+    doc.text(b.v, x+4, y+13);
+    doc.setTextColor(...PDF_COLORS.text3); doc.setFontSize(8.5); doc.setFont('helvetica','normal');
+    doc.text(b.s, x+4, y+18);
   });
-  y+=28;
+  y+=26;
 
   // Staff analysis
   const staffMap={};
@@ -1490,7 +1507,7 @@ function exportReportPDF() {
   const srt=Object.entries(staffMap).sort((a,b)=>b[1].t-a[1].t);
 
   if(srt.length){
-    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...PDF_COLORS.text1);
     doc.text('Staff-wise Payment Analysis', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1503,16 +1520,16 @@ function exportReportPDF() {
       ]),
       foot:[['','TOTAL','Rs.'+totD.toLocaleString('en-IN'),srt.reduce((s,[,v])=>s+v.c,0),'','','100%']],
       theme:'grid',
-      styles:{fontSize:10,cellPadding:4.5},
-      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:9.5},
-      footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.amber,fontStyle:'bold'},
+      styles:{fontSize:9.5,cellPadding:4},
+      headStyles:{fillColor:[180,50,50],textColor:[255,255,255],fontStyle:'bold',fontSize:9},
+      footStyles:{fillColor:PDF_COLORS.card,textColor:PDF_COLORS.amber,fontStyle:'bold'},
       columnStyles:{
         0:{cellWidth:8,halign:'center'},1:{cellWidth:42,fontStyle:'bold'},
         2:{cellWidth:35,halign:'right',textColor:PDF_COLORS.red,fontStyle:'bold'},
         3:{cellWidth:18,halign:'center'},4:{cellWidth:30,halign:'right'},
         5:{cellWidth:22,halign:'center'},6:{cellWidth:22,halign:'right',textColor:PDF_COLORS.blue},
       },
-      didParseCell(data){if(data.section==='body'&&data.row.index%2!==0)data.cell.styles.fillColor=PDF_COLORS.rowAlt},
+      didParseCell(data){if(data.section==='body'&&data.row.index%2!==0)data.cell.styles.fillColor=[250,248,255]},
       margin:{left:M,right:M}
     });
     y=doc.lastAutoTable.finalY+10;
@@ -1522,7 +1539,7 @@ function exportReportPDF() {
   const credE=d.filter(r=>r.credit>0);
   if(credE.length){
     if(y>220){doc.addPage();y=20;}
-    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...PDF_COLORS.text1);
     doc.text('Credits Received', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1530,11 +1547,11 @@ function exportReportPDF() {
       body:credE.map(r=>[fd(r.date),r.staff||r.category||'—','Rs.'+r.credit.toLocaleString('en-IN'),(r.details||'—').substring(0,45)]),
       foot:[['','TOTAL','Rs.'+totC.toLocaleString('en-IN'),'']],
       theme:'grid',
-      styles:{fontSize:10,cellPadding:4.5},
-      headStyles:{fillColor:[34,120,80],textColor:[255,255,255],fontStyle:'bold',fontSize:9.5},
-      footStyles:{fillColor:PDF_COLORS.tfBg,textColor:PDF_COLORS.green,fontStyle:'bold'},
+      styles:{fontSize:9.5,cellPadding:4},
+      headStyles:{fillColor:[30,120,80],textColor:[255,255,255],fontStyle:'bold',fontSize:9},
+      footStyles:{fillColor:PDF_COLORS.card,textColor:PDF_COLORS.green,fontStyle:'bold'},
       columnStyles:{0:{cellWidth:28},1:{cellWidth:40,fontStyle:'bold'},2:{cellWidth:38,halign:'right',textColor:PDF_COLORS.green,fontStyle:'bold'},3:{cellWidth:72}},
-      didParseCell(data){if(data.section==='body'&&data.row.index%2!==0)data.cell.styles.fillColor=PDF_COLORS.rowAlt},
+      didParseCell(data){if(data.section==='body'&&data.row.index%2!==0)data.cell.styles.fillColor=[245,255,250]},
       margin:{left:M,right:M}
     });
     y=doc.lastAutoTable.finalY+10;
@@ -1548,7 +1565,7 @@ function exportReportPDF() {
   });
   if(Object.keys(bd).length){
     if(y>210){doc.addPage();y=20;}
-    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...PDF_COLORS.text1);
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...PDF_COLORS.text1);
     doc.text('Day-by-Day Summary', M, y+6); y+=10;
     doc.autoTable({
       startY:y,
@@ -1561,8 +1578,8 @@ function exportReportPDF() {
         return[fd(dt),g.ob!=null?'Rs.'+g.ob.toLocaleString('en-IN'):'—','Rs.'+dd.toLocaleString('en-IN'),'Rs.'+dc.toLocaleString('en-IN'),g.cb!=null?'Rs.'+g.cb.toLocaleString('en-IN'):'—',(n>=0?'+':'')+n.toLocaleString('en-IN'),g.e.length];
       }),
       theme:'grid',
-      styles:{fontSize:10,cellPadding:4.5},
-      headStyles:{fillColor:PDF_COLORS.thBg,textColor:[255,255,255],fontStyle:'bold',fontSize:9.5,lineColor:PDF_COLORS.line,lineWidth:.3},
+      styles:{fontSize:9.5,cellPadding:4},
+      headStyles:{fillColor:PDF_COLORS.card,textColor:PDF_COLORS.text1,fontStyle:'bold',fontSize:9,lineColor:PDF_COLORS.line,lineWidth:.2},
       columnStyles:{
         0:{cellWidth:28,fontStyle:'bold'},1:{cellWidth:26,halign:'right'},
         2:{cellWidth:26,halign:'right',textColor:PDF_COLORS.red},
@@ -1572,7 +1589,7 @@ function exportReportPDF() {
       },
       didParseCell(data){
         if(data.section==='body'){
-          data.row.index%2===0?data.cell.styles.fillColor=[255,255,255]:data.cell.styles.fillColor=PDF_COLORS.rowAlt;
+          data.row.index%2===0?data.cell.styles.fillColor=[255,255,255]:data.cell.styles.fillColor=[248,250,255];
           if(data.column.index===5){const v=parseFloat(data.cell.raw);data.cell.styles.textColor=v>=0?PDF_COLORS.green:PDF_COLORS.red;}
         }
       },
@@ -1592,123 +1609,6 @@ function exportReportPDF() {
   toast('Report PDF downloaded!','ok');
 }
 
-// ══════════════════════════════════════════
-// EXCEL EXPORT — Fully styled with ExcelJS
-// (colors, formulas, borders, frozen headers)
-// ══════════════════════════════════════════
-
-const XL = {
-  // Brand palette mirrored from CSS, in ARGB hex (no #) for ExcelJS
-  navy:    'FF0F1117',
-  navyDk:  'FF0A0B10',
-  card:    'FF1E2028',
-  cardLt:  'FF252830',
-  border:  'FF383C52',
-  textHi:  'FFF4F5F9',
-  textMed: 'FFC8CAD8',
-  textLo:  'FF9395A8',
-  blue:    'FF6C8AF5',
-  blueLt:  'FFE8EEFE',
-  green:   'FF2DD4A0',
-  greenLt: 'FFE3FAF1',
-  red:     'FFF5605A',
-  redLt:   'FFFEE6E5',
-  amber:   'FFF5A623',
-  amberLt: 'FFFEF3DF',
-  purple:  'FFA78BFA',
-  purpleLt:'FFEFEAFE',
-  white:   'FFFFFFFF',
-  rowAlt:  'FFF7F8FC',
-};
-
-function xlBorderAll(color) {
-  const b = { style:'thin', color:{argb:color||'FFE2E5EE'} };
-  return { top:b, left:b, bottom:b, right:b };
-}
-
-function xlSetTitle(ws, text, subtitle, lastCol) {
-  // Row 1 = banner title
-  ws.mergeCells(1, 1, 1, lastCol);
-  const t = ws.getCell(1, 1);
-  t.value = text;
-  t.font = { name:'Calibri', size:18, bold:true, color:{argb:XL.white} };
-  t.fill = { type:'pattern', pattern:'solid', fgColor:{argb:XL.navy} };
-  t.alignment = { vertical:'middle', horizontal:'left', indent:1 };
-  ws.getRow(1).height = 32;
-
-  // Row 2 = subtitle
-  ws.mergeCells(2, 1, 2, lastCol);
-  const s = ws.getCell(2, 1);
-  s.value = subtitle;
-  s.font = { name:'Calibri', size:11, italic:true, color:{argb:XL.textLo} };
-  s.fill = { type:'pattern', pattern:'solid', fgColor:{argb:XL.cardLt} };
-  s.alignment = { vertical:'middle', horizontal:'left', indent:1 };
-  ws.getRow(2).height = 20;
-
-  // Row 3 = blank spacer
-  ws.getRow(3).height = 6;
-}
-
-function xlStyleHeaderRow(ws, rowNum, color) {
-  const row = ws.getRow(rowNum);
-  row.height = 24;
-  row.eachCell({ includeEmpty:false }, (cell) => {
-    cell.font = { name:'Calibri', size:11, bold:true, color:{argb:XL.white} };
-    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb:color || XL.navy} };
-    cell.alignment = { vertical:'middle', horizontal:'center' };
-    cell.border = xlBorderAll(XL.border);
-  });
-}
-
-function xlStyleDataBody(ws, startRow, endRow, lastCol) {
-  for (let r = startRow; r <= endRow; r++) {
-    const row = ws.getRow(r);
-    const isAlt = (r - startRow) % 2 === 1;
-    for (let c = 1; c <= lastCol; c++) {
-      const cell = row.getCell(c);
-      cell.font = cell.font || { name:'Calibri', size:10.5, color:{argb:'FF1A1C24'} };
-      if (!cell.fill) cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb: isAlt ? XL.rowAlt : XL.white } };
-      cell.border = xlBorderAll();
-      if (!cell.alignment) cell.alignment = { vertical:'middle' };
-    }
-    row.height = 18;
-  }
-}
-
-function xlStyleTotalRow(ws, rowNum, lastCol, accentColor) {
-  const row = ws.getRow(rowNum);
-  row.height = 24;
-  for (let c = 1; c <= lastCol; c++) {
-    const cell = row.getCell(c);
-    cell.font = { name:'Calibri', size:11.5, bold:true, color:{argb:XL.white} };
-    cell.fill = { type:'pattern', pattern:'solid', fgColor:{argb: accentColor || XL.navy} };
-    cell.border = { top:{style:'medium',color:{argb:XL.amber}}, bottom:{style:'medium',color:{argb:XL.amber}}, left:xlBorderAll().left.color&&{style:'thin',color:{argb:XL.border}}||undefined, right:{style:'thin',color:{argb:XL.border}} };
-    cell.alignment = cell.alignment || { vertical:'middle' };
-  }
-}
-
-const INR_FMT = '"₹"#,##0;[Red]"-₹"#,##0';
-const INR_FMT_BLANK = '"₹"#,##0;[Red]"-₹"#,##0;"—"';
-const PCT_FMT = '0.0%';
-const DATE_FMT = 'dd-mmm-yyyy';
-
-async function exportExcel() {
-  let d = G();
-  const mo = document.getElementById('fm').value;
-  const st = document.getElementById('fst').value;
-  if(mo) d=d.filter(r=>r.date.startsWith(mo));
-  if(st) d=d.filter(r=>r.staff===st);
-  d.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
-  await buildAndDownloadXLSX(d, mo, false);
-}
-
-async function exportReportExcel() {
-  const mo = document.getElementById('rpm').value;
-  let d = G();
-  if(mo) d=d.filter(r=>r.date.startsWith(mo));
-  d.sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
-  await buildAndDownloadXLSX(d, mo, true);
-}
 
 async function buildAndDownloadXLSX(data, mo, isReport) {
   if (!window.ExcelJS) { toast('Excel library not loaded yet — try again','er'); return; }
