@@ -1001,8 +1001,8 @@ function renderL() {
   // Build per-date groups and compute row-level closing bal
   // Use openingBal as seed (computed from all data before this period)
   let runBal = openingBal;
-  // If no month filter, seed from first ob in data
-  if (!mo) {
+  // If openingBal is still null (no data before filter OR no filter set), seed from first ob in data
+  if (runBal === null) {
     const firstOb = d.find(r=>r.ob!=null);
     if (firstOb) runBal = firstOb.ob;
   }
@@ -1336,6 +1336,7 @@ function exportPDF() {
     const before = allSorted.filter(r => !r.date.startsWith(mo));
     runBal = liveBalance(before);
   }
+  // If still null (no data before filter OR no filter), seed from first ob in filtered data
   if (runBal === null) {
     const firstOb = d.find(r=>r.ob!=null);
     if (firstOb) runBal = firstOb.ob;
@@ -1780,10 +1781,12 @@ async function buildAndDownloadXLSX(data, mo, isReport) {
     const before = allForBal.filter(r => !r.date.startsWith(mo));
     running = liveBalance(before);
   }
+  // If still null (no data before filter OR no filter), seed from first ob in filtered data
   if (running === null) {
     const firstOb = data.find(r=>r.ob!=null);
     if (firstOb) running = firstOb.ob;
   }
+  // CRITICAL: if still null (no ob in any entry), start from 0 so balance still computes
   if (running === null) running = 0;
 
   data.forEach((r, i) => {
