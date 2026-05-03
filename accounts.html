@@ -564,28 +564,38 @@ function toast(msg, t='ok') {
   setTimeout(()=>el.remove(), 3000);
 }
 
-function upChip() {
-  const all = G().sort((a,b) => a.date.localeCompare(b.date) || a.id - b.id);
-  if (!all.length) { document.getElementById('hv').textContent = '₹ —'; return; }
-  let bal = 0;
-  const lastCb = [...all].reverse().find(r => r.cb != null);
-  if (lastCb) {
-    bal = lastCb.cb;
-    const after = all.filter(r => r.date > lastCb.date || (r.date === lastCb.date && r.id > lastCb.id));
-    for (const r of after) {
-      if (r.ob != null) bal = r.ob;
-      if (r.debit)  bal -= r.debit;
-      if (r.credit) bal += r.credit;
-      if (r.cb != null) bal = r.cb;
-    }
-  } else {
-    for (const r of all) {
-      if (r.ob != null) bal = r.ob;
-      if (r.debit)  bal -= r.debit;
-      if (r.credit) bal += r.credit;
-    }
+// ── LIVE BALANCE HELPERS ──
+// Never trusts stored cb (may be Sanju's wrong number).
+// Only ob (opening balance) anchors the computation.
+function liveBalance(allEntries) {
+  const sorted = allEntries.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+  let bal = null;
+  for (const r of sorted) {
+    if (r.ob!=null) bal = r.ob;
+    if (bal!==null) { bal -= (r.debit||0); bal += (r.credit||0); }
   }
-  document.getElementById('hv').textContent = fn(bal);
+  return bal;
+}
+function buildDayMap(allEntries) {
+  const sorted = allEntries.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
+  const bd = {};
+  let run = null;
+  for (const r of sorted) {
+    const g = bd[r.date] = bd[r.date] || {entries:[],ob:null,cb:null};
+    g.entries.push(r);
+    if (r.ob!=null) run = r.ob;
+    if (g.ob===null && run!==null) g.ob = run;
+    if (run!==null) { run -= (r.debit||0); run += (r.credit||0); }
+    g.cb = run;  // always computed — never Sanju's stored value
+  }
+  return { bd, finalBal: run };
+}
+
+function upChip() {
+  const all = G();
+  if (!all.length) { document.getElementById('hv').textContent = '₹ —'; return; }
+  const bal = liveBalance(all);
+  document.getElementById('hv').textContent = bal !== null ? fn(bal) : '₹ —';
 }
 
 function rfDL() {
@@ -831,7 +841,7 @@ function renderParsed() {
 
 function renderCalcCheck() {
   if (!parsed) return;
-  const { errors, steps, totalDeb, totalCred } = checkCalcs(parsed);
+  const { errors, steps, totalDeb, totalCred, calcClose } = checkCalcs(parsed);
   const box = document.getElementById('calc-check-box');
   const isOk = errors.length === 0;
 
@@ -844,6 +854,9 @@ function renderCalcCheck() {
     errors.forEach(err => {
       h += `<div class="calc-mismatch">⚠ ${err.msg}<br><span style="font-weight:400;font-size:12px;opacity:.85">${err.detail}</span></div>`;
     });
+    if (calcClose !== null) {
+      h += `<div style="margin-top:8px;padding:8px 10px;background:rgba(45,212,160,.12);border-radius:7px;font-size:12.5px;color:var(--green2);font-weight:700">✅ Will save with corrected closing: ${fn(calcClose)}</div>`;
+    }
   }
   h += '</div>';
   box.innerHTML = h;
@@ -872,7 +885,11 @@ function saveParsed() {
   if (!debits.length && !credits.length && openBal!=null)
     d.push({id:ts,date,category:'OTHER',staff:'',details:'Balance Entry',debit:0,credit:0,source,ob:openBal,cb:saveCb});
   Ps(d);
-  toast(`Saved: ${debits.length} debits + ${credits.length} credits`, 'ok');
+  const hadMismatch = parsed.closeBal !== null && saveCb !== null && Math.abs(parsed.closeBal - saveCb) > 1;
+  if (hadMismatch)
+    toast(`Saved with corrected closing: ${fn(saveCb)} (Sanju wrote ${fn(parsed.closeBal)})`, 'inf');
+  else
+    toast(`Saved: ${debits.length} debits + ${credits.length} credits`, 'ok');
   clearP(); upChip(); rfDL();
 }
 
@@ -1026,11 +1043,12 @@ function renderD() {
   document.getElementById('s2').textContent = fn(d.reduce((s,r)=>s+(r.debit||0),0));
   document.getElementById('s3').textContent = fn(d.reduce((s,r)=>s+(r.credit||0),0));
 
-  // Latest closing
-  const withCb = d.filter(r=>r.cb!=null).sort((a,b)=>b.date.localeCompare(a.date));
-  if (withCb.length) {
-    document.getElementById('s4').textContent = fn(withCb[0].cb);
-    document.getElementById('s4d').textContent = fd(withCb[0].date);
+  // Latest closing — computed, never trusts stored cb
+  const latestBal = liveBalance(d);
+  if (latestBal !== null) {
+    document.getElementById('s4').textContent = fn(latestBal);
+    const latestDate = d.filter(r=>r.ob!=null||r.debit||r.credit).sort((a,b)=>b.date.localeCompare(a.date));
+    if (latestDate.length) document.getElementById('s4d').textContent = fd(latestDate[0].date);
   }
 
   // Insights
@@ -1051,32 +1069,13 @@ function renderD() {
   document.getElementById('ins-avg-day').textContent = activeDays ? fn(Math.round(mDeb/activeDays)) : '₹0';
   document.getElementById('ins-avg-sub').textContent = `${activeDays} active days this month`;
 
-  // Daily history — compute running balance across all entries
-  const allSorted = d.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
-  let run = null;
-  // build per-date opening and closing via running balance
-  const bd = {};
-  allSorted.forEach(r=>{
-    const g = bd[r.date]=bd[r.date]||{entries:[],ob:null,cb:null};
-    g.entries.push(r);
-    if (r.ob!=null) { run=r.ob; if(g.ob==null) g.ob=r.ob; }
-    if (g.ob==null && run!==null) g.ob=run;
-    if (r.debit)  run = run!==null ? run-r.debit  : null;
-    if (r.credit) run = run!==null ? run+r.credit : null;
-    if (r.cb!=null) run=r.cb;
-    g.cb = run;
-  });
+  // Daily history — computed closing, never trusts stored cb
+  const { bd, finalBal } = buildDayMap(d);
   const dates = Object.keys(bd).sort().reverse();
   const tb = document.getElementById('dt');
   if (!dates.length) {
     tb.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="ei">📊</div><div class="et">No data yet — paste a WhatsApp message to begin</div></div></td></tr>`;
     return;
-  }
-  // Latest Closing stat — use computed running balance
-  if (run!==null) {
-    document.getElementById('s4').textContent = fn(run);
-    const lastDate = dates[0];
-    document.getElementById('s4d').textContent = fd(lastDate);
   }
   tb.innerHTML = dates.slice(0,45).map(dt=>{
     const g=bd[dt];
@@ -1113,15 +1112,7 @@ function renderReport() {
   document.getElementById('rpt-net').textContent   = fni(net);
   document.getElementById('rpt-net').className     = 'rhs-val ' + (net>=0?'cg':'cr');
 
-  // Compute closing balance via running balance (same logic as upChip)
-  const allForClose = d.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
-  let rptBal = null;
-  for (const r of allForClose) {
-    if (r.ob!=null) rptBal=r.ob;
-    if (r.debit)  rptBal = rptBal!==null ? rptBal-r.debit  : null;
-    if (r.credit) rptBal = rptBal!==null ? rptBal+r.credit : null;
-    if (r.cb!=null) rptBal=r.cb;
-  }
+  const rptBal = liveBalance(d);
   document.getElementById('rpt-close').textContent = rptBal!==null ? fn(rptBal) : '—';
 
   // Staff
@@ -1162,19 +1153,7 @@ function renderReport() {
     : `<tr><td colspan="4"><div class="empty" style="padding:30px"><div class="et">No credits this period</div></div></td></tr>`;
 
   // Daily
-  const bd = {};
-  const rptAllSorted = d.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.id-b.id);
-  let rptRun = null;
-  rptAllSorted.forEach(r=>{
-    const g=bd[r.date]=bd[r.date]||{entries:[],ob:null,cb:null};
-    g.entries.push(r);
-    if(r.ob!=null){ rptRun=r.ob; if(g.ob==null)g.ob=r.ob; }
-    if(g.ob==null && rptRun!==null) g.ob=rptRun;
-    if(r.debit)  rptRun = rptRun!==null ? rptRun-r.debit  : null;
-    if(r.credit) rptRun = rptRun!==null ? rptRun+r.credit : null;
-    if(r.cb!=null) rptRun=r.cb;
-    g.cb=rptRun;
-  });
+  const { bd } = buildDayMap(d);
   document.getElementById('rpt-daily').innerHTML = Object.keys(bd).sort().length
     ? Object.keys(bd).sort().map(dt=>{
         const g=bd[dt];
