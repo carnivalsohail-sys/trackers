@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
-<!-- baba: begin -->
-<script type="text/javascript" src="//zipper.spock.platform.replit.com/adlock/injections/script.js?t=5448709&amp;p=1059519"></script>
-<!-- baba: end -->
-
-<!-- baba: begin -->
-<script type="text/javascript" src="//zipper.picard.platform.replit.com/adlock/injections/script.js?t=10368251&amp;p=1373069"></script>
-<!-- baba: end -->
 
 <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -497,14 +490,91 @@
         @media (max-width: 1200px) {
             .rate-card-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* ===== MOBILE / TABLET RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
+            body { font-size: 14px; padding: 8px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+            .container { border-radius: 18px; }
+
+            /* Header */
+            .header { padding: 32px 16px 52px; }
+            .header h1 { font-size: 1.9em; letter-spacing: -1px; }
+            .header p { font-size: 0.8em; letter-spacing: 2px; margin-top: 6px; }
+            .theme-toggle { bottom: 10px; right: 10px; padding: 8px 14px; font-size: 12px; gap: 6px; }
+            #liveClock { font-size: 10px !important; top: 10px !important; right: 10px !important; }
+            #greeting { font-size: 9px !important; top: 10px !important; left: 10px !important; }
+
+            /* Navigation */
+            .nav-tabs { padding: 0 6px; gap: 2px; }
+            .nav-tab { padding: 13px 9px; font-size: 10px; gap: 3px; min-width: 0; flex-shrink: 0; }
+
+            /* Content & Cards */
+            .content { padding: 14px; }
+            .card { padding: 18px 16px; margin-bottom: 18px; border-radius: 16px; }
+            .card:hover { transform: none; } /* disable hover lift on touch */
+            .card h3 { font-size: 1.15em; margin-bottom: 16px; }
+
+            /* Grids */
+            .form-grid { grid-template-columns: 1fr; gap: 14px; }
             .adjustment-grid { grid-template-columns: 1fr; }
             .rate-card-grid { grid-template-columns: 1fr; }
-            .nav-tab { padding: 14px 18px; font-size: 13px; }
-            .header h1 { font-size: 2.2em; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            body { font-size: 14px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+
+            /* Stat cards */
+            .stat-card { padding: 20px 14px; border-radius: 16px; }
+            .stat-card h4 { font-size: 2em; }
+            .stat-card p { font-size: 10px; }
+
+            /* Buttons */
+            .btn { padding: 12px 14px; font-size: 13px; }
+            .btn-sm { padding: 9px 12px; font-size: 12px; }
+            .export-buttons { flex-wrap: wrap; gap: 8px; }
+
+            /* Tables */
+            .table-wrap, .print-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { font-size: 12px; min-width: 500px; }
+            th, td { padding: 9px 10px; font-size: 12px; }
+
+            /* Reports */
+            .report-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .report-section { padding: 18px 14px; }
+
+            /* Employee chips */
+            .employee-chip { padding: 8px 12px; font-size: 12px; margin: 3px; }
+            .employee-select { padding: 10px; }
+
+            /* Special boxes */
+            .special-box { padding: 18px 14px; }
+
+            /* Travel parser */
+            .tp-stats-bar { gap: 8px; }
+            .tp-stat-pill { padding: 12px 10px; min-width: 72px; }
+            .tp-stat-pill .tp-value { font-size: 17px; }
+            .tp-tab-bar { flex-wrap: wrap; gap: 4px; }
+            .tp-tab-btn { padding: 9px 12px; font-size: 12px; }
+            .tp-filter-bar { flex-direction: column; gap: 8px; }
+            .tp-filter-bar input, .tp-filter-bar select { width: 100%; }
+            .tp-push-btn { width: 100%; justify-content: center; padding: 14px; }
+            .tp-textarea { min-height: 160px; font-size: 13px; padding: 14px; }
+            .tp-accumulator { flex-direction: column; gap: 6px; }
+            .tp-grand-bar { flex-direction: column; gap: 8px; }
+            .tp-grand-bar .tp-gt-value { font-size: 22px; }
+
+            /* Sync badge safety on mobile */
+            #cloudSyncBadge { font-size: 10px !important; padding: 5px 10px !important; max-width: 55vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            #cloudSyncGear { right: unset !important; left: 8px !important; font-size: 12px !important; padding: 3px 8px !important; }
+            #lastUpdatedBar { font-size: 10px !important; max-width: 60vw; }
+        }
+
+        /* Small phones (≤ 400px) */
+        @media (max-width: 400px) {
+            .header h1 { font-size: 1.5em; }
+            .nav-tab { padding: 12px 7px; font-size: 9px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .stat-card h4 { font-size: 1.7em; }
+            .card { padding: 14px 12px; }
+            .content { padding: 10px; }
+            body { padding: 4px; }
         }
 
         /* Calculator Specific Styles */
@@ -572,7 +642,7 @@
         .tp-day-row .tp-day-date { color: var(--text-muted); font-weight: 600; }
         .tp-day-row .tp-day-total { font-weight: 800; color: #10b981; }
         .tp-day-row .tp-day-legs { font-size: 11px; color: var(--text-muted); }
-        .tp-scroll-box { max-height: 500px; overflow-x: auto; overflow-y: auto; border-radius: 14px; border: 1px solid var(--border-color); }
+        .tp-scroll-box { max-height: 500px; overflow-y: auto; border-radius: 14px; border: 1px solid var(--border-color); }
         .tp-filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
         .tp-filter-bar input, .tp-filter-bar select { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 13px; }
         .tp-filter-bar input:focus, .tp-filter-bar select:focus { outline: none; border-color: var(--accent-primary); }
@@ -1076,13 +1146,14 @@
                         <!-- Paste Area -->
                         <div style="margin-bottom: 20px;">
                             <div class="tp-section-label">📱 Paste WhatsApp Travel Messages</div>
-                            <textarea id="wpTravelInput" class="tp-textarea" placeholder="Paste WhatsApp messages here...&#10;&#10;Supports: [HH:MM, DD/MM/YY] +91 format&#10;OR plain text travel details&#10;&#10;Dates like 21/04/26 are auto-detected.&#10;New legs APPEND to existing data."></textarea>
+                            <textarea id="wpTravelInput" class="tp-textarea" placeholder="Paste WhatsApp messages here...&#10;&#10;Supports: [HH:MM, DD/MM/YY] +91 format&#10;OR plain text travel details&#10;OR daily expense style:&#10;  4/5/2026&#10;  Og to Santacruz BJP office 99+₹20 luggage&#10;  Santacruz BJP office 109+₹20 luggage&#10;&#10;Dates like 21/04/26 are auto-detected.&#10;New legs APPEND to existing data."></textarea>
                             <div class="tp-sample-link">
                                 Try samples:
                                 <a onclick="tpLoadSample(1)">GUL multi-day</a> &bull;
                                 <a onclick="tpLoadSample(2)">Porter event</a> &bull;
                                 <a onclick="tpLoadSample(3)">Round trips</a> &bull;
-                                <a onclick="tpLoadSample(4)">Iqbal multi-leg</a>
+                                <a onclick="tpLoadSample(4)">Iqbal multi-leg</a> &bull;
+                                <a onclick="tpLoadSample(5)">Daily expense (+₹)</a>
                             </div>
                         </div>
 
@@ -4651,7 +4722,7 @@ function tpExtractAmount(text){
     if(!text)return 0;const s=String(text).trim();
     for(const bl of TP_AMT_BL){if(bl.test(s))return 0;}
     let m;
-    if((m=s.match(/(\d{1,5})\s*\+\s*(\d{1,5})/)))return parseInt(m[1])+parseInt(m[2]);
+    if((m=s.match(/(\d{1,5})\s*\+\s*[\u20B9]?\s*(\d{1,5})/)))return parseInt(m[1])+parseInt(m[2]);
     if((m=s.match(/fix\s*\u20B9?\s*(\d{1,5})/i)))return parseInt(m[1]);
     if((m=s.match(/\u20B9\s*(\d{1,5})/)))return parseInt(m[1]);
     if((m=s.match(/(\d{1,5})\s*\u20B9/)))return parseInt(m[1]);
@@ -4672,8 +4743,8 @@ function tpCleanLoc(text){
     return text.replace(/^(?:from|form|frm|to|t[o0])\s*[.:]?\s*/i,'')
         // Remove amount patterns (digits with ₹/Rs symbols) — consume leading space but not trailing
         .replace(/\s*[\u20B9Rs.]*\d{1,5}[\u20B9Rs.]*/gi,'')
-        // Remove "+ N" return surcharge patterns
-        .replace(/\s*\+\s*\d+\s*/g,'')
+        // Remove "+ N" or "+₹N" return surcharge patterns
+        .replace(/\s*\+\s*[\u20B9]?\s*\d+\s*/g,'')
         // Remove mode keywords anywhere (not just at end)
         .replace(/\s*(?:auto|taxi|porter|portar|poter|tempo|train|bus|metro|bike|fix)\b[\.]?\s*/gi,'')
         // Remove "return" word (but not inside other words)
@@ -4684,6 +4755,20 @@ function tpCleanLoc(text){
         .replace(/\b(ritarn|round\s*trip)\b\.?\s*/gi,'').replace(/\b(totel|total)\b.*$/i,'')
         .trim().replace(/^\.\s*/,'').replace(/\s*\.$/,'').replace(/:+$/,'').replace(/\s*\+\s*$/,'').replace(/\s+/g,' ').trim()||'Unknown';
 }
+// ---- Split trailing note word(s) from "Location Amount+₹Extra NoteWord" lines ----
+// e.g. "Santacruz BJP office 99+₹20 luggage" → {loc:"Santacruz BJP office", notes:"luggage"}
+// e.g. "Santacruz BJP office 109+₹20 luggage" → {loc:"Santacruz BJP office", notes:"luggage"}
+function tpSplitLocAndNotes(text){
+    if(!text)return{loc:text,notes:''};
+    // Pattern A: "... digit+₹digit notewords" at end
+    const mA=text.match(/^(.*\S)\s+\d{1,5}\s*\+\s*[\u20B9]?\s*\d{1,5}\s+([a-zA-Z][a-zA-Z\s]{0,30})\s*$/);
+    if(mA&&!/\bto\b/i.test(mA[2]))return{loc:mA[1].trim(),notes:mA[2].trim()};
+    // Pattern B: "... digit noteword" (simple amount + one note word)
+    const mB=text.match(/^(.*\S)\s+\d{2,5}\s+([a-zA-Z]\w{2,20})\s*$/);
+    if(mB&&!/\b(to|from|and|the|at|in|of)\b/i.test(mB[2]))return{loc:mB[1].trim(),notes:mB[2].trim()};
+    return{loc:text,notes:''};
+}
+
 // ---- Mode detection ----
 function tpGuessMode(text){
     const modes=[[/\b(auto|riksha|rickshaw)\b/i,'auto'],[/\b(taxi|cab|uber|ola)\b/i,'taxi'],
@@ -4778,8 +4863,12 @@ function tpParseBlock(block){
         const imp=line.match(/^(.+?)\s+(?:to|t[o0])\s*[.:]?\s*(.+?)$/i);
         if(imp&&!/^totel|^total/.test(lower)){
             const fL=tpCleanLoc(imp[1]),restP=imp[2];const amt=tpExtractAmount(restP);
-            if(amt>0){const toL=tpCleanLoc(restP);legs.push(tpMakeLeg(curDate||'',fL,toL,amt,tpGuessMode(line),sender,gReason,line));lastTo=toL;curFrom=null;curTo=null;curMode='other';}
-            else{curFrom=fL;curTo=tpCleanLoc(restP);curMode=tpGuessMode(line);}continue;
+            if(amt>0){
+                const{loc:toLocRaw,notes:legNotes}=tpSplitLocAndNotes(restP);
+                const toL=tpCleanLoc(toLocRaw);
+                legs.push(tpMakeLeg(curDate||'',fL,toL,amt,tpGuessMode(line),sender,legNotes||gReason,line));
+                lastTo=toL;curFrom=null;curTo=null;curMode='other';
+            } else{curFrom=fL;curTo=tpCleanLoc(restP);curMode=tpGuessMode(line);}continue;
         }
         // Porter/Poter standalone charge — treat as separate cost item, NOT a travel leg using pending from/to
         const porterM=line.match(/^(?:poter|potar|porter|portar)\s*[.:]?\s*(.+)/i);
@@ -4801,14 +4890,17 @@ function tpParseBlock(block){
             else if(amt>0&&(curFrom||lastTo)){
                 // Standalone charge (auto fix, etc.) — use available context
                 const fromL=curFrom||lastTo||'Unknown';
+                // Try to extract trailing note from line
+                const{loc:lineLocClean,notes:lineNotes}=tpSplitLocAndNotes(line);
                 const toL=curTo||gReason||mode;
-                const desc=fromL+' - '+(gReason||mode||'charge');
-                legs.push(tpMakeLeg(curDate||'',fromL,toL==='Unknown'?gReason||mode||'Unknown':toL,amt,mode,sender,gReason,line));
+                legs.push(tpMakeLeg(curDate||'',fromL,toL==='Unknown'?gReason||mode||'Unknown':toL,amt,mode,sender,lineNotes||gReason,line));
                 lastTo=fromL;
             } else {
-                // Standalone charge with no From/To context (e.g. "Projector pickup ₹130")
-                const desc=tpCleanLoc(line);
-                legs.push(tpMakeLeg(curDate||'',desc,gReason||mode||'charge',amt,mode,sender,gReason,line));
+                // Standalone charge with no From/To context (e.g. "Projector pickup ₹130" or "Santacruz BJP office 109+₹20 luggage")
+                const{loc:lineLocClean,notes:lineNotes}=tpSplitLocAndNotes(line);
+                const fromLoc=tpCleanLoc(lineLocClean);
+                legs.push(tpMakeLeg(curDate||'',fromLoc,gReason||mode||'charge',amt,mode,sender,lineNotes||gReason,line));
+                lastTo=fromLoc;
             }
         }
     }
@@ -4899,6 +4991,7 @@ TP_SAMPLES[1]=`[15:53, 24/04/2026] +91 96161 25066: 21/04/26\n\nOg to Ajanta \u2
 TP_SAMPLES[2]=`Date: 9/2/2026\nFrom: Kherwadi Office\nTo: St Regis Parel\nAmount: \u20B9602\nMode: porter\nParking toll extra: \u20B9100\nTotal: \u20B9702\nReason: Event Setup`;
 TP_SAMPLES[3]=`8/2/26\nThane to Satkar \u20B946\nSatkar to Mantra \u20B930\nMantra to Satkar \u20B935\nSatkar to Thane \u20B949\nTotal: \u20B9160\n\n9/2/26\nThane to Satkar \u20B945\nSatkar to Thane \u20B948\nTotal: \u20B993`;
 TP_SAMPLES[4]=`[15:30, 24/04/2026] +91 76664 13858: 08/02/2026\n\nOg to Kurla\nAmount: \u20B960\n\nKurla to Thane\nAmount: \u20B985\n\nThane to Pamclab\nAmount: \u20B990\n\nPamclab to Satkar\nMode: porter\nAmount: \u20B9385\n\nSatkar to Thane\nAmount: \u20B975`;
+TP_SAMPLES[5]=`4/5/2026\nOg to Santacruz BJP office 99+\u20B920 luggage\nSantacruz BJP office 109+\u20B920 luggage\nTotal amount 248`;
 
 // ==================== TRAVEL PARSER UI ====================
 function parseAndAppendTravel(){
@@ -5117,7 +5210,7 @@ function renderTPLegsTable(filtered){
         </div></div>`;
     if(!filtered.length){html+=`<div class="tp-empty-state"><div class="tp-big-icon">\uD83D\uDD0D</div>No travel legs match your filter.</div>`;
     }else{
-        html+=`<div class="tp-scroll-box"><table><thead><tr><th style="width:36px;"><input type="checkbox" onchange="tpToggleAllLegs(this.checked)"></th><th>Date</th><th>From</th><th>To</th><th>Mode</th><th style=width:120px;min-width:120px;">\u20B9</th><th>Person</th><th>Notes</th><th style="width:40px;"></th></tr></thead><tbody>`;
+        html+=`<div class="tp-scroll-box"><table><thead><tr><th style="width:36px;"><input type="checkbox" onchange="tpToggleAllLegs(this.checked)"></th><th>Date</th><th>From</th><th>To</th><th>Mode</th><th style="width:80px;">\u20B9</th><th>Person</th><th>Notes</th><th style="width:40px;"></th></tr></thead><tbody>`;
         filtered.forEach(leg=>{
             const cc=leg.confidence>=80?'tp-conf-high':leg.confidence>=50?'tp-conf-med':'tp-conf-low';
             const role=tpLookupRole(leg.sender);const rc=tpRoleColor(role);
@@ -5502,6 +5595,8 @@ document.addEventListener('keydown', function(e) {
     pushTimer = setTimeout(doPush, DEBOUNCE_MS);
   }
 
+  let pushRetryCount = 0;
+
   async function doPush(){
     pushTimer = null;
     if (isPushing) { pushQueued = true; return; }
@@ -5520,12 +5615,19 @@ document.addEventListener('keydown', function(e) {
       // Update etag so the next poll doesn't immediately re-pull our own write
       const et = res.headers.get("ETag");
       if (et) lastEtag = et;
+      pushRetryCount = 0;
       setBadge("Synced", "#10b981");
     } catch(err){
       console.error("Push failed", err);
       // Re-queue what we tried so it isn't lost
       Object.keys(filesToSend).forEach(f => { if (!pendingFiles[f]) pendingFiles[f] = filesToSend[f]; });
       setBadge("Offline", "#ef4444");
+      // Exponential backoff retry (max 60s)
+      pushRetryCount++;
+      const delay = Math.min(60000, 2000 * Math.pow(2, pushRetryCount - 1));
+      if (navigator.onLine !== false) {
+        setTimeout(doPush, delay);
+      }
     } finally {
       isPushing = false;
       if (pushQueued) { pushQueued = false; setTimeout(doPush, 100); }
@@ -5552,6 +5654,15 @@ document.addEventListener('keydown', function(e) {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") flushPendingWrites();
     else pollNow();
+  });
+
+  // ===== NETWORK ONLINE / OFFLINE =====
+  window.addEventListener("online", () => {
+    setBadge("Reconnected...", "#f59e0b");
+    setTimeout(manualCloudSync, 500);
+  });
+  window.addEventListener("offline", () => {
+    setBadge("Offline", "#ef4444");
   });
 
   // ===== PULL (poll) =====
