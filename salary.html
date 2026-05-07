@@ -642,7 +642,8 @@
         .tp-day-row .tp-day-date { color: var(--text-muted); font-weight: 600; }
         .tp-day-row .tp-day-total { font-weight: 800; color: #10b981; }
         .tp-day-row .tp-day-legs { font-size: 11px; color: var(--text-muted); }
-        .tp-scroll-box { max-height: 500px; overflow-y: auto; border-radius: 14px; border: 1px solid var(--border-color); }
+        .tp-scroll-box { max-height: 500px; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 14px; border: 1px solid var(--border-color); }
+        .tp-scroll-box table { min-width: 900px; }
         .tp-filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
         .tp-filter-bar input, .tp-filter-bar select { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 14px; color: var(--text-main); font-family: inherit; font-size: 13px; }
         .tp-filter-bar input:focus, .tp-filter-bar select:focus { outline: none; border-color: var(--accent-primary); }
@@ -4705,7 +4706,7 @@ function tpRoleLabel(cat){
 // ---- Amount blacklist ----
 const TP_AMT_BL=[
     /\b\d+\s*(?:person|people|man|men|ticket|tiket|item|bag|box|pc|nos?|unit|km|kg|hr|hrs?|min|day|days|month|year)\b/i,
-    /\b\d{4,}\b/,
+    /\b\d{5,}\b/,
     /^(?:boy|boys)\s+[A-Za-z]/i
 ];
 // ---- Date extract ----
@@ -4730,10 +4731,10 @@ function tpExtractAmount(text){
     if((m=s.match(/(\d{1,5})\s*\/\s*$/)))return parseInt(m[1]);
     if((m=s.match(/(\d{1,5})\s*\/\s/)))return parseInt(m[1]);
     if((m=s.match(/(?:total|totel|fare\s*amount|total\s*amount)\s*[.]*\s*(\d{1,5})/i)))return parseInt(m[1]);
-    if((m=s.match(/^(?:\s*)(\d{2,5})\s*$/)))return parseInt(m[1]);
+    if((m=s.match(/^(?:\s*)(\d{1,5})\s*$/)))return parseInt(m[1]);
     if((m=s.match(/^(.+?)\s+(\d{1,5})\s*$/))){
         const loc=m[1].trim(),num=parseInt(m[2]);
-        if(loc.length>=2&&loc.length<=30&&!/\d/.test(loc))return num;
+        if(loc.length>=2&&loc.length<=60&&!/\d/.test(loc))return num;
     }
     return 0;
 }
@@ -4842,8 +4843,35 @@ function tpParseBlock(block){
         if(/^(?:boy|boys)\s+[A-Za-z]/i.test(line))continue;
         if(/^(?:tot\w+|fare\s*amount|total\s*amount)/.test(lower)){curFrom=null;curTo=null;curMode='other';continue;}
         const date=tpExtractDate(line);if(date){curDate=date;continue;}
+        const fullFromTo = line.match(/^(?:from|form|frm)\s*[.:]?\s*(.+?)\s+\b(?:to|t[o0])\b\s*[.:]?\s*(.+?)$/i);
+        if(fullFromTo && !/^totel|^total/.test(lower)){
+            const fL=tpCleanLoc(fullFromTo[1]),restP=fullFromTo[2];const amt=tpExtractAmount(restP);
+            if(amt>0){
+                const{loc:toLocRaw,notes:legNotes}=tpSplitLocAndNotes(restP);
+                const toL=tpCleanLoc(toLocRaw);
+                legs.push(tpMakeLeg(curDate||'',fL,toL,amt,tpGuessMode(line),sender,legNotes||gReason,line));
+                lastTo=toL;curFrom=null;curTo=null;curMode='other';
+                continue;
+            } else {
+                curFrom=fL;
+                curTo=tpCleanLoc(restP);
+                curMode=tpGuessMode(line);
+                continue;
+            }
+        }
         const fm=line.match(/^(?:from|form|frm)\s*[.:]?\s*(.+)/i);
-        if(fm){curFrom=tpCleanLoc(fm[1]);curMode=tpGuessMode(line);continue;}
+        if(fm){
+            const fmAmt = tpExtractAmount(fm[1]);
+            if(fmAmt > 0) {
+                const {loc: rawLoc, notes: n} = tpSplitLocAndNotes(fm[1]);
+                const cln = tpCleanLoc(rawLoc);
+                legs.push(tpMakeLeg(curDate||'', curFrom||lastTo||'Unknown', cln, fmAmt, tpGuessMode(line), sender, n||gReason, line));
+                lastTo = cln; curFrom = null; curTo = null; curMode = 'other';
+            } else {
+                curFrom=tpCleanLoc(fm[1]);curMode=tpGuessMode(line);
+            }
+            continue;
+        }
         const tm=line.match(/^(?:to|t[o0])\s*[.:]?\s*(.+)$/i);
         if(tm&&!/^totel|^total/.test(lower)){
             const locP=tm[1];const amt=tpExtractAmount(locP);
@@ -5210,7 +5238,7 @@ function renderTPLegsTable(filtered){
         </div></div>`;
     if(!filtered.length){html+=`<div class="tp-empty-state"><div class="tp-big-icon">\uD83D\uDD0D</div>No travel legs match your filter.</div>`;
     }else{
-        html+=`<div class="tp-scroll-box"><table><thead><tr><th style="width:36px;"><input type="checkbox" onchange="tpToggleAllLegs(this.checked)"></th><th>Date</th><th>From</th><th>To</th><th>Mode</th><th style="width:80px;">\u20B9</th><th>Person</th><th>Notes</th><th style="width:40px;"></th></tr></thead><tbody>`;
+        html+=`<div class="tp-scroll-box"><table><thead><tr><th style="width:36px;"><input type="checkbox" onchange="tpToggleAllLegs(this.checked)"></th><th>Date</th><th>From</th><th>To</th><th>Mode</th><th style="width:110px;">\u20B9</th><th>Person</th><th>Notes</th><th style="width:40px;"></th></tr></thead><tbody>`;
         filtered.forEach(leg=>{
             const cc=leg.confidence>=80?'tp-conf-high':leg.confidence>=50?'tp-conf-med':'tp-conf-low';
             const role=tpLookupRole(leg.sender);const rc=tpRoleColor(role);
@@ -5219,7 +5247,7 @@ function renderTPLegsTable(filtered){
                 <td><input class="tp-editable" value="${escapeHtml(leg.from)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','from',this.value)"></td>
                 <td><input class="tp-editable" value="${escapeHtml(leg.to)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','to',this.value)"></td>
                 <td><select class="tp-editable" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','mode',this.value)">${['auto','taxi','porter','train','bus','bike','tempo','metro','other'].map(m=>`<option value="${m}"${leg.mode===m?' selected':''}>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('')}</select></td>
-                <td><input class="tp-editable" type="number" value="${leg.amount}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','amount',parseInt(this.value)||0)"></td>
+                <td><input class="tp-editable" type="number" style="padding:8px 4px;text-align:center;" value="${leg.amount}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','amount',parseInt(this.value)||0)"></td>
                 <td><div style="display:flex;align-items:center;gap:4px;"><input class="tp-editable" value="${escapeHtml(leg.sender)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','sender',this.value)" style="flex:1;"><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:800;background:${rc.bg};color:${rc.text};border:1px solid ${rc.border};">${tpRoleLabel(role)}</span></div></td>
                 <td><input class="tp-editable" value="${escapeHtml(leg.notes)}" onchange="tpUpdateLeg('${escapeHtml(leg.id)}','notes',this.value)"></td>
                 <td><button class="tp-remove-btn" onclick="tpRemoveLeg('${escapeHtml(leg.id)}')">\u2715</button></td></tr>`;
