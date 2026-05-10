@@ -5249,5 +5249,455 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   END AI CALLS PATCH
   ══════════════════════════════════════════════════════════════════════
 -->
+  <!--
+  ══════════════════════════════════════════════════════════════════════
+  AI CALLS — DEBUG + FIX PATCH
+  Paste this block AFTER the ai-calls-patch block, still before </body>
+  Fixes: invalid params, auth format, CORS, shows real error reason
+  ══════════════════════════════════════════════════════════════════════
+-->
+<script>
+(function () {
+  'use strict';
+
+  var BLAND_TOKEN_KEY = 'carnival_bland_api_key';
+
+  function getToken() { return localStorage.getItem(BLAND_TOKEN_KEY) || ''; }
+
+  // ── SHOW REAL ERROR ───────────────────────────────────────────────────────
+  function showError(title, detail) {
+    // Remove any existing error overlay
+    var old = document.getElementById('aiErrOverlay');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id  = 'aiErrOverlay';
+    overlay.style.cssText = [
+      'position:fixed','top:0','left:0','width:100%','height:100%',
+      'background:rgba(0,0,0,0.75)','z-index:9999',
+      'display:flex','align-items:center','justify-content:center','padding:16px'
+    ].join(';');
+
+    overlay.innerHTML =
+      '<div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;max-width:520px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,0.5);font-family:\'Segoe UI\',system-ui,sans-serif">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">' +
+          '<span style="font-size:1.6em">🚨</span>' +
+          '<span style="font-size:1em;font-weight:800;color:var(--danger-light)">Call Failed — Reason</span>' +
+        '</div>' +
+        '<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:12px;margin-bottom:14px">' +
+          '<div style="font-size:0.82em;font-weight:700;color:var(--text);margin-bottom:6px">' + escH(title) + '</div>' +
+          '<pre style="font-size:0.72em;color:var(--danger-light);white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto;margin:0;font-family:monospace">' + escH(detail) + '</pre>' +
+        '</div>' +
+        '<div id="aiErrHelp" style="font-size:0.77em;color:var(--text-muted);line-height:1.6;margin-bottom:14px"></div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">' +
+          '<button onclick="document.getElementById(\'aiErrOverlay\').remove()" style="padding:9px 18px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text-muted);font-weight:700;cursor:pointer;font-size:0.85em">Close</button>' +
+          '<button onclick="openAICallSettings();document.getElementById(\'aiErrOverlay\').remove()" style="padding:9px 18px;border:none;border-radius:9px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-size:0.85em">⚙ Check API Key</button>' +
+          '<button onclick="runDiagnostic()" style="padding:9px 18px;border:none;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-weight:700;cursor:pointer;font-size:0.85em">🔍 Run Diagnostic</button>' +
+        '</div>' +
+      '</div>';
+
+    // Populate helpful hints based on the error
+    document.body.appendChild(overlay);
+    var helpEl = document.getElementById('aiErrHelp');
+    if (helpEl) helpEl.innerHTML = buildHelp(title, detail);
+
+    overlay.addEventListener('click', function(e){ if (e.target === overlay) overlay.remove(); });
+  }
+
+  function buildHelp(title, detail) {
+    var d = (detail || '').toLowerCase();
+    var t = (title || '').toLowerCase();
+
+    if (d.includes('failed to fetch') || d.includes('networkerror') || d.includes('cors')) {
+      return '<b style="color:var(--accent-light)">🌐 Network / CORS error</b><br>' +
+        'Your browser blocked the request to Bland.ai. Common causes:<br>' +
+        '• Ad-blocker or privacy extension blocking the domain<br>' +
+        '• Try opening in an Incognito tab<br>' +
+        '• Disable extensions and retry<br>' +
+        '• If on a corporate network, the proxy may be blocking it';
+    }
+    if (d.includes('401') || d.includes('unauthorized') || d.includes('invalid api key') || d.includes('invalid key')) {
+      return '<b style="color:var(--accent-light)">🔑 Invalid API Key</b><br>' +
+        '• Go to <a href="https://bland.ai" target="_blank" style="color:var(--primary-light)">bland.ai</a> → Dashboard → API Keys<br>' +
+        '• Copy the key and paste it again in ⚙ Settings<br>' +
+        '• Make sure there are no extra spaces at the start or end';
+    }
+    if (d.includes('400') || d.includes('bad request') || d.includes('invalid')) {
+      return '<b style="color:var(--accent-light)">⚠ Bad Request (400)</b><br>' +
+        'One of the call parameters was rejected by Bland.ai.<br>' +
+        'The patch has already stripped out known bad params. Click <b>Run Diagnostic</b> to test with the absolute minimum payload.';
+    }
+    if (d.includes('402') || d.includes('payment') || d.includes('credits')) {
+      return '<b style="color:var(--accent-light)">💳 Insufficient Credits</b><br>' +
+        'Your Bland.ai account is out of call credits. Log in at bland.ai and top up.';
+    }
+    if (d.includes('429') || d.includes('rate limit')) {
+      return '<b style="color:var(--accent-light)">⏳ Rate Limited</b><br>' +
+        'Too many calls too quickly. Wait a minute and try again.';
+    }
+    if (d.includes('phone') || d.includes('number')) {
+      return '<b style="color:var(--accent-light)">📞 Phone Number Issue</b><br>' +
+        '• Indian numbers must be 10 digits after +91<br>' +
+        '• Example: +91 98765 43210<br>' +
+        '• Bland.ai may not yet support all Indian carrier prefixes';
+    }
+    return '<b>💡 Tip:</b> Click <b>Run Diagnostic</b> below to send a minimal test call and see the exact API response.';
+  }
+
+  function escH(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── DIAGNOSTIC TOOL ───────────────────────────────────────────────────────
+  window.runDiagnostic = async function() {
+    var token = getToken();
+    if (!token) { openAICallSettings(); return; }
+
+    var diagEl = document.getElementById('aiErrHelp');
+    if (diagEl) diagEl.innerHTML = '<span style="color:var(--accent-light)">⏳ Running diagnostic…</span>';
+
+    var results = [];
+
+    // Test 1: GET /me or /calls — check auth
+    try {
+      var r1 = await fetch('https://api.bland.ai/v1/calls?limit=1', {
+        headers: { 'authorization': token }
+      });
+      results.push({ test: 'Auth check (no Bearer)', status: r1.status, ok: r1.ok });
+    } catch(e) {
+      results.push({ test: 'Auth check (no Bearer)', status: 'NETWORK ERROR', ok: false, err: e.message });
+    }
+
+    // Test 2: Same but with Bearer prefix
+    try {
+      var r2 = await fetch('https://api.bland.ai/v1/calls?limit=1', {
+        headers: { 'authorization': 'Bearer ' + token }
+      });
+      results.push({ test: 'Auth check (with Bearer)', status: r2.status, ok: r2.ok });
+    } catch(e) {
+      results.push({ test: 'Auth check (with Bearer)', status: 'NETWORK ERROR', ok: false, err: e.message });
+    }
+
+    // Display results
+    var html = '<b style="color:var(--text)">Diagnostic Results:</b><br><br>';
+    results.forEach(function(r) {
+      var icon  = r.ok ? '✅' : '❌';
+      var color = r.ok ? 'var(--success-light)' : 'var(--danger-light)';
+      html += '<span style="color:' + color + '">' + icon + ' ' + escH(r.test) + ' → HTTP ' + escH(r.status) + (r.err ? ' (' + escH(r.err) + ')' : '') + '</span><br>';
+    });
+
+    // Determine what's working
+    var authOk   = results.find(function(r){ return r.test.includes('no Bearer') && r.ok; });
+    var bearerOk = results.find(function(r){ return r.test.includes('with Bearer') && r.ok; });
+    var netFail  = results.every(function(r){ return String(r.status).includes('NETWORK'); });
+
+    if (netFail) {
+      html += '<br><b style="color:var(--accent-light)">→ Network blocked.</b> Try disabling your ad-blocker or VPN.';
+    } else if (authOk) {
+      html += '<br><b style="color:var(--success-light)">→ API key is valid.</b> Setting preferred auth format…';
+      localStorage.setItem('carnival_bland_auth_format', 'plain');
+    } else if (bearerOk) {
+      html += '<br><b style="color:var(--success-light)">→ API key works with Bearer prefix.</b> Updating setting…';
+      localStorage.setItem('carnival_bland_auth_format', 'bearer');
+    } else {
+      html += '<br><b style="color:var(--danger-light)">→ API key rejected on both formats.</b> Please generate a new key on bland.ai.';
+    }
+
+    if (diagEl) diagEl.innerHTML = html;
+
+    // If auth works, patch the auth header and suggest retrying
+    if (authOk || bearerOk) {
+      setTimeout(function(){
+        var overlay = document.getElementById('aiErrOverlay');
+        if (overlay) overlay.remove();
+        showToast('Diagnostic complete — auth format updated. Please try calling again.', 'success');
+      }, 2000);
+    }
+  };
+
+  // ── OVERRIDE confirmAICall with robust version ────────────────────────────
+  window.confirmAICall = async function(idx, ph) {
+    var p = payments[idx];
+    if (!p) return;
+
+    var token   = getToken();
+    if (!token) { openAICallSettings(); return; }
+
+    var script  = (document.getElementById('aiCallScript') || {}).value || '';
+    var voice   = (document.getElementById('aiCallVoice')  || {}).value || 'maya';
+    var maxDur  = parseInt(((document.getElementById('aiCallDuration') || {}).value || '2'), 10) || 2;
+
+    script = script.trim();
+    if (!script) { showToast('Call script is empty', 'error'); return; }
+
+    var btn = document.getElementById('aiConfirmCallBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '&#128222; Dialling…'; }
+
+    // Determine auth format (from diagnostic or default)
+    var authFmt = localStorage.getItem('carnival_bland_auth_format') || 'plain';
+    var authHeader = authFmt === 'bearer' ? ('Bearer ' + token) : token;
+
+    // Minimal payload — no optional/possibly-unsupported fields
+    var payload = {
+      phone_number: '+91' + ph,
+      task: script,
+      voice: voice,
+      max_duration: maxDur,
+      wait_for_greeting: true,
+      record: true
+    };
+
+    var rawResponse = '';
+    var httpStatus  = 0;
+
+    try {
+      var res  = await fetch('https://api.bland.ai/v1/calls', {
+        method: 'POST',
+        headers: { 'authorization': authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      httpStatus  = res.status;
+      rawResponse = await res.text();
+
+      if (!res.ok) {
+        // Try Bearer prefix automatically if first attempt was plain and got 401
+        if (res.status === 401 && authFmt === 'plain') {
+          var res2 = await fetch('https://api.bland.ai/v1/calls', {
+            method: 'POST',
+            headers: { 'authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res2.ok) {
+            localStorage.setItem('carnival_bland_auth_format', 'bearer');
+            rawResponse = await res2.text();
+            res = res2;
+            httpStatus = res2.status;
+          } else {
+            rawResponse = await res2.text();
+          }
+        }
+      }
+
+      if (!res.ok) {
+        var parsed = {};
+        try { parsed = JSON.parse(rawResponse); } catch(pe) {}
+        var errMsg = parsed.message || parsed.error || parsed.errors || rawResponse || ('HTTP ' + httpStatus);
+        if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
+        showError('HTTP ' + httpStatus + ' from Bland.ai', typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg, null, 2));
+        return;
+      }
+
+      // Success
+      var data   = {};
+      try { data = JSON.parse(rawResponse); } catch(pe) {}
+      var callId = data.call_id || data.id || '';
+
+      // Log to history
+      var history = [];
+      try { history = JSON.parse(localStorage.getItem('carnival_ai_call_history') || '[]'); } catch(e) {}
+      history.unshift({
+        id: callId, ts: Date.now(), clientName: p.clientName,
+        invoiceNo: p.invoiceNo || '', phone: '+91' + ph,
+        company: p.company || '', balance: parseFloat(p.balance || 0),
+        status: 'queued', voice: voice, duration: 0,
+        scriptSnip: script.substring(0, 160)
+      });
+      try { localStorage.setItem('carnival_ai_call_history', JSON.stringify(history.slice(0, 300))); } catch(e) {}
+
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
+      closeModal('aiCallModal');
+      showToast('📞 Call placed for ' + p.clientName.split(' ').slice(0,3).join(' ') + '!', 'success');
+
+      // Update FAB badge
+      var fabBtn = document.querySelector('#aiCallFab .ai-fab-primary');
+      if (fabBtn) {
+        var todayCount = history.filter(function(c){ return new Date(c.ts).toDateString() === new Date().toDateString(); }).length;
+        fabBtn.innerHTML = '&#128222; <span class="ai-fab-label">Call History (' + todayCount + ')</span>';
+      }
+
+      // Poll status
+      if (callId) {
+        setTimeout(function(){ pollCallStatusFixed(callId, authHeader); }, 20000);
+      }
+
+    } catch(networkErr) {
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
+      showError('Network Error — Request Blocked', networkErr.message + '\n\nThis usually means:\n• An ad-blocker or extension is blocking bland.ai\n• A CORS policy is preventing the browser request\n• No internet connection');
+    }
+  };
+
+  // ── POLL STATUS (with correct auth) ──────────────────────────────────────
+  async function pollCallStatusFixed(callId, authHeader) {
+    try {
+      var res  = await fetch('https://api.bland.ai/v1/calls/' + callId, {
+        headers: { 'authorization': authHeader }
+      });
+      if (!res.ok) return;
+      var data   = await res.json();
+      var status = data.status || data.call_status || 'unknown';
+      var dur    = parseFloat(data.call_length || data.duration || 0);
+
+      var h = [];
+      try { h = JSON.parse(localStorage.getItem('carnival_ai_call_history') || '[]'); } catch(e) {}
+      var entry = h.find(function(e){ return e.id === callId; });
+      if (entry) {
+        entry.status   = status;
+        entry.duration = dur;
+        if (data.transcripts && data.transcripts.length) entry.hasTranscript = true;
+        try { localStorage.setItem('carnival_ai_call_history', JSON.stringify(h)); } catch(e) {}
+      }
+
+      var terminal = ['completed','failed','busy','no-answer','voicemail'];
+      if (!terminal.includes(status)) {
+        setTimeout(function(){ pollCallStatusFixed(callId, authHeader); }, 12000);
+      } else if (status === 'completed') {
+        showToast('✅ Call completed (' + Math.round(dur) + 's)', 'success');
+      }
+    } catch(e) { /* silent */ }
+  }
+
+  // ── ALSO FIX BULK CALLS ───────────────────────────────────────────────────
+  var _origBulk = window.confirmBulkCall;
+  window.confirmBulkCall = async function() {
+    // Make sure auth format is determined before bulk runs
+    var token = getToken();
+    if (!token) { openAICallSettings(); return; }
+
+    var checked = Array.from(document.querySelectorAll('.bulk-chk:checked'));
+    if (!checked.length) { showToast('Select at least one client', 'error'); return; }
+
+    var authFmt    = localStorage.getItem('carnival_bland_auth_format') || 'plain';
+    var authHeader = authFmt === 'bearer' ? ('Bearer ' + token) : token;
+
+    var customNote = (document.getElementById('bulkCustomNote') || {}).value || '';
+    var btn = document.querySelector('#bulkCallModal .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Calling…'; }
+    closeModal('bulkCallModal');
+
+    var DELAY = 5000;
+    var success = 0, failed = 0;
+
+    for (var i = 0; i < checked.length; i++) {
+      var idx = parseInt(checked[i].dataset.idx);
+      var p   = payments[idx];
+      if (!p) continue;
+
+      var ph = (p.phone || '').replace(/\D/g,'').slice(-10);
+      if (!ph || ph.length < 10) continue;
+
+      var script = buildBulkScript(p, customNote);
+
+      try {
+        var payload = {
+          phone_number: '+91' + ph,
+          task: script,
+          voice: 'maya',
+          max_duration: 2,
+          wait_for_greeting: true,
+          record: true
+        };
+
+        var res = await fetch('https://api.bland.ai/v1/calls', {
+          method: 'POST',
+          headers: { 'authorization': authHeader, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        // Auto-retry with Bearer if 401
+        if (res.status === 401 && authFmt === 'plain') {
+          authHeader = 'Bearer ' + token;
+          authFmt    = 'bearer';
+          localStorage.setItem('carnival_bland_auth_format', 'bearer');
+          res = await fetch('https://api.bland.ai/v1/calls', {
+            method: 'POST',
+            headers: { 'authorization': authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (res.ok) {
+          var data   = await res.json();
+          var callId = data.call_id || data.id || '';
+          var h = [];
+          try { h = JSON.parse(localStorage.getItem('carnival_ai_call_history') || '[]'); } catch(e) {}
+          h.unshift({ id:callId, ts:Date.now(), clientName:p.clientName, invoiceNo:p.invoiceNo||'',
+            phone:'+91'+ph, company:p.company||'', balance:parseFloat(p.balance||0),
+            status:'queued', voice:'maya', duration:0, scriptSnip:script.substring(0,160) });
+          try { localStorage.setItem('carnival_ai_call_history', JSON.stringify(h.slice(0,300))); } catch(e) {}
+          success++;
+          showToast('📞 ' + (i+1) + '/' + checked.length + ': ' + p.clientName.split(' ').slice(0,2).join(' '), 'success');
+          if (callId) {
+            setTimeout((function(id, ah){ return function(){ pollCallStatusFixed(id, ah); }; })(callId, authHeader), 20000 + i * DELAY);
+          }
+        } else {
+          failed++;
+          var txt = await res.text();
+          showToast('Failed: ' + p.clientName.split(' ')[0] + ' — ' + res.status, 'error');
+        }
+      } catch(err) {
+        failed++;
+        showToast('Network error for ' + p.clientName.split(' ')[0], 'error');
+      }
+
+      if (i < checked.length - 1) await new Promise(function(r){ setTimeout(r, DELAY); });
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = '🤖 Start Bulk Calls'; }
+    showToast('Bulk calls done: ' + success + ' placed, ' + failed + ' failed', success > 0 ? 'success' : 'error');
+  };
+
+  function buildBulkScript(p, customNote) {
+    var bal    = parseFloat(p.balance || 0);
+    var invStr = p.invoiceNo ? 'Invoice number ' + p.invoiceNo : 'your pending invoice';
+    var balStr = 'Rupees ' + bal.toLocaleString('en-IN', {maximumFractionDigits:0});
+    var callerName = localStorage.getItem('carnival_bland_caller_name') || 'Carnival Accounts';
+    return 'Hello! May I please speak with someone from the accounts team at ' + p.clientName + '? ' +
+      'This is a payment reminder from ' + callerName + '. ' +
+      'We are calling regarding ' + invStr + ' for ' + balStr + ' which is currently outstanding. ' +
+      'Kindly process this at the earliest convenience. ' +
+      (customNote ? customNote + '. ' : '') +
+      'Thank you for your partnership with Carnival!';
+  }
+
+  // ── ADD "RUN DIAGNOSTIC" BUTTON TO SETTINGS MODAL ─────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    injectDiagBtn();
+  });
+  // Also try immediately if DOM already loaded
+  if (document.readyState !== 'loading') {
+    setTimeout(injectDiagBtn, 300);
+  }
+
+  function injectDiagBtn() {
+    var modal = document.getElementById('aiSettingsModal');
+    if (!modal || modal.dataset.diagInjected) return;
+    modal.dataset.diagInjected = '1';
+
+    // Watch for modal open
+    if (window.MutationObserver) {
+      new MutationObserver(function() {
+        if (!modal.classList.contains('active')) return;
+        var footer = modal.querySelector('.modal-content > div:last-child');
+        if (!footer || footer.querySelector('.diag-btn-injected')) return;
+        var diagBtn = document.createElement('button');
+        diagBtn.className = 'btn btn-secondary btn-sm diag-btn-injected';
+        diagBtn.style.cssText = 'border-color:var(--primary);color:var(--primary-light);margin-right:auto';
+        diagBtn.innerHTML = '🔍 Run Diagnostic';
+        diagBtn.onclick = function(){ runDiagnostic(); closeModal('aiSettingsModal'); };
+        footer.insertBefore(diagBtn, footer.firstChild);
+      }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+  console.log('[AI Calls Fix] Loaded — robust error handling + auto auth-format detection active');
+
+})();
+</script>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  END AI CALLS DEBUG + FIX PATCH
+  ══════════════════════════════════════════════════════════════════════
+-->
 </body>
 </html>
