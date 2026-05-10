@@ -4443,7 +4443,13 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   var BLAND_TOKEN_KEY   = 'carnival_bland_api_key';
   var BLAND_CALLER_KEY  = 'carnival_bland_caller_name';
   var CALL_HISTORY_KEY  = 'carnival_ai_call_history';
-  var BLAND_API_BASE    = 'https://api.bland.ai/v1';  // ✅ FIXED
+    var BLAND_API_BASE    = 'https://api.bland.ai/v1';
+
+  // CORS PROXY — browsers block direct API calls from local files
+  var CORS_PROXY = 'https://corsproxy.io/?';
+  function blandFetch(path, options) {
+    return fetch(CORS_PROXY + encodeURIComponent(BLAND_API_BASE + path), options || {});
+  }
 
   function getBlandToken()  { return localStorage.getItem(BLAND_TOKEN_KEY)  || ''; }
   function getCallerName()  { return localStorage.getItem(BLAND_CALLER_KEY) || 'Carnival Accounts'; }
@@ -4556,7 +4562,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     try {
       // ✅ FIXED: Direct call to Bland.ai API with proper auth
-      var res = await fetch(BLAND_API_BASE + '/calls', {
+      var res = await blandFetch('/calls', {
         method: 'POST',
         headers: blandHeaders(token),
         body: JSON.stringify(payload)
@@ -4596,7 +4602,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     var token = getBlandToken();
     if (!token || !callId) return;
     try {
-      var res = await fetch(BLAND_API_BASE + '/calls/' + callId, {
+      var res = await blandFetch('/calls/' + callId, {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!res.ok) return;
@@ -4694,7 +4700,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       var script = buildScript(p, 'en', customNote);
       try {
         // ✅ FIXED: Direct to Bland.ai with proper auth
-        var res = await fetch(BLAND_API_BASE + '/calls', {
+        var res = await blandFetch('/calls', {
           method: 'POST',
           headers: blandHeaders(token),
           body: JSON.stringify({ phone_number:'+91'+ph, task:script, voice:'maya', max_duration:2, wait_for_greeting:true, record:true })
@@ -4742,7 +4748,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     try {
       // ✅ FIXED: Verify against real Bland.ai API
-      var res = await fetch(BLAND_API_BASE + '/calls?limit=1', {
+      var res = await blandFetch('/calls?limit=1', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (res.ok) {
