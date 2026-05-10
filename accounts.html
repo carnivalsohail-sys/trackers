@@ -1525,5 +1525,262 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderD(); upChip(); rfDL();
 });
 </script>
+  <!--
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║  PATCH: Opening Balance Anchor Fix                                   ║
+  ║  File:  accounts-patch-opening-anchor.html                          ║
+  ║  Apply: Paste the <script> block at the bottom of accounts.html     ║
+  ║         just before </body>                                          ║
+  ║                                                                      ║
+  ║  BUG FIXED:                                                         ║
+  ║  When a new day's WhatsApp message is saved, Sanju's stated          ║
+  ║  "Opening bal" was being stored as an `ob` anchor in the DB.        ║
+  ║  This broke the computed chain — if Sanju's opening was wrong       ║
+  ║  (e.g. he wrote 22748 instead of 21748), every subsequent day       ║
+  ║  would silently inherit the wrong base.                              ║
+  ║                                                                      ║
+  ║  FIX:                                                                ║
+  ║  1. computedBalanceBeforeDate() — derives what the app KNOWS        ║
+  ║     the opening should be from prior saved entries.                  ║
+  ║  2. doParse() — attaches computed opening to parsed object so       ║
+  ║     renderCalcCheck() can show a mismatch warning BEFORE save.      ║
+  ║  3. renderCalcCheck() — new "Opening Check" section shows           ║
+  ║     App-computed vs Sanju's stated opening with ✅/⚠ indicator.     ║
+  ║  4. saveParsed() — if prior data exists, does NOT write ob anchor;  ║
+  ║     the computed chain continues unbroken. ob anchor is only         ║
+  ║     written for the very first entry (no prior data at all).        ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+-->
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  HELPER: Compute running balance from all entries BEFORE a date
+//  Returns null if no prior data exists (clean slate)
+// ══════════════════════════════════════════════════════════════════
+function computedBalanceBeforeDate(targetDate) {
+  const prior = G().filter(r => r.date < targetDate);
+  if (!prior.length) return null;
+  return liveBalance(prior);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  PATCHED: doParse()
+//  Attaches _computedOpenBal to parsed so the calc checker can use it
+// ══════════════════════════════════════════════════════════════════
+window.doParse = function() {
+  const raw = document.getElementById('wm').value.trim();
+  const dt  = document.getElementById('pd').value;
+  const src = document.getElementById('ps').value;
+  if (!raw) { toast('Paste a message first', 'er'); return; }
+  if (!dt)  { toast('Select a date', 'er'); return; }
+
+  parsed = parseWA(raw, dt, src);
+  // Attach what the app knows the opening SHOULD be
+  parsed._computedOpenBal = computedBalanceBeforeDate(dt);
+
+  renderParsed();
+  renderCalcCheck();
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  PATCHED: renderCalcCheck()
+//  Adds "Opening Balance Check" block at the top
+// ══════════════════════════════════════════════════════════════════
+window.renderCalcCheck = function() {
+  if (!parsed) return;
+  const { errors: origErrors, steps, totalDeb, totalCred, calcClose } = checkCalcs(parsed);
+  const errors = origErrors.slice(); // copy so we can inject opening error
+
+  const box = document.getElementById('calc-check-box');
+
+  // ── Opening Balance Section ──────────────────────────────────
+  const computedOpen  = parsed._computedOpenBal;  // what the app computed
+  const sanjuOpen     = parsed.openBal;           // what Sanju wrote
+
+  let openCheckHtml = '';
+  let openingMismatch = false;
+
+  if (computedOpen !== null) {
+    // We have prior data — we KNOW what the opening should be
+    const diff = sanjuOpen !== null ? Math.abs(computedOpen - sanjuOpen) : null;
+    openingMismatch = diff !== null && diff > 1;
+
+    if (openingMismatch) {
+      errors.unshift({
+        msg: 'Opening balance mismatch with app's computed chain!',
+        detail: `App computed opening: ₹${computedOpen.toLocaleString('en-IN')} — Sanju wrote: ₹${sanjuOpen.toLocaleString('en-IN')} — Difference: ₹${diff.toLocaleString('en-IN')}`
+      });
+    }
+
+    openCheckHtml = `
+      <div style="margin-bottom:10px;padding:11px 13px;border-radius:9px;border:1px solid ${openingMismatch ? 'var(--red-b)' : 'var(--green-b)'};background:${openingMismatch ? 'var(--red-bg)' : 'var(--green-bg)'}">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:${openingMismatch ? 'var(--red2)' : 'var(--green2)'};margin-bottom:8px">
+          ${openingMismatch ? '⚠' : '✅'} Opening Balance Check
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:rgba(0,0,0,.2);border-radius:7px;padding:8px 11px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);margin-bottom:3px">App Computed</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--green2)">₹${computedOpen.toLocaleString('en-IN')}</div>
+            <div style="font-size:11px;color:var(--t4);margin-top:2px">from prior entries</div>
+          </div>
+          <div style="background:rgba(0,0,0,.2);border-radius:7px;padding:8px 11px">
+            <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);margin-bottom:3px">Sanju's Opening</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:${openingMismatch ? 'var(--red2)' : 'var(--green2)'}">
+              ${sanjuOpen !== null ? '₹' + sanjuOpen.toLocaleString('en-IN') : '—'}
+            </div>
+            <div style="font-size:11px;color:var(--t4);margin-top:2px">${openingMismatch ? `off by ₹${diff.toLocaleString('en-IN')}` : 'matches ✓'}</div>
+          </div>
+        </div>
+        ${openingMismatch ? `
+        <div style="margin-top:9px;padding:8px 10px;background:rgba(108,138,245,.12);border-radius:7px;font-size:12.5px;color:var(--blue2);font-weight:600">
+          💡 App will use its computed opening (₹${computedOpen.toLocaleString('en-IN')}) and ignore Sanju's figure.
+          Sanju's opening balance will NOT be saved as an anchor — the chain stays intact.
+        </div>` : ''}
+      </div>`;
+
+  } else if (sanjuOpen !== null) {
+    // No prior data — this is the first/only anchor, show info
+    openCheckHtml = `
+      <div style="margin-bottom:10px;padding:11px 13px;border-radius:9px;border:1px solid var(--blue-b);background:var(--blue-bg)">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue2);margin-bottom:5px">
+          🔑 First Entry — Opening Balance Anchor
+        </div>
+        <div style="font-size:13px;color:var(--t2)">No prior data found. Sanju's opening balance of
+          <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--blue2)">₹${sanjuOpen.toLocaleString('en-IN')}</span>
+          will be saved as the chain's starting anchor.
+        </div>
+      </div>`;
+  }
+
+  // ── Rebuild existing calc check with opening section prepended ──
+  const isOk = errors.length === 0;
+  let h = `<div class="calc-check ${isOk ? 'ok' : 'err'}">`;
+  h += `<div class="calc-check-title"><span>${isOk ? '✅' : '❌'}</span> Calculation Check: ${isOk ? 'All correct!' : errors.length + ' error(s) found!'}</div>`;
+
+  // Insert opening check inside the calc-check box
+  if (openCheckHtml) h += openCheckHtml;
+
+  steps.forEach(s => {
+    h += `<div class="calc-step"><span class="step-label">${s.label}</span><span class="step-val ${s.cls}">${s.val}</span></div>`;
+  });
+
+  if (errors.length) {
+    errors.forEach(err => {
+      h += `<div class="calc-mismatch">⚠ ${err.msg}<br><span style="font-weight:400;font-size:12px;opacity:.85">${err.detail}</span></div>`;
+    });
+    if (calcClose !== null) {
+      h += `<div style="margin-top:8px;padding:8px 10px;background:rgba(45,212,160,.12);border-radius:7px;font-size:12.5px;color:var(--green2);font-weight:700">✅ Will save with corrected closing: ₹${calcClose.toLocaleString('en-IN')}</div>`;
+    }
+  }
+  h += '</div>';
+  box.innerHTML = h;
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  PATCHED: saveParsed()
+//  Core fix: only write ob anchor when there is NO prior data.
+//  If prior data exists, strip ob from all saved entries so the
+//  computed chain is the sole source of truth.
+// ══════════════════════════════════════════════════════════════════
+window.saveParsed = function() {
+  if (!parsed) { toast('Nothing to save', 'er'); return; }
+  const { date, source, debits, credits, openBal, closeBal } = parsed;
+
+  // ── Determine true opening ────────────────────────────────────
+  const computedOpen  = computedBalanceBeforeDate(date);
+  const hasPriorData  = computedOpen !== null;
+
+  // Use app's computed opening if available, else fall back to Sanju's stated opening
+  const effectiveOpen = hasPriorData ? computedOpen : openBal;
+
+  // ── Warn if opening mismatch ──────────────────────────────────
+  if (hasPriorData && openBal !== null && Math.abs(computedOpen - openBal) > 1) {
+    toast(
+      `Opening mismatch! App uses ₹${computedOpen.toLocaleString('en-IN')} (computed), not Sanju's ₹${openBal.toLocaleString('en-IN')}`,
+      'inf'
+    );
+  }
+
+  // ── Compute correct closing ───────────────────────────────────
+  const totalDeb  = debits.reduce((s,e)=>s+e.amount, 0);
+  const totalCred = credits.reduce((s,e)=>s+e.amount, 0);
+  const calcClose = effectiveOpen !== null ? effectiveOpen - totalDeb + totalCred : closeBal;
+  const saveCb    = calcClose !== null ? calcClose : closeBal;
+
+  const d = G();
+  const ts = Date.now();
+  let idx = 0;
+
+  debits.forEach((e, i) => {
+    d.push({
+      id:       ts + idx++,
+      date,
+      category: 'ON ACC',
+      staff:    e.staff,
+      details:  e.details || '',
+      debit:    e.amount,
+      credit:   0,
+      source,
+      // Only set ob anchor on FIRST entry AND only if there's no prior data
+      ob:  (!hasPriorData && i === 0) ? openBal : null,
+      cb:  (i === debits.length - 1 && credits.length === 0) ? saveCb : null
+    });
+  });
+
+  credits.forEach((e, i) => {
+    d.push({
+      id:       ts + idx++,
+      date,
+      category: /\b(client)\b/i.test(e.name) ? 'CLIENT'
+               : /\b(mam|maam|ma'am|madam|transfer)\b/i.test(e.name) ? 'CLIENT'
+               : 'ADV',
+      staff:    e.name,
+      details:  e.details || '',
+      debit:    0,
+      credit:   e.amount,
+      source,
+      // Only set ob anchor on FIRST entry if no debits AND no prior data
+      ob:  (!hasPriorData && debits.length === 0 && i === 0) ? openBal : null,
+      cb:  i === credits.length - 1 ? saveCb : null
+    });
+  });
+
+  // Pure balance-only entry (no debits, no credits, just an opening balance)
+  if (!debits.length && !credits.length && openBal != null) {
+    d.push({
+      id:       ts,
+      date,
+      category: 'OTHER',
+      staff:    '',
+      details:  'Balance Entry',
+      debit:    0,
+      credit:   0,
+      source,
+      ob:  !hasPriorData ? openBal : null,
+      cb:  saveCb
+    });
+  }
+
+  Ps(d);
+
+  // ── Toast feedback ────────────────────────────────────────────
+  const hadCloseMismatch = parsed.closeBal !== null && saveCb !== null && Math.abs(parsed.closeBal - saveCb) > 1;
+  const hadOpenMismatch  = hasPriorData && openBal !== null && Math.abs(computedOpen - openBal) > 1;
+
+  if (hadOpenMismatch && hadCloseMismatch) {
+    toast(`Saved — opening corrected to ₹${computedOpen.toLocaleString('en-IN')}, closing to ₹${saveCb.toLocaleString('en-IN')}`, 'inf');
+  } else if (hadOpenMismatch) {
+    toast(`Saved — opening corrected (₹${computedOpen.toLocaleString('en-IN')} vs Sanju's ₹${openBal.toLocaleString('en-IN')})`, 'inf');
+  } else if (hadCloseMismatch) {
+    toast(`Saved with corrected closing: ₹${saveCb.toLocaleString('en-IN')} (Sanju wrote ₹${parsed.closeBal.toLocaleString('en-IN')})`, 'inf');
+  } else {
+    toast(`Saved: ${debits.length} debit${debits.length !== 1 ? 's' : ''} + ${credits.length} credit${credits.length !== 1 ? 's' : ''}`, 'ok');
+  }
+
+  clearP();
+  upChip();
+  rfDL();
+};
+</script>
 </body>
 </html>
