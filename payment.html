@@ -4638,7 +4638,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   var BLAND_TOKEN_KEY   = 'carnival_bland_api_key';
   var BLAND_CALLER_KEY  = 'carnival_bland_caller_name';
   var CALL_HISTORY_KEY  = 'carnival_ai_call_history';
-  var BLAND_API_BASE    = 'https://api.bland.ai/v1';
+  var BLAND_API_BASE    = 'http://localhost:3456/api/bland';
 
   // ── STORAGE ───────────────────────────────────────────────────────────────
   function getBlandToken()  { return localStorage.getItem(BLAND_TOKEN_KEY)  || ''; }
@@ -4820,7 +4820,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       var res = await fetch(BLAND_API_BASE + '/calls', {
         method: 'POST',
         headers: {
-          'authorization': token,
+          'x-bland-token': token,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -4879,7 +4879,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     if (!token || !callId) return;
     try {
       var res  = await fetch(BLAND_API_BASE + '/calls/' + callId, {
-        headers: { 'authorization': token }
+        headers: { 'x-bland-token': token }
       });
       if (!res.ok) return;
       var data = await res.json();
@@ -5360,8 +5360,8 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     // Test 1: GET /me or /calls — check auth
     try {
-      var r1 = await fetch('https://api.bland.ai/v1/calls?limit=1', {
-        headers: { 'authorization': token }
+      var r1 = await fetch('http://localhost:3456/api/bland/calls?limit=1', {
+        headers: { 'x-bland-token': token }
       });
       results.push({ test: 'Auth check (no Bearer)', status: r1.status, ok: r1.ok });
     } catch(e) {
@@ -5370,8 +5370,8 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     // Test 2: Same but with Bearer prefix
     try {
-      var r2 = await fetch('https://api.bland.ai/v1/calls?limit=1', {
-        headers: { 'authorization': 'Bearer ' + token }
+      var r2 = await fetch('http://localhost:3456/api/bland/calls?limit=1', {
+        headers: { 'x-bland-token': 'Bearer ' + token }
       });
       results.push({ test: 'Auth check (with Bearer)', status: r2.status, ok: r2.ok });
     } catch(e) {
@@ -5451,9 +5451,9 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     var httpStatus  = 0;
 
     try {
-      var res  = await fetch('https://api.bland.ai/v1/calls', {
+      var res  = await fetch('http://localhost:3456/api/bland/calls', {
         method: 'POST',
-        headers: { 'authorization': authHeader, 'Content-Type': 'application/json' },
+        headers: { 'x-bland-token': authHeader, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -5463,9 +5463,9 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       if (!res.ok) {
         // Try Bearer prefix automatically if first attempt was plain and got 401
         if (res.status === 401 && authFmt === 'plain') {
-          var res2 = await fetch('https://api.bland.ai/v1/calls', {
+          var res2 = await fetch('http://localhost:3456/api/bland/calls', {
             method: 'POST',
-            headers: { 'authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            headers: { 'x-bland-token': 'Bearer ' + token, 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
           if (res2.ok) {
@@ -5530,8 +5530,8 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   // ── POLL STATUS (with correct auth) ──────────────────────────────────────
   async function pollCallStatusFixed(callId, authHeader) {
     try {
-      var res  = await fetch('https://api.bland.ai/v1/calls/' + callId, {
-        headers: { 'authorization': authHeader }
+      var res  = await fetch('http://localhost:3456/api/bland/calls/' + callId, {
+        headers: { 'x-bland-token': authHeader }
       });
       if (!res.ok) return;
       var data   = await res.json();
@@ -5598,9 +5598,9 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
           record: true
         };
 
-        var res = await fetch('https://api.bland.ai/v1/calls', {
+        var res = await fetch('http://localhost:3456/api/bland/calls', {
           method: 'POST',
-          headers: { 'authorization': authHeader, 'Content-Type': 'application/json' },
+          headers: { 'x-bland-token': authHeader, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
@@ -5609,9 +5609,9 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
           authHeader = 'Bearer ' + token;
           authFmt    = 'bearer';
           localStorage.setItem('carnival_bland_auth_format', 'bearer');
-          res = await fetch('https://api.bland.ai/v1/calls', {
+          res = await fetch('http://localhost:3456/api/bland/calls', {
             method: 'POST',
-            headers: { 'authorization': authHeader, 'Content-Type': 'application/json' },
+            headers: { 'x-bland-token': authHeader, 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
         }
