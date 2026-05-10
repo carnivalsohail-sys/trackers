@@ -1781,6 +1781,347 @@ window.saveParsed = function() {
   upChip();
   rfDL();
 };
+<!--
+  ╔══════════════════════════════════════════════════════════════════════╗
+  ║  PATCH: Chain Repair Utility                                         ║
+  ║  File:  accounts-patch-chain-repair.html                            ║
+  ║  Apply: Paste the <script> block just before </body>                ║
+  ║         in accounts.html (AFTER the opening-anchor patch)           ║
+  ║                                                                      ║
+  ║  WHAT IT DOES:                                                       ║
+  ║  Adds a "🔧 Fix Chain" button in the topbar.                        ║
+  ║  When clicked, scans all saved entries, finds every ob anchor       ║
+  ║  after the first one, compares it to what the computed chain        ║
+  ║  would produce, and lets you strip them all in one click.           ║
+  ╚══════════════════════════════════════════════════════════════════════╝
+-->
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  INJECT "Fix Chain" BUTTON INTO TOPBAR
+// ══════════════════════════════════════════════════════════════════
+(function injectRepairButton() {
+  function tryInject() {
+    const topbarR = document.querySelector('.topbar-r');
+    if (!topbarR || document.getElementById('chain-repair-btn')) return;
+    const btn = document.createElement('div');
+    btn.id = 'chain-repair-btn';
+    btn.className = 'settings-btn';
+    btn.title = 'Scan & repair opening balance chain';
+    btn.textContent = '🔧';
+    btn.style.cssText = 'position:relative';
+    btn.onclick = openChainRepair;
+    // Insert before the settings gear button
+    topbarR.insertBefore(btn, topbarR.firstChild);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInject);
+  } else {
+    tryInject();
+  }
+})();
+
+// ══════════════════════════════════════════════════════════════════
+//  CORE SCAN: finds all orphan ob anchors
+//  Returns { firstAnchor, orphans[], summary }
+// ══════════════════════════════════════════════════════════════════
+function scanChain() {
+  const all = G().slice().sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
+
+  // Find the first legitimate ob anchor
+  const firstAnchorIdx = all.findIndex(r => r.ob != null);
+
+  if (firstAnchorIdx === -1) {
+    return { firstAnchor: null, orphans: [], entries: all, summary: 'no_anchors' };
+  }
+
+  const firstAnchor = all[firstAnchorIdx];
+
+  // Walk from the first anchor, track computed balance, collect orphans
+  let running = firstAnchor.ob;
+  const orphans = [];
+
+  for (let i = firstAnchorIdx; i < all.length; i++) {
+    const r = all[i];
+
+    if (i > firstAnchorIdx && r.ob != null) {
+      // This is an orphan anchor — compare stored vs computed
+      const diff = Math.abs(r.ob - running);
+      orphans.push({
+        entry:      r,
+        storedOb:   r.ob,
+        computedOb: running,
+        diff:       diff,
+        match:      diff <= 1,
+        date:       r.date,
+        staff:      r.staff || '—',
+        details:    r.details || '—'
+      });
+      // Do NOT reset running from r.ob — we deliberately ignore it for computation
+    }
+
+    // Apply this entry's debit/credit to the running balance
+    running -= (r.debit  || 0);
+    running += (r.credit || 0);
+  }
+
+  return {
+    firstAnchor,
+    orphans,
+    entries:    all,
+    finalBal:   running,
+    summary:    orphans.length === 0 ? 'clean' : 'dirty'
+  };
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  APPLY REPAIR: strips orphan ob anchors from the DB
+// ══════════════════════════════════════════════════════════════════
+function applyChainRepair(orphans) {
+  const orphanIds = new Set(orphans.map(o => o.entry.id));
+  const all = G();
+  let fixed = 0;
+
+  all.forEach(r => {
+    if (orphanIds.has(r.id) && r.ob != null) {
+      r.ob = null;
+      fixed++;
+    }
+  });
+
+  Ps(all);
+  return fixed;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  MODAL UI
+// ══════════════════════════════════════════════════════════════════
+function openChainRepair() {
+  const scan = scanChain();
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'chain-repair-modal';
+
+  modal.innerHTML = buildModalHTML(scan);
+
+  modal.addEventListener('click', e => {
+    if (e.target === modal) modal.remove();
+  });
+
+  document.body.appendChild(modal);
+}
+
+function buildModalHTML(scan) {
+  const { firstAnchor, orphans, summary, finalBal } = scan;
+
+  // ── Header ────────────────────────────────────────────────────
+  let headerBadge = '';
+  if (summary === 'no_anchors') {
+    headerBadge = `<span style="background:var(--amber-bg);color:var(--amber2);border:1px solid var(--amber-b);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700">⚠ No Anchor Found</span>`;
+  } else if (summary === 'clean') {
+    headerBadge = `<span style="background:var(--green-bg);color:var(--green2);border:1px solid var(--green-b);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700">✅ Chain is Clean</span>`;
+  } else {
+    const mismatches = orphans.filter(o => !o.match).length;
+    headerBadge = `<span style="background:var(--red-bg);color:var(--red2);border:1px solid var(--red-b);padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700">
+      ${orphans.length} Orphan Anchor${orphans.length !== 1 ? 's' : ''} Found${mismatches ? ' · ' + mismatches + ' mismatch' + (mismatches !== 1 ? 'es' : '') : ''}
+    </span>`;
+  }
+
+  // ── First anchor box ─────────────────────────────────────────
+  let firstAnchorHtml = '';
+  if (firstAnchor) {
+    firstAnchorHtml = `
+      <div style="padding:11px 14px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:9px;margin-bottom:14px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue2);margin-bottom:6px">🔑 Legitimate Root Anchor (kept)</div>
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Date</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--t1)">${fd(firstAnchor.date)}</div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Opening Balance</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--green2)">₹${firstAnchor.ob.toLocaleString('en-IN')}</div>
+          </div>
+          ${finalBal != null ? `<div>
+            <div style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Computed Final Balance</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--amber2)">₹${finalBal.toLocaleString('en-IN')}</div>
+          </div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  // ── No anchors state ─────────────────────────────────────────
+  if (summary === 'no_anchors') {
+    return `<div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">🔧 Chain Repair</div>
+        <button class="modal-close" onclick="document.getElementById('chain-repair-modal').remove()">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="padding:40px 20px;text-align:center">
+          <div style="font-size:40px;margin-bottom:12px">⚠️</div>
+          <div style="font-size:16px;font-weight:700;color:var(--amber2);margin-bottom:8px">No opening balance anchor found</div>
+          <div style="font-size:13px;color:var(--t3)">The database has no entries with an opening balance set.<br>Use the Manual tab to set an opening balance first.</div>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-g" onclick="document.getElementById('chain-repair-modal').remove()">Close</button></div>
+    </div>`;
+  }
+
+  // ── Clean state ──────────────────────────────────────────────
+  if (summary === 'clean') {
+    return `<div class="modal">
+      <div class="modal-head">
+        <div class="modal-title">🔧 Chain Repair</div>
+        <button class="modal-close" onclick="document.getElementById('chain-repair-modal').remove()">×</button>
+      </div>
+      <div class="modal-body">
+        ${firstAnchorHtml}
+        <div style="padding:30px 20px;text-align:center;background:var(--green-bg);border:1px solid var(--green-b);border-radius:var(--r2)">
+          <div style="font-size:36px;margin-bottom:10px">✅</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green2);margin-bottom:6px">Chain is Clean</div>
+          <div style="font-size:13px;color:var(--t3)">No orphan anchors found. All days are computed continuously<br>from the single root anchor above.</div>
+        </div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-p" onclick="document.getElementById('chain-repair-modal').remove()">Done</button></div>
+    </div>`;
+  }
+
+  // ── Dirty state — show orphan list ───────────────────────────
+  const mismatches = orphans.filter(o => !o.match);
+  const matches    = orphans.filter(o =>  o.match);
+
+  let orphanRows = orphans.map((o, i) => {
+    const rowColor = o.match
+      ? 'rgba(45,212,160,.05)'
+      : 'rgba(245,96,90,.07)';
+    const borderColor = o.match
+      ? 'rgba(45,212,160,.15)'
+      : 'rgba(245,96,90,.2)';
+
+    return `
+      <div style="background:${rowColor};border:1px solid ${borderColor};border-radius:8px;padding:11px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="font-size:22px">${o.match ? '✅' : '⚠️'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:5px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t3)">${fd(o.date)}</span>
+            ${o.staff !== '—' ? `<span style="font-size:12px;font-weight:600;color:var(--t2)">${o.staff}</span>` : ''}
+            ${o.details !== '—' ? `<span style="font-size:11px;color:var(--t4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px" title="${o.details}">${o.details}</span>` : ''}
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap">
+            <div>
+              <span style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1px;text-transform:uppercase">Stored ob</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${o.match ? 'var(--t2)' : 'var(--red2)'};margin-left:6px">₹${o.storedOb.toLocaleString('en-IN')}</span>
+            </div>
+            <div>
+              <span style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1px;text-transform:uppercase">Computed</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--green2);margin-left:6px">₹${o.computedOb.toLocaleString('en-IN')}</span>
+            </div>
+            ${!o.match ? `<div>
+              <span style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1px;text-transform:uppercase">Diff</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--red2);margin-left:6px">₹${o.diff.toLocaleString('en-IN')}</span>
+            </div>` : `<span style="font-size:11px;color:var(--green2);font-weight:600">same ✓ — harmless duplicate</span>`}
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--t4);text-align:right;flex-shrink:0">→ ob set to null</div>
+      </div>`;
+  }).join('<div style="height:6px"></div>');
+
+  // Summary chips
+  const summaryChips = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <div style="background:var(--s3);border:1px solid var(--b1);border-radius:8px;padding:8px 14px;text-align:center">
+        <div style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px">Total Anchors</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--t1)">${orphans.length}</div>
+      </div>
+      <div style="background:var(--red-bg);border:1px solid var(--red-b);border-radius:8px;padding:8px 14px;text-align:center">
+        <div style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px">Mismatches</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--red2)">${mismatches.length}</div>
+      </div>
+      <div style="background:var(--green-bg);border:1px solid var(--green-b);border-radius:8px;padding:8px 14px;text-align:center">
+        <div style="font-size:10px;color:var(--t4);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px">Harmless Dupes</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--green2)">${matches.length}</div>
+      </div>
+    </div>`;
+
+  // Mismatch callout
+  const mismatchCallout = mismatches.length > 0 ? `
+    <div style="padding:11px 14px;background:var(--red-bg);border:1px solid var(--red-b);border-radius:9px;margin-bottom:14px;font-size:13px;color:var(--red2)">
+      <span style="font-weight:800">⚠ ${mismatches.length} real mismatch${mismatches.length !== 1 ? 'es' : ''} detected.</span>
+      Sanju's stated openings on these days didn't match the app's computed chain.
+      After repair, the correct computed values will be used — your balances will be accurate.
+    </div>` : `
+    <div style="padding:11px 14px;background:var(--green-bg);border:1px solid var(--green-b);border-radius:9px;margin-bottom:14px;font-size:13px;color:var(--green2)">
+      <span style="font-weight:800">✅ No actual data errors.</span>
+      All ${orphans.length} orphan anchor${orphans.length !== 1 ? 's' : ''} happened to match the computed chain.
+      Stripping them is still good hygiene — it prevents future drift.
+    </div>`;
+
+  return `<div class="modal" style="max-width:680px">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">🔧 Chain Repair</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">Scan complete — review before applying</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('chain-repair-modal').remove()">×</button>
+    </div>
+    <div class="modal-body">
+
+      ${firstAnchorHtml}
+      ${summaryChips}
+      ${mismatchCallout}
+
+      <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);margin-bottom:8px">Orphan Anchors to Strip</div>
+      <div style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:0">
+        ${orphanRows}
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:var(--s3);border:1px solid var(--b1);border-radius:9px;font-size:12.5px;color:var(--t3)">
+        <span style="font-weight:700;color:var(--t2)">What happens after repair:</span>
+        All highlighted <code style="background:var(--s4);padding:1px 5px;border-radius:4px;font-size:11px">ob</code> fields are set to <code style="background:var(--s4);padding:1px 5px;border-radius:4px;font-size:11px">null</code>.
+        The single root anchor (${fd(firstAnchor.date)}) remains.
+        The full balance chain is then computed mathematically from that one point.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-g" onclick="document.getElementById('chain-repair-modal').remove()">Cancel</button>
+      <button class="btn btn-r" onclick="confirmRepair()" style="gap:8px">
+        🔧 Strip ${orphans.length} Anchor${orphans.length !== 1 ? 's' : ''} &amp; Repair Chain
+      </button>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CONFIRM & APPLY
+// ══════════════════════════════════════════════════════════════════
+function confirmRepair() {
+  const scan  = scanChain(); // re-scan on latest DB state
+  const fixed = applyChainRepair(scan.orphans);
+
+  // Close modal
+  const modal = document.getElementById('chain-repair-modal');
+  if (modal) modal.remove();
+
+  toast(`Chain repaired — ${fixed} anchor${fixed !== 1 ? 's' : ''} stripped`, 'ok');
+
+  // Refresh all views
+  upChip();
+  renderD();
+  if (document.getElementById('tab-ledger').classList.contains('active'))  renderL();
+  if (document.getElementById('tab-report').classList.contains('active'))  renderReport();
+  if (document.getElementById('tab-staff').classList.contains('active'))   renderS();
+  if (document.getElementById('tab-manual').classList.contains('active'))  renderM();
+
+  // Show post-repair scan to confirm clean
+  setTimeout(() => {
+    const postScan = scanChain();
+    if (postScan.summary === 'clean') {
+      toast('✅ Chain verified clean after repair', 'ok');
+    }
+  }, 500);
+}
 </script>
 </body>
 </html>
