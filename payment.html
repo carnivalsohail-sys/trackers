@@ -26,20 +26,18 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
 :root,[data-theme="dark"]{
-  --bg-start:#07090f;--bg-end:#0b0e18;
-  --surface:#0f1422;--surface-2:#141928;--surface-3:#1a2035;
-  --border:#1e2a42;--border-light:#263350;
-  --text:#eef2ff;--text-muted:#b8ccee;--text-dim:#7a9ac0;--text-faint:#4a6890;
-  --primary:#6366f1;--primary-dark:#4f52d4;--primary-light:#a5b4fc;--primary-glow:rgba(99,102,241,0.18);
+  --bg-start:#0a0f1e;--bg-end:#0f172a;
+  --surface:#1a2540;--surface-2:#22304f;--surface-3:#2c3e5e;
+  --border:#2e4070;--border-light:#3a5080;
+  --text:#f0f4ff;--text-muted:#c8d5f0;--text-dim:#8fa8cc;--text-faint:#5a7aaa;
+  --primary:#6366f1;--primary-dark:#4f52d4;--primary-light:#a5b4fc;--primary-glow:rgba(99,102,241,0.2);
   --accent:#f59e0b;--accent-light:#fcd34d;--accent-glow:rgba(245,158,11,0.15);
-  --danger:#ef4444;--danger-dark:#dc2626;--danger-light:#fca5a5;--danger-glow:rgba(239,68,68,0.12);
-  --success:#10b981;--success-dark:#059669;--success-light:#6ee7b7;--success-glow:rgba(16,185,129,0.12);
+  --danger:#ef4444;--danger-dark:#dc2626;--danger-light:#fca5a5;--danger-glow:rgba(239,68,68,0.15);
+  --success:#10b981;--success-dark:#059669;--success-light:#6ee7b7;--success-glow:rgba(16,185,129,0.15);
   --warning:#f97316;--warning-light:#fdba74;
   --badge-mca:#a78bfa;
-  --shadow:rgba(0,0,0,0.7);
-  --toggle-bg:#0f1422;
-  /* card accent colours per company */
-  --ce-color:#6366f1;--cf-color:#a855f7;--rk-color:#10b981;--mca-color:#a78bfa;
+  --shadow:rgba(0,0,0,0.5);
+  --toggle-bg:#1a2540;
 }
 
 [data-theme="light"]{
@@ -67,9 +65,8 @@ body{
 }
 body::before{
   content:'';position:fixed;top:0;left:0;right:0;bottom:0;
-  background:radial-gradient(ellipse at 10% 20%,rgba(99,102,241,0.06) 0%,transparent 50%),
-             radial-gradient(ellipse at 90% 80%,rgba(16,185,129,0.04) 0%,transparent 50%),
-             radial-gradient(ellipse at 50% 50%,rgba(168,85,247,0.025) 0%,transparent 60%);
+  background:radial-gradient(ellipse at 15% 30%,rgba(99,102,241,0.07) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 70%,rgba(16,185,129,0.05) 0%,transparent 55%);
   z-index:0;pointer-events:none;
 }
 .container{max-width:1700px;margin:0 auto;position:relative;z-index:1}
@@ -4376,352 +4373,700 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 </script>
 <!--
   ══════════════════════════════════════════════════════════════════════
-  AI CALLS — FINAL FIX (replaces ALL previous AI call patches)
-  DELETE all blocks between "AI AUTOMATIC CALLS PATCH" and "END AI CALLS PATCH"
-  and paste this single block before </body>
+  AI AUTOMATIC CALLS PATCH — Bland.ai integration
+  Paste this ENTIRE block just before </body> in payment.html
+  Does NOT modify any existing code — purely additive patch
   ══════════════════════════════════════════════════════════════════════
 -->
 
 <!-- ── AI CALLS STYLES ── -->
 <style>
-.act-aicall { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+/* AI Call action button */
+.act-aicall {
+  background: rgba(168,85,247,0.12);
+  color: #c084fc;
+  border: 1px solid rgba(168,85,247,0.3);
+}
 .act-aicall:hover { background: rgba(168,85,247,0.22); }
-[data-theme="light"] .act-aicall { background: rgba(124,58,237,0.08); color: #7c3aed; border-color: rgba(124,58,237,0.2); }
-#aiCallFab { position:fixed; bottom:82px; right:14px; z-index:400; display:flex; flex-direction:column; gap:7px; align-items:flex-end; pointer-events:none; }
+[data-theme="light"] .act-aicall {
+  background: rgba(124,58,237,0.08);
+  color: #7c3aed;
+  border-color: rgba(124,58,237,0.2);
+}
+
+/* Floating FABs */
+#aiCallFab {
+  position: fixed;
+  bottom: 82px;
+  right: 14px;
+  z-index: 400;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  align-items: flex-end;
+  pointer-events: none; /* children handle their own clicks */
+}
 #aiCallFab > * { pointer-events: auto; }
-.ai-fab-btn { display:flex; align-items:center; gap:6px; padding:8px 14px; border:none; border-radius:50px; font-size:0.74em; font-weight:800; cursor:pointer; white-space:nowrap; transition:all 0.2s; font-family:'Segoe UI',system-ui,sans-serif; -webkit-tap-highlight-color:transparent; box-shadow:0 4px 14px rgba(0,0,0,0.25); }
-.ai-fab-primary { background:linear-gradient(135deg,#7c3aed,#6d28d9); color:#fff; }
-.ai-fab-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(124,58,237,0.45); }
-.ai-fab-secondary { background:rgba(124,58,237,0.14); color:#c084fc; border:1px solid rgba(124,58,237,0.3); }
-.ai-fab-secondary:hover { background:rgba(124,58,237,0.22); }
-.ai-fab-secondary.needs-setup { border-color:var(--accent); color:var(--accent-light); background:rgba(245,158,11,0.1); animation:fab-pulse 2.5s infinite; }
+.ai-fab-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border: none; border-radius: 50px;
+  font-size: 0.74em; font-weight: 800; cursor: pointer;
+  white-space: nowrap; transition: all 0.2s;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+.ai-fab-primary {
+  background: linear-gradient(135deg,#7c3aed,#6d28d9);
+  color: #fff;
+}
+.ai-fab-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.45); }
+.ai-fab-secondary {
+  background: rgba(124,58,237,0.14);
+  color: #c084fc;
+  border: 1px solid rgba(124,58,237,0.3);
+}
+.ai-fab-secondary:hover { background: rgba(124,58,237,0.22); }
+.ai-fab-secondary.needs-setup {
+  border-color: var(--accent);
+  color: var(--accent-light);
+  background: rgba(245,158,11,0.1);
+  animation: fab-pulse 2.5s infinite;
+}
 @keyframes fab-pulse { 0%,100%{box-shadow:0 4px 14px rgba(0,0,0,0.2)} 50%{box-shadow:0 4px 20px rgba(245,158,11,0.35)} }
-.ai-script-textarea { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:9px; font-size:0.82em; line-height:1.65; background:var(--surface-2); color:var(--text); resize:vertical; font-family:'Segoe UI',system-ui,sans-serif; transition:border-color 0.2s; min-height:180px; }
-.ai-script-textarea:focus { outline:none; border-color:var(--primary); }
-.call-hist-row { padding:10px 13px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap; transition:background 0.15s; }
-.call-hist-row:hover { background:var(--primary-glow); }
-.call-hist-row:last-child { border-bottom:none; }
-.call-status-pill { padding:3px 9px; border-radius:7px; font-size:0.65em; font-weight:800; text-transform:uppercase; letter-spacing:0.3px; flex-shrink:0; }
-.cs-queued { background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); }
-.cs-calling { background:rgba(96,165,250,0.15); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); animation:blink 1.5s infinite; }
+
+/* Script textarea */
+.ai-script-textarea {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 9px;
+  font-size: 0.82em; line-height: 1.65;
+  background: var(--surface-2); color: var(--text);
+  resize: vertical; font-family: 'Segoe UI', system-ui, sans-serif;
+  transition: border-color 0.2s;
+  min-height: 180px;
+}
+.ai-script-textarea:focus { outline: none; border-color: var(--primary); }
+
+/* Call history row */
+.call-hist-row {
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; transition: background 0.15s;
+}
+.call-hist-row:hover { background: var(--primary-glow); }
+.call-hist-row:last-child { border-bottom: none; }
+
+/* Status pill */
+.call-status-pill {
+  padding: 3px 9px; border-radius: 7px;
+  font-size: 0.65em; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+.cs-queued    { background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); }
+.cs-calling   { background:rgba(96,165,250,0.15);  color:#60a5fa; border:1px solid rgba(96,165,250,0.3);  animation:blink 1.5s infinite; }
 .cs-completed { background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); }
-.cs-failed { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); }
-.cs-busy { background:rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); }
-.cs-no-answer { background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3); }
-.cs-unknown { background:rgba(148,163,184,0.1); color:#94a3b8; border:1px solid rgba(148,163,184,0.2); }
-.ai-info-box { border-radius:9px; padding:10px 13px; font-size:0.76em; line-height:1.6; margin-bottom:13px; }
+.cs-failed    { background:rgba(239,68,68,0.15);   color:#ef4444; border:1px solid rgba(239,68,68,0.3);   }
+.cs-busy      { background:rgba(249,115,22,0.15);  color:#f97316; border:1px solid rgba(249,115,22,0.3);  }
+.cs-no-answer { background:rgba(99,102,241,0.15);  color:#818cf8; border:1px solid rgba(99,102,241,0.3);  }
+.cs-unknown   { background:rgba(148,163,184,0.1);  color:#94a3b8; border:1px solid rgba(148,163,184,0.2); }
+
+/* Info box inside modals */
+.ai-info-box {
+  border-radius: 9px; padding: 10px 13px;
+  font-size: 0.76em; line-height: 1.6;
+  margin-bottom: 13px;
+}
 .ai-info-purple { background:rgba(168,85,247,0.08); border:1px solid rgba(168,85,247,0.22); color:var(--badge-mca); }
-.ai-info-green { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); color:var(--success-light); }
-.ai-info-amber { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.22); color:var(--accent-light); }
+.ai-info-green  { background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2);  color:var(--success-light); }
+.ai-info-amber  { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.22); color:var(--accent-light);  }
 [data-theme="light"] .ai-info-purple { color:#6d28d9; }
-[data-theme="light"] .ai-info-green { color:#065f46; }
-[data-theme="light"] .ai-info-amber { color:#92400e; }
-.lang-chip { padding:5px 11px; border-radius:20px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); font-size:0.74em; font-weight:700; cursor:pointer; transition:all 0.2s; }
-.lang-chip:hover,.lang-chip.active { background:rgba(168,85,247,0.12); border-color:rgba(168,85,247,0.4); color:#c084fc; }
-[data-theme="light"] .lang-chip:hover,[data-theme="light"] .lang-chip.active { background:#f3e8ff; border-color:#ddd6fe; color:#7c3aed; }
-.bulk-call-row { display:flex; align-items:center; gap:8px; padding:8px 11px; background:var(--surface-2); border:1px solid var(--border); border-radius:9px; margin-bottom:6px; font-size:0.78em; }
+[data-theme="light"] .ai-info-green  { color:#065f46; }
+[data-theme="light"] .ai-info-amber  { color:#92400e; }
+
+/* Quick-select language chips */
+.lang-chip {
+  padding: 5px 11px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text-dim); font-size: 0.74em; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.lang-chip:hover,.lang-chip.active {
+  background: rgba(168,85,247,0.12);
+  border-color: rgba(168,85,247,0.4);
+  color: #c084fc;
+}
+[data-theme="light"] .lang-chip:hover,[data-theme="light"] .lang-chip.active {
+  background: #f3e8ff; border-color: #ddd6fe; color: #7c3aed;
+}
+
+/* Bulk call row */
+.bulk-call-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 11px; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 9px;
+  margin-bottom: 6px; font-size: 0.78em;
+}
 .bulk-call-row input[type=checkbox] { width:16px; height:16px; cursor:pointer; flex-shrink:0; }
 .bulk-call-row .bcr-client { flex:1; font-weight:700; color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.bulk-call-row .bcr-bal { color:var(--danger-light); font-family:monospace; font-weight:800; font-size:0.88em; flex-shrink:0; }
+.bulk-call-row .bcr-bal   { color:var(--danger-light); font-family:monospace; font-weight:800; font-size:0.88em; flex-shrink:0; }
 [data-theme="light"] .bulk-call-row .bcr-bal { color:#991b1b; }
+
+/* Mobile: hide FAB label on very small screens */
 @media(max-width:400px){ .ai-fab-label { display:none; } }
 </style>
 
-<div class="modal" id="aiCallModal"><div class="modal-content" style="max-width:640px"><div class="modal-header"><h2>🤖 AI Reminder Call</h2><button class="close-btn" onclick="closeModal('aiCallModal')">&times;</button></div><div id="aiCallModalBody"></div></div></div>
-<div class="modal" id="callHistoryModal"><div class="modal-content" style="max-width:620px"><div class="modal-header"><h2>📞 AI Call History</h2><button class="close-btn" onclick="closeModal('callHistoryModal')">&times;</button></div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px"><button class="btn btn-secondary btn-xs" onclick="openAICallSettings()">⚙ API Settings</button><button class="btn btn-secondary btn-xs" onclick="openBulkCallModal()">📋 Bulk Call Red Flags</button><button class="btn btn-danger btn-xs" onclick="clearCallHistory()">🗑 Clear History</button></div><div id="callHistoryBody" style="max-height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;-webkit-overflow-scrolling:touch"></div></div></div>
-<div class="modal" id="aiSettingsModal"><div class="modal-content" style="max-width:500px"><div class="modal-header"><h2>⚙ AI Calls — Bland.ai Setup</h2><button class="close-btn" onclick="closeModal('aiSettingsModal')">&times;</button></div><div class="ai-info-box ai-info-purple" style="margin-bottom:14px"><b>Bland.ai</b> makes realistic AI phone calls. Your API key is stored on this device only and calls go directly to Bland.ai's servers (no proxy needed).</div><div style="background:var(--surface-2);border-radius:10px;padding:13px;margin-bottom:14px;font-size:0.81em;color:var(--text-muted);line-height:1.7"><b style="color:var(--text)">How to get your API key (free to start):</b><br>1. Sign up at <a href="https://bland.ai" target="_blank" style="color:var(--primary-light);font-weight:700">bland.ai</a><br>2. Dashboard → <b>API Keys</b> → Create new key<br>3. Paste below — stored on this device only</div><div class="input-group" style="margin-bottom:12px"><label>Bland.ai API Key</label><input id="blandTokenInput" type="password" placeholder="org_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-family:monospace;font-size:0.84em"></div><div class="input-group" style="margin-bottom:14px"><label>Caller Display Name (optional)</label><input id="blandCallerName" type="text" placeholder="e.g. Carnival Accounts Team" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em"></div><div class="ai-info-box ai-info-green">✅ Pricing: ~$0.09/min · Free trial includes minutes · Supports Indian numbers (+91) · Calls recorded</div><div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn btn-secondary" onclick="closeModal('aiSettingsModal')">Cancel</button><button class="btn btn-danger btn-sm" id="blandRemoveBtn" style="display:none" onclick="removeBlandToken()">Remove Key</button><button class="btn btn-primary" onclick="saveBlandSettings()" id="blandSaveBtn">Save & Verify</button></div></div></div>
-<div class="modal" id="bulkCallModal"><div class="modal-content" style="max-width:580px"><div class="modal-header"><h2>📋 Bulk AI Calls — Red Flag Clients</h2><button class="close-btn" onclick="closeModal('bulkCallModal')">&times;</button></div><div class="ai-info-box ai-info-amber" style="margin-bottom:12px">⚡ Calls are queued and sent one after another with a 5-second gap.</div><div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;align-items:center"><button class="btn btn-secondary btn-xs" onclick="bulkSelectAll(true)">Select All</button><button class="btn btn-secondary btn-xs" onclick="bulkSelectAll(false)">Deselect All</button><span id="bulkSelectedCount" style="font-size:0.75em;color:var(--text-dim);margin-left:auto">0 selected</span></div><div id="bulkCallList" style="max-height:320px;overflow-y:auto;padding:4px 0"></div><div class="input-group" style="margin-top:12px;margin-bottom:14px"><label>Custom note to add at end of script (optional)</label><input type="text" id="bulkCustomNote" placeholder="e.g. Please call us back on 98XXXXXXXX" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em"></div><div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn btn-secondary" onclick="closeModal('bulkCallModal')">Cancel</button><button class="btn btn-primary" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)" onclick="confirmBulkCall()">🤖 Start Bulk Calls</button></div></div></div>
-<div id="aiCallFab"><button class="ai-fab-btn ai-fab-secondary needs-setup" id="aiSetupFab" onclick="openAICallSettings()">⚙ <span class="ai-fab-label">Setup AI Calls</span></button><button class="ai-fab-btn ai-fab-primary" onclick="showCallHistory()">📞 <span class="ai-fab-label">Call History</span></button></div>
+<!-- ── AI CALL PREVIEW MODAL ── -->
+<div class="modal" id="aiCallModal">
+  <div class="modal-content" style="max-width:640px">
+    <div class="modal-header">
+      <h2>🤖 AI Reminder Call</h2>
+      <button class="close-btn" onclick="closeModal('aiCallModal')">&times;</button>
+    </div>
+    <div id="aiCallModalBody"></div>
+  </div>
+</div>
 
+<!-- ── CALL HISTORY MODAL ── -->
+<div class="modal" id="callHistoryModal">
+  <div class="modal-content" style="max-width:620px">
+    <div class="modal-header">
+      <h2>📞 AI Call History</h2>
+      <button class="close-btn" onclick="closeModal('callHistoryModal')">&times;</button>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-secondary btn-xs" onclick="openAICallSettings()">⚙ API Settings</button>
+      <button class="btn btn-secondary btn-xs" onclick="openBulkCallModal()">📋 Bulk Call Red Flags</button>
+      <button class="btn btn-danger btn-xs" onclick="clearCallHistory()">🗑 Clear History</button>
+    </div>
+    <div id="callHistoryBody" style="max-height:480px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;-webkit-overflow-scrolling:touch"></div>
+  </div>
+</div>
+
+<!-- ── BLAND.AI SETTINGS MODAL ── -->
+<div class="modal" id="aiSettingsModal">
+  <div class="modal-content" style="max-width:500px">
+    <div class="modal-header">
+      <h2>⚙ AI Calls — Bland.ai Setup</h2>
+      <button class="close-btn" onclick="closeModal('aiSettingsModal')">&times;</button>
+    </div>
+    <div class="ai-info-box ai-info-purple" style="margin-bottom:14px">
+      <b>Bland.ai</b> makes realistic AI phone calls using natural speech. Your clients hear a professional reminder, can ask questions, and the call is recorded.
+    </div>
+
+    <div style="background:var(--surface-2);border-radius:10px;padding:13px;margin-bottom:14px;font-size:0.81em;color:var(--text-muted);line-height:1.7">
+      <b style="color:var(--text)">How to get your API key (free to start):</b><br>
+      1. Sign up at <a href="https://bland.ai" target="_blank" style="color:var(--primary-light);font-weight:700">bland.ai</a><br>
+      2. Dashboard → <b>API Keys</b> → Create new key<br>
+      3. Paste below — stored on this device only, never sent anywhere else
+    </div>
+
+    <div class="input-group" style="margin-bottom:12px">
+      <label>Bland.ai API Key</label>
+      <input id="blandTokenInput" type="password"
+        placeholder="org_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-family:monospace;font-size:0.84em">
+    </div>
+
+    <div class="input-group" style="margin-bottom:14px">
+      <label>Caller Display Name (optional)</label>
+      <input id="blandCallerName" type="text"
+        placeholder="e.g. Carnival Accounts Team"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em">
+    </div>
+
+    <div class="ai-info-box ai-info-green">
+      ✅ Pricing: ~$0.09/min · Free trial includes minutes · Supports Indian numbers (+91) · Calls recorded · Hindi & English supported
+    </div>
+    <div class="ai-info-box ai-info-amber">
+      ℹ️ Some Indian telecom carriers may block automated calls. If a call fails, use WhatsApp or Email fallback shown on each record.
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="closeModal('aiSettingsModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="blandRemoveBtn" style="display:none" onclick="removeBlandToken()">Remove Key</button>
+      <button class="btn btn-primary" onclick="saveBlandSettings()" id="blandSaveBtn">Save & Verify</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BULK CALL MODAL ── -->
+<div class="modal" id="bulkCallModal">
+  <div class="modal-content" style="max-width:580px">
+    <div class="modal-header">
+      <h2>📋 Bulk AI Calls — Red Flag Clients</h2>
+      <button class="close-btn" onclick="closeModal('bulkCallModal')">&times;</button>
+    </div>
+    <div class="ai-info-box ai-info-amber" style="margin-bottom:12px">
+      ⚡ Calls are queued and sent one after another with a 5-second gap. Only clients with valid phone numbers are shown.
+    </div>
+    <div style="display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-secondary btn-xs" onclick="bulkSelectAll(true)">Select All</button>
+      <button class="btn btn-secondary btn-xs" onclick="bulkSelectAll(false)">Deselect All</button>
+      <span id="bulkSelectedCount" style="font-size:0.75em;color:var(--text-dim);margin-left:auto">0 selected</span>
+    </div>
+    <div id="bulkCallList" style="max-height:320px;overflow-y:auto;padding:4px 0"></div>
+    <div class="input-group" style="margin-top:12px;margin-bottom:14px">
+      <label>Custom note to add at end of script (optional)</label>
+      <input type="text" id="bulkCustomNote" placeholder="e.g. Please call us back on 98XXXXXXXX"
+        style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-secondary" onclick="closeModal('bulkCallModal')">Cancel</button>
+      <button class="btn btn-primary" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)" onclick="confirmBulkCall()">🤖 Start Bulk Calls</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FLOATING FABs ── -->
+<div id="aiCallFab">
+  <button class="ai-fab-btn ai-fab-secondary needs-setup" id="aiSetupFab" onclick="openAICallSettings()">
+    ⚙ <span class="ai-fab-label">Setup AI Calls</span>
+  </button>
+  <button class="ai-fab-btn ai-fab-primary" onclick="showCallHistory()">
+    📞 <span class="ai-fab-label">Call History</span>
+  </button>
+</div>
+
+<!-- ── MAIN AI CALLS SCRIPT ── -->
 <script>
 (function () {
   'use strict';
 
-  // ══════════════════════════════════════════════════════════════════════
-  //  FIXED: Points to the REAL Bland.ai API (was broken localhost proxy)
-  // ══════════════════════════════════════════════════════════════════════
+  // ── CONSTANTS ─────────────────────────────────────────────────────────────
   var BLAND_TOKEN_KEY   = 'carnival_bland_api_key';
   var BLAND_CALLER_KEY  = 'carnival_bland_caller_name';
   var CALL_HISTORY_KEY  = 'carnival_ai_call_history';
-    var BLAND_API_BASE    = 'https://api.bland.ai/v1';
+  var BLAND_API_BASE    = 'http://localhost:3456/api/bland';
 
-  // CORS PROXY — browsers block direct API calls from local files
-  var CORS_PROXY = 'https://corsproxy.io/?';
-  function blandFetch(path, options) {
-    return fetch(CORS_PROXY + encodeURIComponent(BLAND_API_BASE + path), options || {});
-  }
-
+  // ── STORAGE ───────────────────────────────────────────────────────────────
   function getBlandToken()  { return localStorage.getItem(BLAND_TOKEN_KEY)  || ''; }
   function getCallerName()  { return localStorage.getItem(BLAND_CALLER_KEY) || 'Carnival Accounts'; }
-  function getCallHistory() { try { return JSON.parse(localStorage.getItem(CALL_HISTORY_KEY) || '[]'); } catch(e) { return []; } }
-  function saveCallHistory(h) { try { localStorage.setItem(CALL_HISTORY_KEY, JSON.stringify((h || []).slice(0, 300))); } catch(e) {} }
-  function addToHistory(entry) { var h = getCallHistory(); h.unshift(entry); saveCallHistory(h); }
+  function getCallHistory() {
+    try { return JSON.parse(localStorage.getItem(CALL_HISTORY_KEY) || '[]'); }
+    catch(e) { return []; }
+  }
+  function saveCallHistory(h) {
+    try { localStorage.setItem(CALL_HISTORY_KEY, JSON.stringify((h || []).slice(0, 300))); }
+    catch(e) {}
+  }
+  function addToHistory(entry) {
+    var h = getCallHistory();
+    h.unshift(entry);
+    saveCallHistory(h);
+  }
 
+  // ── PHONE NORMALISE ───────────────────────────────────────────────────────
   function normalisePhone(raw) {
     if (!raw) return '';
     var digits = String(raw).replace(/\D/g, '');
+    // Strip leading 91 if it makes it 12 digits
     if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
-    return digits.length === 10 ? digits : '';
+    if (digits.length === 10) return digits;
+    return '';
   }
 
-  // ✅ FIXED auth helper — always uses proper Authorization: Bearer header
-  function blandHeaders(token) {
-    return {
-      'Authorization': 'Bearer ' + token,
-      'Content-Type': 'application/json'
-    };
-  }
-
+  // ── SCRIPT BUILDER ────────────────────────────────────────────────────────
   function buildScript(p, lang, customNote) {
     var bal    = parseFloat(p.balance || 0);
     var invStr = p.invoiceNo ? 'Invoice number ' + p.invoiceNo : 'your pending invoice';
     var balStr = 'Rupees ' + bal.toLocaleString('en-IN', {maximumFractionDigits:0});
-    var dueStr = p.dueDate ? new Date(p.dueDate).toLocaleDateString('en-IN', {day:'2-digit', month:'long', year:'numeric'}) : 'the specified due date';
+    var dueStr = p.dueDate
+      ? new Date(p.dueDate).toLocaleDateString('en-IN', {day:'2-digit', month:'long', year:'numeric'})
+      : 'the specified due date';
     var callerName = getCallerName();
+
     if (lang === 'hi') {
-      return 'Namaste! Kya main ' + p.clientName + ' se baat kar sakta hoon? Main ' + callerName + ' ki taraf se ek payment reminder call kar raha hoon. ' + invStr + ' ke liye ' + balStr + ' ka bhugtan baki hai, jo ' + dueStr + ' tak dena tha. Kripaya jald se jald is bhugtan ko process karein. ' + (customNote ? customNote + '. ' : '') + 'Carnival ke saath aapke sahyog ke liye dhanyavaad. Dhanyavaad!';
+      return 'Namaste! Kya main ' + p.clientName + ' se baat kar sakta hoon? ' +
+        'Main ' + callerName + ' ki taraf se ek automated payment reminder call kar raha hoon. ' +
+        invStr + ' ke liye ' + balStr + ' ka bhugtan baki hai, jo ' + dueStr + ' tak dena tha. ' +
+        'Kripaya jald se jald is bhugtan ko process karein. ' +
+        (customNote ? customNote + '. ' : '') +
+        'Kisi bhi sawaal ke liye hamare accounts team se sampark karein. ' +
+        'Carnival ke saath aapke sahyog ke liye dhanyavaad. Dhanyavaad!';
     }
     if (lang === 'hi-en') {
-      return 'Hello! ' + p.clientName + ' se koi available hain? Yeh ' + callerName + ' ki taraf se ek payment reminder call hai. Aapka ' + invStr + ' ke liye ' + balStr + ' outstanding hai, jo due tha ' + dueStr + ' ko. Please process kar dijiye jab bhi convenient ho. ' + (customNote ? customNote + '. ' : '') + 'Koi sawaal ho to hamare team se baat karein. Shukriya!';
+      return 'Hello! ' + p.clientName + ' se koi available hain? ' +
+        'Yeh ' + callerName + ' ki taraf se ek payment reminder call hai. ' +
+        'Aapka ' + invStr + ' ke liye ' + balStr + ' outstanding hai, ' +
+        'jo due tha ' + dueStr + ' ko. ' +
+        'Please process kar dijiye jab bhi convenient ho. ' +
+        (customNote ? customNote + '. ' : '') +
+        'Koi sawaal ho to hamare team se baat karein. Shukriya!';
     }
-    return 'Hello! May I please speak with someone from the accounts or finance team at ' + p.clientName + '? This is an automated payment reminder call from ' + callerName + '. We are calling regarding ' + invStr + ' for an outstanding amount of ' + balStr + ', which was due on ' + dueStr + '. We kindly request you to process this payment at your earliest convenience. ' + (customNote ? customNote + '. ' : '') + 'If the payment has already been made, please disregard this call. For any queries, please reach out to our accounts team directly. Thank you for your continued partnership with Carnival. Have a wonderful day!';
+    // Default: English
+    return 'Hello! May I please speak with someone from the accounts or finance team at ' + p.clientName + '? ' +
+      'This is an automated payment reminder call from ' + callerName + '. ' +
+      'We are calling regarding ' + invStr + ' for an outstanding amount of ' + balStr + ', ' +
+      'which was due on ' + dueStr + '. ' +
+      'We kindly request you to process this payment at your earliest convenience. ' +
+      (customNote ? customNote + '. ' : '') +
+      'If the payment has already been made, please disregard this call and we apologise for any inconvenience. ' +
+      'For any queries, please reach out to our accounts team directly. ' +
+      'Thank you for your continued partnership with Carnival. Have a wonderful day!';
   }
 
   // ── OPEN CALL MODAL ───────────────────────────────────────────────────────
   window.aiCallPayment = function(idx) {
     var p = payments[idx];
     if (!p) return;
+
     var token = getBlandToken();
-    if (!token) { openAICallSettings(); return; }
+    if (!token) {
+      openAICallSettings();
+      return;
+    }
+
     var ph = normalisePhone(p.phone);
-    if (!ph) { showToast('No valid 10-digit phone number for ' + p.clientName.split(' ').slice(0,3).join(' '), 'error'); return; }
+    if (!ph) {
+      showToast('No valid 10-digit phone number for ' + p.clientName.split(' ').slice(0,3).join(' '), 'error');
+      return;
+    }
+
     renderCallModal(idx, p, ph);
     document.getElementById('aiCallModal').classList.add('active');
   };
 
   function renderCallModal(idx, p, ph) {
-    var bal = parseFloat(p.balance || 0);
+    var bal    = parseFloat(p.balance || 0);
     var script = buildScript(p, 'en', '');
+
     document.getElementById('aiCallModalBody').innerHTML =
       '<div style="background:var(--surface-2);border-radius:11px;padding:13px;margin-bottom:14px;border:1px solid var(--border)">' +
         '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;margin-bottom:7px">' +
-          '<div><div style="font-weight:800;font-size:0.9em;color:var(--text);line-height:1.3">' + p.clientName + '</div><div style="font-size:0.72em;color:var(--text-dim);margin-top:2px">' + p.company + '</div></div>' +
+          '<div>' +
+            '<div style="font-weight:800;font-size:0.9em;color:var(--text);line-height:1.3">' + p.clientName + '</div>' +
+            '<div style="font-size:0.72em;color:var(--text-dim);margin-top:2px">' + p.company + '</div>' +
+          '</div>' +
           '<span style="font-weight:800;font-family:monospace;color:var(--danger-light);font-size:0.95em;flex-shrink:0">&#8377;' + bal.toLocaleString('en-IN') + '</span>' +
         '</div>' +
         '<div style="display:flex;gap:12px;font-size:0.76em;flex-wrap:wrap">' +
           '<span>&#128222; <b style="color:var(--text)">+91 ' + ph.replace(/(\d{5})(\d{5})/, '$1 $2') + '</b></span>' +
           (p.invoiceNo ? '<span>&#128196; Inv <b style="color:var(--text)">' + p.invoiceNo + '</b></span>' : '') +
-          (p.dueDate ? '<span>&#128197; Due <b style="color:var(--accent-light)">' + new Date(p.dueDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + '</b></span>' : '') +
-        '</div></div>' +
-      '<div style="margin-bottom:10px"><div style="font-size:0.67em;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Script Language</div>' +
+          (p.dueDate   ? '<span>&#128197; Due <b style="color:var(--accent-light)">' + new Date(p.dueDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) + '</b></span>' : '') +
+        '</div>' +
+      '</div>' +
+
+      '<div style="margin-bottom:10px">' +
+        '<div style="font-size:0.67em;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px">Script Language</div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
-          '<button class="lang-chip active" data-lang="en" onclick="aiSwitchLang(this,' + idx + ',\'' + ph + '\')">&#127468;&#127463; English</button>' +
-          '<button class="lang-chip" data-lang="hi" onclick="aiSwitchLang(this,' + idx + ',\'' + ph + '\')">&#127470;&#127475; Hindi</button>' +
-          '<button class="lang-chip" data-lang="hi-en" onclick="aiSwitchLang(this,' + idx + ',\'' + ph + '\')">&#127470;&#127475; Hinglish</button>' +
-        '</div></div>' +
-      '<div class="input-group" style="margin-bottom:12px"><label style="margin-bottom:5px;display:block">&#128221; Call Script — Review & Edit</label><textarea id="aiCallScript" class="ai-script-textarea" rows="8">' + script + '</textarea></div>' +
+          '<button class="lang-chip active" data-lang="en"   onclick="aiSwitchLang(this,' + idx + ',\'' + ph + '\')">&#127468;&#127463; English</button>' +
+          '<button class="lang-chip"        data-lang="hi"   onclick="aiSwitchLang(this,' + idx + ',\'' + ph + '\')">&#127470;&#127475; Hindi</button>' +
+          '<button class="lang-chip"        data-lang="hi-en" onclick="aiSwitchLang(this,' + idx + ',\'' + ph + '\')">&#127470;&#127475; Hinglish</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="input-group" style="margin-bottom:12px">' +
+        '<label style="margin-bottom:5px;display:block">&#128221; Call Script — Review &amp; Edit Before Calling</label>' +
+        '<textarea id="aiCallScript" class="ai-script-textarea" rows="8">' + script + '</textarea>' +
+      '</div>' +
+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px">' +
-        '<div class="input-group"><label>Voice</label><select id="aiCallVoice" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em"><option value="maya">Maya — Female</option><option value="ryan">Ryan — Male</option><option value="adriana">Adriana — Female</option><option value="nat">Nat — Neutral</option><option value="josh">Josh — Male</option></select></div>' +
-        '<div class="input-group"><label>Max Duration</label><select id="aiCallDuration" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em"><option value="1">1 min</option><option value="2" selected>2 min</option><option value="3">3 min</option></select></div></div>' +
-      '<div class="ai-info-box ai-info-purple" style="margin-bottom:14px">&#129302; AI will call <b>+91 ' + ph.replace(/(\d{5})(\d{5})/, '$1 $2') + '</b> directly via Bland.ai. Call will be logged.</div>' +
+        '<div class="input-group">' +
+          '<label style="margin-bottom:4px;display:block">&#127908; Voice</label>' +
+          '<select id="aiCallVoice" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em">' +
+            '<option value="maya">Maya — Female, Professional</option>' +
+            '<option value="ryan">Ryan — Male, Friendly</option>' +
+            '<option value="adriana">Adriana — Female, Warm</option>' +
+            '<option value="nat">Nat — Neutral, Clear</option>' +
+            '<option value="josh">Josh — Male, Authoritative</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="input-group">' +
+          '<label style="margin-bottom:4px;display:block">&#9201; Max Duration</label>' +
+          '<select id="aiCallDuration" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em">' +
+            '<option value="1">1 minute</option>' +
+            '<option value="2" selected>2 minutes</option>' +
+            '<option value="3">3 minutes</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ai-info-box ai-info-purple" style="margin-bottom:14px">' +
+        '&#129302; AI will call <b>+91 ' + ph.replace(/(\d{5})(\d{5})/, '$1 $2') + '</b> and read the script above. ' +
+        'The call will be logged in your history. Recording is enabled by default.' +
+      '</div>' +
+
       '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">' +
         '<button class="btn btn-secondary" onclick="closeModal(\'aiCallModal\')">Cancel</button>' +
-        '<button class="btn btn-primary" id="aiConfirmCallBtn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 3px 12px rgba(124,58,237,0.35)" onclick="confirmAICall(' + idx + ',\'' + ph + '\')">&#129302; Call Now</button></div>';
+        '<button class="btn btn-primary" id="aiConfirmCallBtn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 3px 12px rgba(124,58,237,0.35)" onclick="confirmAICall(' + idx + ',\'' + ph + '\')">' +
+          '&#129302; Call Now' +
+        '</button>' +
+      '</div>';
   }
 
   window.aiSwitchLang = function(btn, idx, ph) {
     document.querySelectorAll('.lang-chip').forEach(function(c){ c.classList.remove('active'); });
     btn.classList.add('active');
-    document.getElementById('aiCallScript').value = buildScript(payments[idx], btn.dataset.lang, '');
+    var p    = payments[idx];
+    var lang = btn.dataset.lang;
+    document.getElementById('aiCallScript').value = buildScript(p, lang, '');
   };
 
-  // ── CONFIRM & MAKE CALL (FIXED — uses real API + proper auth) ────────────
+  // ── CONFIRM & MAKE CALL ───────────────────────────────────────────────────
   window.confirmAICall = async function(idx, ph) {
-    var p = payments[idx];
+    var p       = payments[idx];
     if (!p) return;
-    var token = getBlandToken();
-    if (!token) { openAICallSettings(); return; }
-
-    var script = (document.getElementById('aiCallScript') || {}).value || '';
-    var voice  = (document.getElementById('aiCallVoice')  || {}).value || 'maya';
-    var maxDur = parseInt(((document.getElementById('aiCallDuration') || {}).value || '2'), 10) || 2;
-    script = script.trim();
-    if (!script) { showToast('Call script is empty', 'error'); return; }
+    var token   = getBlandToken();
+    var script  = document.getElementById('aiCallScript').value.trim();
+    var voice   = document.getElementById('aiCallVoice').value;
+    var maxDur  = parseInt(document.getElementById('aiCallDuration').value) || 2;
 
     var btn = document.getElementById('aiConfirmCallBtn');
-    if (btn) { btn.disabled = true; btn.innerHTML = '&#128222; Dialling…'; }
-
-    var payload = {
-      phone_number: '+91' + ph,
-      task: script,
-      voice: voice,
-      max_duration: maxDur,
-      wait_for_greeting: true,
-      record: true
-    };
+    if (btn) { btn.disabled = true; btn.innerHTML = '&#128222; Dialling...'; }
 
     try {
-      // ✅ FIXED: Direct call to Bland.ai API with proper auth
-      var res = await blandFetch('/calls', {
+      var res = await fetch(BLAND_API_BASE + '/calls', {
         method: 'POST',
-        headers: blandHeaders(token),
-        body: JSON.stringify(payload)
+        headers: {
+          'x-bland-token': token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          phone_number: '+91' + ph,
+          task: script,
+          voice: voice,
+          max_duration: maxDur,
+          wait_for_greeting: true,
+          record: true,
+          language: 'en',
+          model: 'enhanced',
+          first_sentence: 'Hello, may I please speak with someone from the accounts department?'
+        })
       });
 
-      var rawText = await res.text();
-      var data = {};
-      try { data = JSON.parse(rawText); } catch(pe) {}
-
-      if (!res.ok) {
-        var errMsg = data.message || data.error || rawText || ('HTTP ' + res.status);
-        if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
-        showToast('Call failed: ' + errMsg, 'error');
-        return;
-      }
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.message || data.error || ('API error ' + res.status));
 
       var callId = data.call_id || data.id || '';
+
       addToHistory({
-        id: callId, ts: Date.now(), clientName: p.clientName, invoiceNo: p.invoiceNo || '',
-        phone: '+91' + ph, company: p.company || '', balance: parseFloat(p.balance || 0),
-        status: 'queued', voice: voice, duration: 0, scriptSnip: script.substring(0, 160)
+        id:         callId,
+        ts:         Date.now(),
+        clientName: p.clientName,
+        invoiceNo:  p.invoiceNo || '',
+        phone:      '+91' + ph,
+        company:    p.company || '',
+        balance:    parseFloat(p.balance || 0),
+        status:     'queued',
+        voice:      voice,
+        duration:   0,
+        scriptSnip: script.substring(0, 160)
       });
 
       closeModal('aiCallModal');
       showToast('&#128222; Call placed for ' + p.clientName.split(' ').slice(0,3).join(' ') + '!', 'success');
+
+      // Update FAB badge
       updateFabBadge();
-      if (callId) setTimeout(function(){ pollStatus(callId); }, 20000);
+
+      // Poll for status after delay
+      if (callId) {
+        setTimeout(function(){ pollStatus(callId); }, 20000);
+      }
 
     } catch(err) {
+      console.error('AI Call failed:', err);
+      showToast('Call failed: ' + err.message, 'error');
       if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
-      showToast('Network error: ' + err.message + ' — check internet connection', 'error');
     }
   };
 
-  // ── STATUS POLLING (FIXED) ──────────────────────────────────────────────
+  // ── STATUS POLLING ────────────────────────────────────────────────────────
   async function pollStatus(callId) {
     var token = getBlandToken();
     if (!token || !callId) return;
     try {
-      var res = await blandFetch('/calls/' + callId, {
-        headers: { 'Authorization': 'Bearer ' + token }
+      var res  = await fetch(BLAND_API_BASE + '/calls/' + callId, {
+        headers: { 'x-bland-token': token }
       });
       if (!res.ok) return;
       var data = await res.json();
-      var status = data.status || data.call_status || 'unknown';
+
+      var status   = data.status || data.call_status || 'unknown';
       var duration = parseFloat(data.call_length || data.duration || 0);
       var terminal = ['completed','failed','busy','no-answer','voicemail'];
 
       var h = getCallHistory();
       var entry = h.find(function(e){ return e.id === callId; });
       if (entry) {
-        entry.status = status;
+        entry.status   = status;
         entry.duration = duration;
-        if (data.transcripts && data.transcripts.length) entry.hasTranscript = true;
+        if (data.transcripts && data.transcripts.length) {
+          entry.hasTranscript = true;
+        }
         saveCallHistory(h);
         updateFabBadge();
       }
+
       if (!terminal.includes(status)) {
         setTimeout(function(){ pollStatus(callId); }, 12000);
-      } else if (status === 'completed') {
-        showToast('✅ Call completed (' + Math.round(duration) + 's)', 'success');
       }
-    } catch(e) {}
+    } catch(e) { /* silent */ }
   }
 
-  // ── HISTORY ──────────────────────────────────────────────────────────────
+  // ── HISTORY PANEL ─────────────────────────────────────────────────────────
   window.showCallHistory = function() {
     renderHistoryBody();
     document.getElementById('callHistoryModal').classList.add('active');
   };
 
   function renderHistoryBody() {
-    var h = getCallHistory();
+    var h  = getCallHistory();
     var el = document.getElementById('callHistoryBody');
     if (!h.length) {
-      el.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--text-faint)"><div style="font-size:2.5em;margin-bottom:10px">&#128222;</div><div style="font-weight:700;margin-bottom:5px">No AI calls yet</div><div style="font-size:0.82em">Click &#129302; on any red-flagged record to place your first call</div></div>';
+      el.innerHTML =
+        '<div style="text-align:center;padding:40px 20px;color:var(--text-faint)">' +
+          '<div style="font-size:2.5em;margin-bottom:10px">&#128222;</div>' +
+          '<div style="font-weight:700;margin-bottom:5px">No AI calls yet</div>' +
+          '<div style="font-size:0.82em">Click &#129302; on any red-flagged record to place your first call</div>' +
+        '</div>';
       return;
     }
-    var scMap = { queued:'cs-queued', calling:'cs-calling', completed:'cs-completed', failed:'cs-failed', busy:'cs-busy', 'no-answer':'cs-no-answer' };
+    var scMap = {
+      queued:'cs-queued', calling:'cs-calling', completed:'cs-completed',
+      failed:'cs-failed', busy:'cs-busy', 'no-answer':'cs-no-answer'
+    };
     el.innerHTML = h.map(function(c) {
-      var sc = scMap[c.status] || 'cs-unknown';
-      var dt = new Date(c.ts).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      var sc  = scMap[c.status] || 'cs-unknown';
+      var dt  = new Date(c.ts).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
       var dur = c.duration ? Math.round(c.duration) + 's' : '';
-      return '<div class="call-hist-row"><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:0.83em;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.clientName||'') + '</div><div style="font-size:0.68em;color:var(--text-faint);margin-top:1px">' + dt + ' &bull; ' + (c.phone||'') + ' &bull; &#8377;' + (c.balance||0).toLocaleString('en-IN') + (c.invoiceNo?' &bull; #'+c.invoiceNo:'') + '</div></div>' + (dur ? '<span style="font-size:0.68em;color:var(--text-faint);flex-shrink:0">' + dur + '</span>' : '') + '<span class="call-status-pill ' + sc + '">' + (c.status||'?') + '</span>' + (c.hasTranscript ? '<span title="Transcript available" style="font-size:0.9em">&#128196;</span>' : '') + '</div>';
+      var bal = '&#8377;' + (c.balance||0).toLocaleString('en-IN');
+      return '<div class="call-hist-row">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-weight:700;font-size:0.83em;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.clientName||'') + '</div>' +
+          '<div style="font-size:0.68em;color:var(--text-faint);margin-top:1px">' + dt + ' &bull; ' + (c.phone||'') + ' &bull; ' + bal + (c.invoiceNo?' &bull; #'+c.invoiceNo:'') + '</div>' +
+        '</div>' +
+        (dur ? '<span style="font-size:0.68em;color:var(--text-faint);flex-shrink:0">' + dur + '</span>' : '') +
+        '<span class="call-status-pill ' + sc + '">' + (c.status||'?') + '</span>' +
+        (c.hasTranscript ? '<span title="Transcript available" style="font-size:0.9em;cursor:default">&#128196;</span>' : '') +
+      '</div>';
     }).join('');
   }
 
   window.clearCallHistory = function() {
-    if (!confirm('Clear all call history?')) return;
+    if (!confirm('Clear all call history? This cannot be undone.')) return;
     localStorage.removeItem(CALL_HISTORY_KEY);
     renderHistoryBody();
     updateFabBadge();
     showToast('Call history cleared', 'info');
   };
 
-  // ── BULK CALLS (FIXED) ──────────────────────────────────────────────────
+  // ── BULK CALLS ────────────────────────────────────────────────────────────
   window.openBulkCallModal = function() {
     var token = getBlandToken();
     if (!token) { openAICallSettings(); return; }
+
+    // Red-flag clients with a valid phone
     var targets = payments.filter(function(p){
-      var s = (typeof calcStatus === 'function') ? calcStatus(p) : {};
-      return s.isRedFlag && normalisePhone(p.phone);
-    }).sort(function(a,b){
-      return (calcStatus(b).daysOverdue||0) - (calcStatus(a).daysOverdue||0);
-    });
-    if (!targets.length) { showToast('No red-flag clients with valid phone numbers', 'error'); return; }
-    document.getElementById('bulkCallList').innerHTML = targets.map(function(p, i) {
+      var s  = (typeof calcStatus === 'function') ? calcStatus(p) : {};
       var ph = normalisePhone(p.phone);
-      var s = calcStatus(p);
-      return '<div class="bulk-call-row"><input type="checkbox" class="bulk-chk" data-idx="' + payments.indexOf(p) + '" id="bchk'+i+'" checked onchange="updateBulkCount()"><label for="bchk'+i+'" style="flex:1;min-width:0;cursor:pointer;display:flex;align-items:center;gap:8px"><span class="bcr-client">' + p.clientName + '</span>' + (s.daysOverdue ? '<span style="font-size:0.65em;color:var(--danger-light);font-weight:800;flex-shrink:0">' + s.daysOverdue + 'd</span>' : '') + '</label><span class="bcr-bal">&#8377;' + parseFloat(p.balance||0).toLocaleString('en-IN') + '</span></div>';
+      return s.isRedFlag && ph;
+    }).sort(function(a,b){
+      var sa = (typeof calcStatus==='function') ? calcStatus(a) : {};
+      var sb = (typeof calcStatus==='function') ? calcStatus(b) : {};
+      return (sb.daysOverdue||0) - (sa.daysOverdue||0);
+    });
+
+    if (!targets.length) {
+      showToast('No red-flag clients with valid phone numbers', 'error');
+      return;
+    }
+
+    document.getElementById('bulkCallList').innerHTML = targets.map(function(p, i){
+      var ph  = normalisePhone(p.phone);
+      var s   = (typeof calcStatus==='function') ? calcStatus(p) : {};
+      var bal = parseFloat(p.balance||0);
+      return '<div class="bulk-call-row">' +
+        '<input type="checkbox" class="bulk-chk" data-idx="' + payments.indexOf(p) + '" id="bchk'+i+'" checked onchange="updateBulkCount()">' +
+        '<label for="bchk'+i+'" style="flex:1;min-width:0;cursor:pointer;display:flex;align-items:center;gap:8px">' +
+          '<span class="bcr-client">' + p.clientName + '</span>' +
+          (s.daysOverdue ? '<span style="font-size:0.65em;color:var(--danger-light);font-weight:800;flex-shrink:0">' + s.daysOverdue + 'd</span>' : '') +
+        '</label>' +
+        '<span class="bcr-bal">&#8377;' + bal.toLocaleString('en-IN') + '</span>' +
+        '<span style="font-size:0.68em;color:var(--text-faint);flex-shrink:0">+91 ' + ph.replace(/(\d{5})(\d{5})/,'$1 $2') + '</span>' +
+      '</div>';
     }).join('');
+
     updateBulkCount();
     closeModal('callHistoryModal');
     document.getElementById('bulkCallModal').classList.add('active');
   };
 
-  window.bulkSelectAll = function(state) { document.querySelectorAll('.bulk-chk').forEach(function(c){ c.checked = state; }); updateBulkCount(); };
-  window.updateBulkCount = function() { var sel = document.querySelectorAll('.bulk-chk:checked').length; var el = document.getElementById('bulkSelectedCount'); if (el) el.textContent = sel + ' selected'; };
+  window.bulkSelectAll = function(state) {
+    document.querySelectorAll('.bulk-chk').forEach(function(c){ c.checked = state; });
+    updateBulkCount();
+  };
+
+  window.updateBulkCount = function() {
+    var sel = document.querySelectorAll('.bulk-chk:checked').length;
+    var el  = document.getElementById('bulkSelectedCount');
+    if (el) el.textContent = sel + ' selected';
+  };
 
   window.confirmBulkCall = async function() {
     var token = getBlandToken();
     if (!token) { openAICallSettings(); return; }
+
     var checked = Array.from(document.querySelectorAll('.bulk-chk:checked'));
     if (!checked.length) { showToast('Select at least one client', 'error'); return; }
-    var customNote = (document.getElementById('bulkCustomNote') || {}).value || '';
+
+    var customNote = document.getElementById('bulkCustomNote').value.trim();
     var btn = document.querySelector('#bulkCallModal .btn-primary');
     if (btn) { btn.disabled = true; btn.textContent = 'Calling…'; }
+
     closeModal('bulkCallModal');
     showToast('Starting ' + checked.length + ' AI calls…', 'info');
 
+    var DELAY_MS = 5000; // 5s between calls
     for (var i = 0; i < checked.length; i++) {
       var idx = parseInt(checked[i].dataset.idx);
-      var p = payments[idx]; if (!p) continue;
-      var ph = normalisePhone(p.phone); if (!ph) continue;
+      var p   = payments[idx];
+      if (!p) continue;
+      var ph  = normalisePhone(p.phone);
+      if (!ph) continue;
+
       var script = buildScript(p, 'en', customNote);
       try {
-        // ✅ FIXED: Direct to Bland.ai with proper auth
-        var res = await blandFetch('/calls', {
+        var res = await fetch(BLAND_API_BASE + '/calls', {
           method: 'POST',
-          headers: blandHeaders(token),
-          body: JSON.stringify({ phone_number:'+91'+ph, task:script, voice:'maya', max_duration:2, wait_for_greeting:true, record:true })
+          headers: { 'authorization': token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone_number: '+91' + ph,
+            task: script,
+            voice: 'maya',
+            max_duration: 2,
+            wait_for_greeting: true,
+            record: true,
+            language: 'en',
+            model: 'enhanced'
+          })
         });
         var data = await res.json();
         if (!res.ok) throw new Error(data.message || 'error');
         var callId = data.call_id || data.id || '';
-        addToHistory({ id:callId, ts:Date.now(), clientName:p.clientName, invoiceNo:p.invoiceNo||'', phone:'+91'+ph, company:p.company||'', balance:parseFloat(p.balance||0), status:'queued', voice:'maya', duration:0, scriptSnip:script.substring(0,160) });
-        showToast('📞 ' + (i+1) + '/' + checked.length + ': ' + p.clientName.split(' ').slice(0,2).join(' '), 'success');
-        if (callId) setTimeout((function(id){ return function(){ pollStatus(id); }; })(callId), 20000 + i * 5000);
+        addToHistory({
+          id:callId, ts:Date.now(), clientName:p.clientName, invoiceNo:p.invoiceNo||'',
+          phone:'+91'+ph, company:p.company||'', balance:parseFloat(p.balance||0),
+          status:'queued', voice:'maya', duration:0, scriptSnip:script.substring(0,160)
+        });
+        showToast('&#128222; Call ' + (i+1) + '/' + checked.length + ': ' + p.clientName.split(' ').slice(0,3).join(' '), 'success');
+        if (callId) setTimeout((function(id){ return function(){ pollStatus(id); }; })(callId), 20000 + i * DELAY_MS);
       } catch(err) {
-        showToast('Failed: ' + p.clientName.split(' ')[0] + ' — ' + err.message, 'error');
+        showToast('Call failed for ' + p.clientName.split(' ').slice(0,2).join(' ') + ': ' + err.message, 'error');
       }
-      if (i < checked.length - 1) await new Promise(function(r){ setTimeout(r, 5000); });
+
+      if (i < checked.length - 1) await sleep(DELAY_MS);
     }
+
     updateFabBadge();
     if (btn) { btn.disabled = false; btn.textContent = '🤖 Start Bulk Calls'; }
-    showToast('Bulk calls complete!', 'success');
   };
 
-  // ── SETTINGS (FIXED — verify calls real API) ────────────────────────────
+  function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  // ── SETTINGS MODAL ────────────────────────────────────────────────────────
   window.openAICallSettings = function() {
     var curToken = getBlandToken();
     var inp = document.getElementById('blandTokenInput');
@@ -4731,6 +5076,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     if (inp) inp.placeholder = curToken ? '(token set — paste new to replace)' : 'org_xxxxxxxxxxxxxxxxxxxxxxxxxxxx';
     if (cni) cni.value = getCallerName();
     if (rem) rem.style.display = curToken ? '' : 'none';
+    // Close other modals first
     ['aiCallModal','callHistoryModal','bulkCallModal'].forEach(function(id){ closeModal(id); });
     document.getElementById('aiSettingsModal').classList.add('active');
   };
@@ -4738,8 +5084,13 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   window.saveBlandSettings = async function() {
     var rawToken = document.getElementById('blandTokenInput').value.trim();
     var callerN  = document.getElementById('blandCallerName').value.trim();
-    if (rawToken && !rawToken.includes('…')) localStorage.setItem(BLAND_TOKEN_KEY, rawToken);
+
+    // Only update token if a new one was typed (not the masked preview)
+    if (rawToken && !rawToken.includes('…')) {
+      localStorage.setItem(BLAND_TOKEN_KEY, rawToken);
+    }
     if (callerN) localStorage.setItem(BLAND_CALLER_KEY, callerN);
+
     var token = getBlandToken();
     if (!token) { showToast('Please enter an API key', 'error'); return; }
 
@@ -4747,66 +5098,84 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     if (btn) { btn.disabled = true; btn.textContent = 'Verifying…'; }
 
     try {
-      // ✅ FIXED: Verify against real Bland.ai API
-      var res = await blandFetch('/calls?limit=1', {
-        headers: { 'Authorization': 'Bearer ' + token }
+      var res = await fetch(BLAND_API_BASE + '/calls?limit=1', {
+        headers: { 'authorization': token }
       });
       if (res.ok) {
-        showToast('✅ API key saved & verified!', 'success');
+        showToast('&#9989; API key saved & verified!', 'success');
         closeModal('aiSettingsModal');
         updateSetupFab();
-        if (typeof setFilterCard === 'function') setFilterCard(activeFilterCard);
+        // Re-render to show AI call buttons now that token exists
+        if (typeof setFilterCard === 'function' && typeof activeFilterCard !== 'undefined') setFilterCard(activeFilterCard);
         if (typeof renderFollowups === 'function') renderFollowups();
       } else {
-        var txt = await res.text();
-        showToast('Verification failed (' + res.status + '): check your key', 'error');
+        showToast('Key saved but verification failed — check the key', 'error');
         if (btn) { btn.disabled = false; btn.textContent = 'Save & Verify'; }
       }
     } catch(e) {
-      showToast('Network error during verify — key saved anyway', 'info');
+      showToast('Key saved (network issue during verify)', 'info');
       closeModal('aiSettingsModal');
       updateSetupFab();
     }
   };
 
   window.removeBlandToken = function() {
-    if (!confirm('Remove Bland.ai API key?')) return;
+    if (!confirm('Remove Bland.ai API key from this device?')) return;
     localStorage.removeItem(BLAND_TOKEN_KEY);
     closeModal('aiSettingsModal');
     updateSetupFab();
     showToast('API key removed', 'info');
   };
 
-  // ── FAB HELPERS ───────────────────────────────────────────────────────
+  // ── FAB HELPERS ───────────────────────────────────────────────────────────
   function updateSetupFab() {
     var fab = document.getElementById('aiSetupFab');
     if (!fab) return;
-    if (getBlandToken()) { fab.classList.remove('needs-setup'); fab.innerHTML = '&#9881; <span class="ai-fab-label">AI Call Settings</span>'; }
-    else { fab.classList.add('needs-setup'); fab.innerHTML = '&#9881; <span class="ai-fab-label">Setup AI Calls ✨</span>'; }
-  }
-  function updateFabBadge() {
-    var h = getCallHistory();
-    var today = new Date().toDateString();
-    var count = h.filter(function(c){ return new Date(c.ts).toDateString() === today; }).length;
-    var btn = document.querySelector('#aiCallFab .ai-fab-primary');
-    if (btn) btn.innerHTML = '&#128222; <span class="ai-fab-label">Call History' + (count ? ' (' + count + ')' : '') + '</span>';
+    if (getBlandToken()) {
+      fab.classList.remove('needs-setup');
+      fab.innerHTML = '&#9881; <span class="ai-fab-label">AI Call Settings</span>';
+    } else {
+      fab.classList.add('needs-setup');
+      fab.innerHTML = '&#9881; <span class="ai-fab-label">Setup AI Calls ✨</span>';
+    }
   }
 
-  // ── INJECT AI BUTTON INTO TABLE + FOLLOWUPS ────────────────────────────
+  function updateFabBadge() {
+    var h     = getCallHistory();
+    var today = new Date().toDateString();
+    var count = h.filter(function(c){ return new Date(c.ts).toDateString() === today; }).length;
+    var btn   = document.querySelector('#aiCallFab .ai-fab-primary');
+    if (!btn) return;
+    btn.innerHTML = '&#128222; <span class="ai-fab-label">Call History' + (count ? ' (' + count + ')' : '') + '</span>';
+  }
+
+  // ── INJECT AI CALL BUTTON INTO TABLE ACTIONS ──────────────────────────────
+  // Wraps the original buildActions to append the AI call button
   if (typeof buildActions === 'function') {
     var _origBA = buildActions;
     window.buildActions = function(p, idx) {
       var base = _origBA(p, idx);
-      var ph = normalisePhone(p.phone);
-      var bal = parseFloat(p.balance || 0);
+      var ph   = normalisePhone(p.phone);
+      var bal  = parseFloat(p.balance || 0);
       if (!ph || bal <= 0) return base;
-      return base.replace('</div>', '<button class="act-btn act-aicall" onclick="aiCallPayment(' + idx + ')" title="AI Reminder Call">&#129302;</button></div>');
+      // Insert before closing </div> of action-group
+      return base.replace(
+        '</div>',
+        '<button class="act-btn act-aicall" onclick="aiCallPayment(' + idx + ')" title="AI Reminder Call">&#129302;</button></div>'
+      );
     };
   }
+
+  // ── INJECT AI CALL BUTTON INTO FOLLOWUP CARDS ─────────────────────────────
+  // Wraps renderFollowups to add the button after DOM render
   if (typeof renderFollowups === 'function') {
     var _origRF = renderFollowups;
-    window.renderFollowups = function() { _origRF(); injectFollowupAIButtons(); };
+    window.renderFollowups = function() {
+      _origRF();
+      injectFollowupAIButtons();
+    };
   }
+
   function injectFollowupAIButtons() {
     document.querySelectorAll('.followup-actions').forEach(function(actDiv) {
       if (actDiv.querySelector('.ai-call-injected')) return;
@@ -4814,42 +5183,521 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       if (!payBtn) return;
       var m = payBtn.getAttribute('onclick').match(/openPayModal\((\d+)\)/);
       if (!m) return;
-      var idx = parseInt(m[1]); var p = payments[idx]; if (!p) return;
-      var ph = normalisePhone(p.phone);
+      var idx = parseInt(m[1]);
+      var p   = payments[idx];
+      if (!p) return;
+      var ph  = normalisePhone(p.phone);
       if (!ph || parseFloat(p.balance||0) <= 0) return;
+
       var btn = document.createElement('button');
       btn.className = 'btn btn-xs act-aicall ai-call-injected';
-      btn.title = 'AI Reminder Call';
+      btn.title     = 'AI Reminder Call';
       btn.innerHTML = '&#129302; AI Call';
-      btn.onclick = function(){ aiCallPayment(idx); };
+      btn.onclick   = function(){ aiCallPayment(idx); };
+      // Insert as first child so it appears before other buttons
       actDiv.insertBefore(btn, actDiv.firstChild);
     });
   }
 
-  // ── MODAL CLOSE HANDLERS ──────────────────────────────────────────────
+  // ── ESCAPE KEY for new modals ─────────────────────────────────────────────
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') ['aiCallModal','callHistoryModal','aiSettingsModal','bulkCallModal'].forEach(function(id){ closeModal(id); });
-  });
-  ['aiCallModal','callHistoryModal','aiSettingsModal','bulkCallModal'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.addEventListener('click', function(e){ if (e.target.id === id) closeModal(id); });
+    if (e.key === 'Escape') {
+      ['aiCallModal','callHistoryModal','aiSettingsModal','bulkCallModal'].forEach(function(id) {
+        closeModal(id);
+      });
+    }
   });
 
-  // ── BOOT ──────────────────────────────────────────────────────────────
+  // Click-outside to close new modals
+  ['aiCallModal','callHistoryModal','aiSettingsModal','bulkCallModal'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', function(e) {
+        if (e.target.id === id) closeModal(id);
+      });
+    }
+  });
+
+  // ── BOOT ──────────────────────────────────────────────────────────────────
   function boot() {
     updateSetupFab();
     updateFabBadge();
+    // Re-render table + followups to inject AI buttons (only if token already set)
     if (getBlandToken()) {
-      if (typeof setFilterCard === 'function') setFilterCard(activeFilterCard);
+      if (typeof setFilterCard === 'function' && typeof activeFilterCard !== 'undefined') {
+        setFilterCard(activeFilterCard);
+      }
       if (typeof renderFollowups === 'function') renderFollowups();
     }
-    // Resume polling any pending calls
-    var pending = getCallHistory().filter(function(c){ return c.id && ['queued','calling'].includes(c.status) && (Date.now() - c.ts) < 3600000; });
+    // Poll any queued calls from a previous session
+    var pending = getCallHistory().filter(function(c){
+      return c.id && ['queued','calling'].includes(c.status) && (Date.now() - c.ts) < 3600000;
+    });
     pending.forEach(function(c){ setTimeout(function(){ pollStatus(c.id); }, 3000); });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-  else setTimeout(boot, 150);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    setTimeout(boot, 150);
+  }
+
 })();
 </script>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  END AI CALLS PATCH
+  ══════════════════════════════════════════════════════════════════════
+-->
+  <!--
+  ══════════════════════════════════════════════════════════════════════
+  AI CALLS — DEBUG + FIX PATCH
+  Paste this block AFTER the ai-calls-patch block, still before </body>
+  Fixes: invalid params, auth format, CORS, shows real error reason
+  ══════════════════════════════════════════════════════════════════════
+-->
+<script>
+(function () {
+  'use strict';
+
+  var BLAND_TOKEN_KEY = 'carnival_bland_api_key';
+
+  function getToken() { return localStorage.getItem(BLAND_TOKEN_KEY) || ''; }
+
+  // ── SHOW REAL ERROR ───────────────────────────────────────────────────────
+  function showError(title, detail) {
+    // Remove any existing error overlay
+    var old = document.getElementById('aiErrOverlay');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id  = 'aiErrOverlay';
+    overlay.style.cssText = [
+      'position:fixed','top:0','left:0','width:100%','height:100%',
+      'background:rgba(0,0,0,0.75)','z-index:9999',
+      'display:flex','align-items:center','justify-content:center','padding:16px'
+    ].join(';');
+
+    overlay.innerHTML =
+      '<div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:22px;max-width:520px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,0.5);font-family:\'Segoe UI\',system-ui,sans-serif">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">' +
+          '<span style="font-size:1.6em">🚨</span>' +
+          '<span style="font-size:1em;font-weight:800;color:var(--danger-light)">Call Failed — Reason</span>' +
+        '</div>' +
+        '<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:12px;margin-bottom:14px">' +
+          '<div style="font-size:0.82em;font-weight:700;color:var(--text);margin-bottom:6px">' + escH(title) + '</div>' +
+          '<pre style="font-size:0.72em;color:var(--danger-light);white-space:pre-wrap;word-break:break-all;max-height:180px;overflow-y:auto;margin:0;font-family:monospace">' + escH(detail) + '</pre>' +
+        '</div>' +
+        '<div id="aiErrHelp" style="font-size:0.77em;color:var(--text-muted);line-height:1.6;margin-bottom:14px"></div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">' +
+          '<button onclick="document.getElementById(\'aiErrOverlay\').remove()" style="padding:9px 18px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text-muted);font-weight:700;cursor:pointer;font-size:0.85em">Close</button>' +
+          '<button onclick="openAICallSettings();document.getElementById(\'aiErrOverlay\').remove()" style="padding:9px 18px;border:none;border-radius:9px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-size:0.85em">⚙ Check API Key</button>' +
+          '<button onclick="runDiagnostic()" style="padding:9px 18px;border:none;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-weight:700;cursor:pointer;font-size:0.85em">🔍 Run Diagnostic</button>' +
+        '</div>' +
+      '</div>';
+
+    // Populate helpful hints based on the error
+    document.body.appendChild(overlay);
+    var helpEl = document.getElementById('aiErrHelp');
+    if (helpEl) helpEl.innerHTML = buildHelp(title, detail);
+
+    overlay.addEventListener('click', function(e){ if (e.target === overlay) overlay.remove(); });
+  }
+
+  function buildHelp(title, detail) {
+    var d = (detail || '').toLowerCase();
+    var t = (title || '').toLowerCase();
+
+    if (d.includes('failed to fetch') || d.includes('networkerror') || d.includes('cors')) {
+      return '<b style="color:var(--accent-light)">🌐 Network / CORS error</b><br>' +
+        'Your browser blocked the request to Bland.ai. Common causes:<br>' +
+        '• Ad-blocker or privacy extension blocking the domain<br>' +
+        '• Try opening in an Incognito tab<br>' +
+        '• Disable extensions and retry<br>' +
+        '• If on a corporate network, the proxy may be blocking it';
+    }
+    if (d.includes('401') || d.includes('unauthorized') || d.includes('invalid api key') || d.includes('invalid key')) {
+      return '<b style="color:var(--accent-light)">🔑 Invalid API Key</b><br>' +
+        '• Go to <a href="https://bland.ai" target="_blank" style="color:var(--primary-light)">bland.ai</a> → Dashboard → API Keys<br>' +
+        '• Copy the key and paste it again in ⚙ Settings<br>' +
+        '• Make sure there are no extra spaces at the start or end';
+    }
+    if (d.includes('400') || d.includes('bad request') || d.includes('invalid')) {
+      return '<b style="color:var(--accent-light)">⚠ Bad Request (400)</b><br>' +
+        'One of the call parameters was rejected by Bland.ai.<br>' +
+        'The patch has already stripped out known bad params. Click <b>Run Diagnostic</b> to test with the absolute minimum payload.';
+    }
+    if (d.includes('402') || d.includes('payment') || d.includes('credits')) {
+      return '<b style="color:var(--accent-light)">💳 Insufficient Credits</b><br>' +
+        'Your Bland.ai account is out of call credits. Log in at bland.ai and top up.';
+    }
+    if (d.includes('429') || d.includes('rate limit')) {
+      return '<b style="color:var(--accent-light)">⏳ Rate Limited</b><br>' +
+        'Too many calls too quickly. Wait a minute and try again.';
+    }
+    if (d.includes('phone') || d.includes('number')) {
+      return '<b style="color:var(--accent-light)">📞 Phone Number Issue</b><br>' +
+        '• Indian numbers must be 10 digits after +91<br>' +
+        '• Example: +91 98765 43210<br>' +
+        '• Bland.ai may not yet support all Indian carrier prefixes';
+    }
+    return '<b>💡 Tip:</b> Click <b>Run Diagnostic</b> below to send a minimal test call and see the exact API response.';
+  }
+
+  function escH(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── DIAGNOSTIC TOOL ───────────────────────────────────────────────────────
+  window.runDiagnostic = async function() {
+    var token = getToken();
+    if (!token) { openAICallSettings(); return; }
+
+    var diagEl = document.getElementById('aiErrHelp');
+    if (diagEl) diagEl.innerHTML = '<span style="color:var(--accent-light)">⏳ Running diagnostic…</span>';
+
+    var results = [];
+
+    // Test 1: GET /me or /calls — check auth
+    try {
+      var r1 = await fetch('http://localhost:3456/api/bland/calls?limit=1', {
+        headers: { 'x-bland-token': token }
+      });
+      results.push({ test: 'Auth check (no Bearer)', status: r1.status, ok: r1.ok });
+    } catch(e) {
+      results.push({ test: 'Auth check (no Bearer)', status: 'NETWORK ERROR', ok: false, err: e.message });
+    }
+
+    // Test 2: Same but with Bearer prefix
+    try {
+      var r2 = await fetch('http://localhost:3456/api/bland/calls?limit=1', {
+        headers: { 'x-bland-token': 'Bearer ' + token }
+      });
+      results.push({ test: 'Auth check (with Bearer)', status: r2.status, ok: r2.ok });
+    } catch(e) {
+      results.push({ test: 'Auth check (with Bearer)', status: 'NETWORK ERROR', ok: false, err: e.message });
+    }
+
+    // Display results
+    var html = '<b style="color:var(--text)">Diagnostic Results:</b><br><br>';
+    results.forEach(function(r) {
+      var icon  = r.ok ? '✅' : '❌';
+      var color = r.ok ? 'var(--success-light)' : 'var(--danger-light)';
+      html += '<span style="color:' + color + '">' + icon + ' ' + escH(r.test) + ' → HTTP ' + escH(r.status) + (r.err ? ' (' + escH(r.err) + ')' : '') + '</span><br>';
+    });
+
+    // Determine what's working
+    var authOk   = results.find(function(r){ return r.test.includes('no Bearer') && r.ok; });
+    var bearerOk = results.find(function(r){ return r.test.includes('with Bearer') && r.ok; });
+    var netFail  = results.every(function(r){ return String(r.status).includes('NETWORK'); });
+
+    if (netFail) {
+      html += '<br><b style="color:var(--accent-light)">→ Network blocked.</b> Try disabling your ad-blocker or VPN.';
+    } else if (authOk) {
+      html += '<br><b style="color:var(--success-light)">→ API key is valid.</b> Setting preferred auth format…';
+      localStorage.setItem('carnival_bland_auth_format', 'plain');
+    } else if (bearerOk) {
+      html += '<br><b style="color:var(--success-light)">→ API key works with Bearer prefix.</b> Updating setting…';
+      localStorage.setItem('carnival_bland_auth_format', 'bearer');
+    } else {
+      html += '<br><b style="color:var(--danger-light)">→ API key rejected on both formats.</b> Please generate a new key on bland.ai.';
+    }
+
+    if (diagEl) diagEl.innerHTML = html;
+
+    // If auth works, patch the auth header and suggest retrying
+    if (authOk || bearerOk) {
+      setTimeout(function(){
+        var overlay = document.getElementById('aiErrOverlay');
+        if (overlay) overlay.remove();
+        showToast('Diagnostic complete — auth format updated. Please try calling again.', 'success');
+      }, 2000);
+    }
+  };
+
+  // ── OVERRIDE confirmAICall with robust version ────────────────────────────
+  window.confirmAICall = async function(idx, ph) {
+    var p = payments[idx];
+    if (!p) return;
+
+    var token   = getToken();
+    if (!token) { openAICallSettings(); return; }
+
+    var script  = (document.getElementById('aiCallScript') || {}).value || '';
+    var voice   = (document.getElementById('aiCallVoice')  || {}).value || 'maya';
+    var maxDur  = parseInt(((document.getElementById('aiCallDuration') || {}).value || '2'), 10) || 2;
+
+    script = script.trim();
+    if (!script) { showToast('Call script is empty', 'error'); return; }
+
+    var btn = document.getElementById('aiConfirmCallBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '&#128222; Dialling…'; }
+
+    // Determine auth format (from diagnostic or default)
+    var authFmt = localStorage.getItem('carnival_bland_auth_format') || 'plain';
+    var authHeader = authFmt === 'bearer' ? ('Bearer ' + token) : token;
+
+    // Minimal payload — no optional/possibly-unsupported fields
+    var payload = {
+      phone_number: '+91' + ph,
+      task: script,
+      voice: voice,
+      max_duration: maxDur,
+      wait_for_greeting: true,
+      record: true
+    };
+
+    var rawResponse = '';
+    var httpStatus  = 0;
+
+    try {
+      var res  = await fetch('http://localhost:3456/api/bland/calls', {
+        method: 'POST',
+        headers: { 'x-bland-token': authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      httpStatus  = res.status;
+      rawResponse = await res.text();
+
+      if (!res.ok) {
+        // Try Bearer prefix automatically if first attempt was plain and got 401
+        if (res.status === 401 && authFmt === 'plain') {
+          var res2 = await fetch('http://localhost:3456/api/bland/calls', {
+            method: 'POST',
+            headers: { 'x-bland-token': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (res2.ok) {
+            localStorage.setItem('carnival_bland_auth_format', 'bearer');
+            rawResponse = await res2.text();
+            res = res2;
+            httpStatus = res2.status;
+          } else {
+            rawResponse = await res2.text();
+          }
+        }
+      }
+
+      if (!res.ok) {
+        var parsed = {};
+        try { parsed = JSON.parse(rawResponse); } catch(pe) {}
+        var errMsg = parsed.message || parsed.error || parsed.errors || rawResponse || ('HTTP ' + httpStatus);
+        if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
+        showError('HTTP ' + httpStatus + ' from Bland.ai', typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg, null, 2));
+        return;
+      }
+
+      // Success
+      var data   = {};
+      try { data = JSON.parse(rawResponse); } catch(pe) {}
+      var callId = data.call_id || data.id || '';
+
+      // Log to history
+      var history = [];
+      try { history = JSON.parse(localStorage.getItem('carnival_ai_call_history') || '[]'); } catch(e) {}
+      history.unshift({
+        id: callId, ts: Date.now(), clientName: p.clientName,
+        invoiceNo: p.invoiceNo || '', phone: '+91' + ph,
+        company: p.company || '', balance: parseFloat(p.balance || 0),
+        status: 'queued', voice: voice, duration: 0,
+        scriptSnip: script.substring(0, 160)
+      });
+      try { localStorage.setItem('carnival_ai_call_history', JSON.stringify(history.slice(0, 300))); } catch(e) {}
+
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
+      closeModal('aiCallModal');
+      showToast('📞 Call placed for ' + p.clientName.split(' ').slice(0,3).join(' ') + '!', 'success');
+
+      // Update FAB badge
+      var fabBtn = document.querySelector('#aiCallFab .ai-fab-primary');
+      if (fabBtn) {
+        var todayCount = history.filter(function(c){ return new Date(c.ts).toDateString() === new Date().toDateString(); }).length;
+        fabBtn.innerHTML = '&#128222; <span class="ai-fab-label">Call History (' + todayCount + ')</span>';
+      }
+
+      // Poll status
+      if (callId) {
+        setTimeout(function(){ pollCallStatusFixed(callId, authHeader); }, 20000);
+      }
+
+    } catch(networkErr) {
+      if (btn) { btn.disabled = false; btn.innerHTML = '&#129302; Call Now'; }
+      showError('Network Error — Request Blocked', networkErr.message + '\n\nThis usually means:\n• An ad-blocker or extension is blocking bland.ai\n• A CORS policy is preventing the browser request\n• No internet connection');
+    }
+  };
+
+  // ── POLL STATUS (with correct auth) ──────────────────────────────────────
+  async function pollCallStatusFixed(callId, authHeader) {
+    try {
+      var res  = await fetch('http://localhost:3456/api/bland/calls/' + callId, {
+        headers: { 'x-bland-token': authHeader }
+      });
+      if (!res.ok) return;
+      var data   = await res.json();
+      var status = data.status || data.call_status || 'unknown';
+      var dur    = parseFloat(data.call_length || data.duration || 0);
+
+      var h = [];
+      try { h = JSON.parse(localStorage.getItem('carnival_ai_call_history') || '[]'); } catch(e) {}
+      var entry = h.find(function(e){ return e.id === callId; });
+      if (entry) {
+        entry.status   = status;
+        entry.duration = dur;
+        if (data.transcripts && data.transcripts.length) entry.hasTranscript = true;
+        try { localStorage.setItem('carnival_ai_call_history', JSON.stringify(h)); } catch(e) {}
+      }
+
+      var terminal = ['completed','failed','busy','no-answer','voicemail'];
+      if (!terminal.includes(status)) {
+        setTimeout(function(){ pollCallStatusFixed(callId, authHeader); }, 12000);
+      } else if (status === 'completed') {
+        showToast('✅ Call completed (' + Math.round(dur) + 's)', 'success');
+      }
+    } catch(e) { /* silent */ }
+  }
+
+  // ── ALSO FIX BULK CALLS ───────────────────────────────────────────────────
+  var _origBulk = window.confirmBulkCall;
+  window.confirmBulkCall = async function() {
+    // Make sure auth format is determined before bulk runs
+    var token = getToken();
+    if (!token) { openAICallSettings(); return; }
+
+    var checked = Array.from(document.querySelectorAll('.bulk-chk:checked'));
+    if (!checked.length) { showToast('Select at least one client', 'error'); return; }
+
+    var authFmt    = localStorage.getItem('carnival_bland_auth_format') || 'plain';
+    var authHeader = authFmt === 'bearer' ? ('Bearer ' + token) : token;
+
+    var customNote = (document.getElementById('bulkCustomNote') || {}).value || '';
+    var btn = document.querySelector('#bulkCallModal .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Calling…'; }
+    closeModal('bulkCallModal');
+
+    var DELAY = 5000;
+    var success = 0, failed = 0;
+
+    for (var i = 0; i < checked.length; i++) {
+      var idx = parseInt(checked[i].dataset.idx);
+      var p   = payments[idx];
+      if (!p) continue;
+
+      var ph = (p.phone || '').replace(/\D/g,'').slice(-10);
+      if (!ph || ph.length < 10) continue;
+
+      var script = buildBulkScript(p, customNote);
+
+      try {
+        var payload = {
+          phone_number: '+91' + ph,
+          task: script,
+          voice: 'maya',
+          max_duration: 2,
+          wait_for_greeting: true,
+          record: true
+        };
+
+        var res = await fetch('http://localhost:3456/api/bland/calls', {
+          method: 'POST',
+          headers: { 'x-bland-token': authHeader, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        // Auto-retry with Bearer if 401
+        if (res.status === 401 && authFmt === 'plain') {
+          authHeader = 'Bearer ' + token;
+          authFmt    = 'bearer';
+          localStorage.setItem('carnival_bland_auth_format', 'bearer');
+          res = await fetch('http://localhost:3456/api/bland/calls', {
+            method: 'POST',
+            headers: { 'x-bland-token': authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        if (res.ok) {
+          var data   = await res.json();
+          var callId = data.call_id || data.id || '';
+          var h = [];
+          try { h = JSON.parse(localStorage.getItem('carnival_ai_call_history') || '[]'); } catch(e) {}
+          h.unshift({ id:callId, ts:Date.now(), clientName:p.clientName, invoiceNo:p.invoiceNo||'',
+            phone:'+91'+ph, company:p.company||'', balance:parseFloat(p.balance||0),
+            status:'queued', voice:'maya', duration:0, scriptSnip:script.substring(0,160) });
+          try { localStorage.setItem('carnival_ai_call_history', JSON.stringify(h.slice(0,300))); } catch(e) {}
+          success++;
+          showToast('📞 ' + (i+1) + '/' + checked.length + ': ' + p.clientName.split(' ').slice(0,2).join(' '), 'success');
+          if (callId) {
+            setTimeout((function(id, ah){ return function(){ pollCallStatusFixed(id, ah); }; })(callId, authHeader), 20000 + i * DELAY);
+          }
+        } else {
+          failed++;
+          var txt = await res.text();
+          showToast('Failed: ' + p.clientName.split(' ')[0] + ' — ' + res.status, 'error');
+        }
+      } catch(err) {
+        failed++;
+        showToast('Network error for ' + p.clientName.split(' ')[0], 'error');
+      }
+
+      if (i < checked.length - 1) await new Promise(function(r){ setTimeout(r, DELAY); });
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = '🤖 Start Bulk Calls'; }
+    showToast('Bulk calls done: ' + success + ' placed, ' + failed + ' failed', success > 0 ? 'success' : 'error');
+  };
+
+  function buildBulkScript(p, customNote) {
+    var bal    = parseFloat(p.balance || 0);
+    var invStr = p.invoiceNo ? 'Invoice number ' + p.invoiceNo : 'your pending invoice';
+    var balStr = 'Rupees ' + bal.toLocaleString('en-IN', {maximumFractionDigits:0});
+    var callerName = localStorage.getItem('carnival_bland_caller_name') || 'Carnival Accounts';
+    return 'Hello! May I please speak with someone from the accounts team at ' + p.clientName + '? ' +
+      'This is a payment reminder from ' + callerName + '. ' +
+      'We are calling regarding ' + invStr + ' for ' + balStr + ' which is currently outstanding. ' +
+      'Kindly process this at the earliest convenience. ' +
+      (customNote ? customNote + '. ' : '') +
+      'Thank you for your partnership with Carnival!';
+  }
+
+  // ── ADD "RUN DIAGNOSTIC" BUTTON TO SETTINGS MODAL ─────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    injectDiagBtn();
+  });
+  // Also try immediately if DOM already loaded
+  if (document.readyState !== 'loading') {
+    setTimeout(injectDiagBtn, 300);
+  }
+
+  function injectDiagBtn() {
+    var modal = document.getElementById('aiSettingsModal');
+    if (!modal || modal.dataset.diagInjected) return;
+    modal.dataset.diagInjected = '1';
+
+    // Watch for modal open
+    if (window.MutationObserver) {
+      new MutationObserver(function() {
+        if (!modal.classList.contains('active')) return;
+        var footer = modal.querySelector('.modal-content > div:last-child');
+        if (!footer || footer.querySelector('.diag-btn-injected')) return;
+        var diagBtn = document.createElement('button');
+        diagBtn.className = 'btn btn-secondary btn-sm diag-btn-injected';
+        diagBtn.style.cssText = 'border-color:var(--primary);color:var(--primary-light);margin-right:auto';
+        diagBtn.innerHTML = '🔍 Run Diagnostic';
+        diagBtn.onclick = function(){ runDiagnostic(); closeModal('aiSettingsModal'); };
+        footer.insertBefore(diagBtn, footer.firstChild);
+      }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+  console.log('[AI Calls Fix] Loaded — robust error handling + auto auth-format detection active');
+
+})();
+</script>
+<!--
+  ══════════════════════════════════════════════════════════════════════
+  END AI CALLS DEBUG + FIX PATCH
+  ══════════════════════════════════════════════════════════════════════
+-->
 </body>
 </html>
