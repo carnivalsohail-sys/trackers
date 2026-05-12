@@ -4577,23 +4577,27 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     </div>
 
     <div class="input-group" style="margin-bottom:14px">
-      <label>CORS Proxy URL (only if connection fails)</label>
+      <label>Custom CORS Proxy (optional — leave blank for auto)</label>
       <input id="corsProxyInput" type="text"
-        placeholder="e.g. https://your-server.com/proxy or leave blank"
+        placeholder="Auto-detect works for most cases. Only set this if auto fails."
         style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-family:monospace;font-size:0.78em">
     </div>
 
     <div class="ai-info-box ai-info-green">
       ✅ Pricing: ~$0.09/min · Free trial includes minutes · Supports Indian numbers (+91) · Calls recorded
     </div>
+    <div class="ai-info-box ai-info-purple" style="background:rgba(99,102,241,0.06)">
+      🔄 <b>Auto-proxy:</b> If Bland.ai blocks your browser (CORS), the system automatically finds a working proxy. No setup needed — just click Save & Test!
+    </div>
     <div class="ai-info-box ai-info-amber">
-      ⚠️ <b>"Connection failed" / "not connected to internet"?</b> This means your browser is blocking the API request (CORS). Fixes:<br>
-      1. <b>Best:</b> Host this HTML on a web server (even localhost) instead of opening the file directly<br>
-      2. <b>Quick:</b> Paste a CORS proxy URL above (e.g. a simple server that forwards requests to api.bland.ai)<br>
-      3. Ensure your internet is working and ad-blockers are disabled for this page
+      ⚠️ <b>Still getting errors?</b> Try:<br>
+      1. Click <b>Reset Proxy</b> below and Save & Test again<br>
+      2. Paste a custom proxy URL above (search "free CORS proxy")<br>
+      3. Disable ad-blockers for this page
     </div>
 
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-xs" onclick="resetProxy()" style="font-size:0.72em">🔄 Reset Proxy</button>
       <button class="btn btn-secondary" onclick="closeModal('aiSettingsModal')">Cancel</button>
       <button class="btn btn-danger btn-sm" id="blandRemoveBtn" style="display:none" onclick="removeBlandToken()">Remove Key</button>
       <button class="btn btn-primary" onclick="saveBlandSettings()" id="blandSaveBtn">Save & Test</button>
@@ -4654,28 +4658,101 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   var BLAND_API_BASE    = 'https://api.bland.ai/v1';
 
   // ── CORS PROXY HELPERS ────────────────────────────────────────────────────
-  // Bland.ai blocks browser requests from file:// or non-whitelisted domains.
-  // A CORS proxy routes the request through a server that adds proper headers.
-  // The user can configure one in ⚙ Settings.
+  // Bland.ai does NOT support browser CORS (no Access-Control-Allow-Origin header).
+  // So ALL browser requests get blocked — even from GitHub Pages.
+  // Solution: route through a proxy that adds CORS headers server-side.
+  //
+  // Built-in proxy list (free, public). We try direct first, then fallback.
+  var PROXY_LIST = [
+    'https://corsproxy.io/?',
+    'https://api.allorigins.win/raw?url=',
+    'https://cors.sh/?'
+  ];
+  var ACTIVE_PROXY_KEY = 'carnival_active_proxy';
+  var PROXY_MODE_KEY   = 'carnival_proxy_mode'; // 'auto' | 'direct' | 'custom'
+
   function getCorsProxy() { return (localStorage.getItem(CORS_PROXY_KEY) || '').trim(); }
   function setCorsProxy(url) { if (url) localStorage.setItem(CORS_PROXY_KEY, url); else localStorage.removeItem(CORS_PROXY_KEY); }
+  function getActiveProxy() { return localStorage.getItem(ACTIVE_PROXY_KEY) || ''; }
+  function setActiveProxy(url) { if (url) localStorage.setItem(ACTIVE_PROXY_KEY, url); else localStorage.removeItem(ACTIVE_PROXY_KEY); }
+  function getProxyMode() { return localStorage.getItem(PROXY_MODE_KEY) || 'auto'; }
+  function setProxyMode(m) { localStorage.setItem(PROXY_MODE_KEY, m); }
 
-  function apiFetch(url, opts) {
-    var proxy = getCorsProxy();
-    var finalUrl = proxy ? (proxy.replace(/\/$/, '') + '/' + url) : url;
-    // If using a proxy, strip Authorization header from direct request
-    // and send it as a custom header the proxy can forward
-    if (proxy && opts && opts.headers && opts.headers['Authorization']) {
-      opts.headers['x-bland-authorization'] = opts.headers['Authorization'];
-      delete opts.headers['Authorization'];
+  // Smart fetch: try direct first, auto-fallback to proxy on CORS error
+  async function apiFetch(url, opts) {
+    var mode = getProxyMode();
+    var customProxy = getCorsProxy();
+    var savedProxy = getActiveProxy();
+
+    // If user set a custom proxy, always use it
+    if (customProxy) {
+      return proxyFetch(url, opts, customProxy);
     }
-    return fetch(finalUrl, opts);
+
+    // If we already found a working proxy, use it directly
+    if (savedProxy && mode === 'auto') {
+      return proxyFetch(url, opts, savedProxy);
+    }
+
+    // If mode is 'direct', skip proxy entirely
+    if (mode === 'direct') {
+      return fetch(url, opts);
+    }
+
+    // Auto mode: try direct first, then fallback through proxy list
+    try {
+      var res = await fetch(url, opts);
+      // Direct worked! Remember this and use direct going forward
+      setActiveProxy('');
+      return res;
+    } catch(e) {
+      if (!isLikelyCorsOrNetworkError(e)) throw e;
+      // Direct failed (CORS) — try proxy list
+      for (var i = 0; i < PROXY_LIST.length; i++) {
+        try {
+          var res = await proxyFetch(url, opts, PROXY_LIST[i]);
+          if (res.ok || res.status === 400 || res.status === 401 || res.status === 422) {
+            // Proxy worked (even 400/401 means connection succeeded)
+            setActiveProxy(PROXY_LIST[i]);
+            return res;
+          }
+        } catch(pe) {
+          // This proxy failed, try next
+          continue;
+        }
+      }
+      // All proxies failed
+      throw new Error('CORS: Could not reach Bland.ai directly or via any proxy. Set a custom proxy in ⚙ Settings.');
+    }
+  }
+
+  function proxyFetch(url, opts, proxy) {
+    var finalUrl;
+    if (proxy.includes('allorigins')) {
+      // allorigins uses query param encoding
+      finalUrl = proxy + encodeURIComponent(url);
+    } else {
+      finalUrl = proxy + url;
+    }
+    var fetchOpts = Object.assign({}, opts || {}, { headers: Object.assign({}, (opts && opts.headers) || {}) });
+    // Move Authorization to a custom header so proxy can forward it
+    if (fetchOpts.headers['Authorization']) {
+      fetchOpts.headers['x-bland-authorization'] = fetchOpts.headers['Authorization'];
+      delete fetchOpts.headers['Authorization'];
+    }
+    return fetch(finalUrl, fetchOpts);
   }
 
   function isLikelyCorsOrNetworkError(err) {
     if (err && typeof err === 'object' && err.name === 'TypeError') return true;
     if (err && typeof err === 'string' && /failed\s*to\s*fetch|network|cors|cross-origin/i.test(err)) return true;
     return false;
+  }
+
+  function resetProxy() {
+    setActiveProxy('');
+    setProxyMode('auto');
+    showToast('Proxy reset — will auto-detect on next call', 'info');
   }
 
   // ── STORAGE HELPERS ───────────────────────────────────────────────────────
@@ -5060,34 +5137,47 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     // Key is saved — always close modal and update UI so buttons appear
     closeModal('aiSettingsModal');
+    // Reset proxy detection when user saves new settings
+    if (proxyUrl) {
+      setActiveProxy('');
+    } else {
+      // No custom proxy — try auto-detect from scratch
+      setActiveProxy('');
+      setProxyMode('auto');
+    }
     updateSetupFab();
     if (typeof setFilterCard === 'function') setFilterCard(activeFilterCard);
     if (typeof renderFollowups === 'function') renderFollowups();
     if (typeof renderMobileCards === 'function') renderMobileCards();
 
-    showToast('✅ Key saved! Verifying connection…', 'info');
+    showToast('✅ Key saved! Testing connection…', 'info');
 
-    // Verify in background (non-blocking)
+    // Verify in background (non-blocking) — auto-detects proxy if needed
     try {
       var res = await apiFetch(BLAND_API_BASE + '/calls?limit=1', {
         headers: { 'Authorization': token }
       });
+      var activeP = getActiveProxy();
       if (res.ok) {
-        showToast('✅ Connected to Bland.ai — ready to make calls!', 'success');
+        if (activeP) {
+          showToast('✅ Connected via proxy — ready to make calls!', 'success');
+        } else {
+          showToast('✅ Connected directly to Bland.ai — ready to make calls!', 'success');
+        }
       } else {
         var data = await res.json().catch(function(){ return {}; });
         var errMsg = data.error || data.message || res.status;
         if (res.status === 401 || res.status === 403) {
           showToast('⚠️ Invalid API key (error ' + res.status + '). Check your key at app.bland.ai', 'error');
         } else {
-          showToast('⚠️ Verify returned ' + res.status + ': ' + errMsg, 'error');
+          showToast('⚠️ API returned ' + res.status + ': ' + errMsg, 'error');
         }
       }
     } catch(e) {
       if (isLikelyCorsOrNetworkError(e)) {
-        showToast('⚠️ Browser blocked the request (CORS). Key is saved — try a CORS proxy or serve from a web server.', 'error');
+        showToast('⚠️ All connection methods failed (CORS). Key is saved — set a custom proxy in ⚙ Settings.', 'error');
       } else {
-        showToast('⚠️ Network error during verify. Key is saved — calls will retry.', 'error');
+        showToast('⚠️ Network error: ' + (e.message || e) + '. Key is saved.', 'error');
       }
     }
   };
