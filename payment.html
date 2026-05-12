@@ -280,187 +280,6 @@ select option{background:var(--surface);color:var(--text)}
 .table-header{padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px}
 .table-scroll{overflow-x:auto;max-height:65vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:0.78em;min-width:1200px}
-thead{position:stick.mobile-app-sub{font-size:0.65em;color:var(--text-dim);margin-top:1px}
-
-/* ─── BOTTOM NAV (mobile) ─── */
-.bottom-nav{
-  display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;
-  background:var(--surface);border-top:1px solid var(--border);
-  padding:6px 0 env(safe-area-inset-bottom,6px);
-  box-shadow:0 -4px 20px var(--shadow);
-}
-.bottom-nav-inner{display:flex;justify-content:space-around;align-items:center}
-.bnav-btn{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  background:none;border:none;cursor:pointer;padding:6px 10px;
-  color:var(--text-faint);transition:color 0.2s;min-width:56px;
-  -webkit-tap-highlight-color:transparent;
-}
-.bnav-btn.active{color:var(--primary)}
-.bnav-icon{font-size:1.2em}
-.bnav-label{font-size:0.55em;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-
-/* ─── ALERT BANNER ─── */
-.alert-banner{
-  background:linear-gradient(135deg,#b91c1c,#991b1b);
-  color:#fff;padding:12px 16px;border-radius:14px;margin-bottom:12px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:8px;
-  box-shadow:0 8px 28px rgba(220,38,38,0.35);
-  border:1px solid rgba(239,68,68,0.4);
-}
-.alert-icon{font-size:1.6em;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
-.alert-text{font-size:0.9em;font-weight:700;color:#fff}
-.alert-count{background:rgba(255,255,255,0.25);padding:2px 10px;border-radius:10px;font-weight:800;margin-left:6px;color:#fff}
-.alert-btn{background:#fff;color:#b91c1c;border:none;padding:7px 16px;border-radius:9px;font-weight:800;cursor:pointer;transition:all 0.2s;font-size:0.82em}
-.alert-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.25)}
-
-/* ─── HEADER ─── */
-header{
-  background:var(--surface);padding:20px;border-radius:18px;margin-bottom:12px;
-  position:relative;overflow:hidden;border:1px solid var(--border);
-  box-shadow:0 4px 24px rgba(0,0,0,0.4),0 1px 3px rgba(0,0,0,0.3);
-}
-header::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,var(--primary),var(--accent),var(--success),var(--danger));
-}
-.header-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
-h1{color:var(--text);font-size:1.4em;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;letter-spacing:-0.5px}
-.company-badge{display:inline-block;padding:2px 9px;border-radius:18px;font-size:0.36em;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.badge-ce{background:rgba(99,102,241,0.15);color:var(--primary-light);border:1px solid rgba(99,102,241,0.3)}
-.badge-cf{background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3)}
-.badge-rk{background:rgba(16,185,129,0.15);color:var(--success-light);border:1px solid rgba(16,185,129,0.3)}
-.subtitle{color:var(--text-muted);font-size:0.85em;margin-top:4px;font-weight:500}
-.last-updated{color:var(--text-dim);font-size:0.72em;margin-top:3px}
-
-/* ─── STATS ─── */
-.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px}
-.stat-card{background:var(--surface-2);padding:14px;border-radius:13px;transition:all 0.3s;position:relative;overflow:hidden;border:1px solid var(--border);cursor:default;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
-.stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.5);border-color:var(--border-light)}
-.stat-card::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;border-radius:0 4px 4px 0}
-.stat-card.s-total::after{background:var(--primary)}
-.stat-card.s-paid::after{background:var(--success)}
-.stat-card.s-danger::after{background:var(--danger)}
-.stat-card.s-warn::after{background:var(--accent)}
-.stat-card.s-mca::after{background:var(--badge-mca)}
-.stat-label{font-size:0.64em;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;opacity:0.9}
-.stat-value{font-size:1.3em;font-weight:800;margin-top:6px;letter-spacing:-0.5px;line-height:1.2}
-.stat-value.v-primary{color:var(--primary-light)}
-.stat-value.v-success{color:var(--success-light)}
-.stat-value.v-danger{color:var(--danger-light)}
-.stat-value.v-accent{color:var(--accent-light)}
-.stat-value.v-mca{color:var(--badge-mca)}
-.stat-subtitle{font-size:0.66em;color:var(--text-faint);margin-top:2px;font-weight:500}
-.stat-icon{position:absolute;top:12px;right:12px;font-size:1.4em;opacity:0.5}
-
-/* ─── QUICK ACTIONS ─── */
-.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.quick-card{background:var(--surface);padding:12px 8px;border-radius:13px;cursor:pointer;transition:all 0.25s;text-align:center;border:1px solid var(--border);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
-.quick-card:hover,.quick-card:active{transform:translateY(-3px);border-color:var(--primary);box-shadow:0 10px 28px var(--primary-glow)}
-.quick-icon{font-size:1.5em;margin-bottom:4px}
-.quick-title{font-weight:700;color:var(--text);font-size:0.78em}
-.quick-subtitle{font-size:0.66em;color:var(--text-dim);margin-top:2px}
-
-/* ─── FILTER SELECTOR ─── */
-.filter-selector{background:var(--surface);border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid var(--border);box-shadow:0 3px 16px rgba(0,0,0,0.4)}
-.filter-selector-label{font-size:0.62em;color:var(--text-faint);font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
-.filter-cards{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
-.filter-card{border:2px solid var(--border);border-radius:11px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface-2);position:relative;-webkit-tap-highlight-color:transparent}
-.filter-card:hover,.filter-card:active{border-color:var(--border-light);background:var(--surface-3)}
-.filter-card.active{border-color:var(--primary);background:var(--primary-glow);box-shadow:0 0 18px var(--primary-glow)}
-.fc-dot{width:6px;height:6px;border-radius:50%;margin:0 auto 5px;transform:scale(0);transition:transform 0.2s}
-.filter-card.active .fc-dot{transform:scale(1)}
-.fc-icon{font-size:1.2em;margin-bottom:2px}
-.fc-label{font-size:0.68em;font-weight:700;color:var(--text-muted);transition:color 0.2s}
-.filter-card.active .fc-label{color:var(--primary-light)}
-.fc-count{font-size:0.6em;color:var(--text-faint);margin-top:2px}
-.fc-label.lc-red{color:var(--danger-light)}
-.fc-label.lc-orange{color:var(--warning-light)}
-.fc-label.lc-yellow{color:var(--accent-light)}
-.fc-label.lc-green{color:var(--success-light)}
-[data-theme="light"] .fc-label.lc-red{color:#991b1b}
-[data-theme="light"] .fc-label.lc-orange{color:#9a3412}
-[data-theme="light"] .fc-label.lc-yellow{color:#92400e}
-[data-theme="light"] .fc-label.lc-green{color:#065f46}
-
-/* ─── RED FLAG SECTION ─── */
-.red-flag-section{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:12px;border-left:4px solid var(--danger);border-top:1px solid var(--border);border-right:1px solid var(--border);border-bottom:1px solid var(--border);box-shadow:0 3px 16px rgba(0,0,0,0.4)}
-.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px}
-.section-title{font-size:1em;color:var(--text);display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:-0.3px}
-.red-badge{background:var(--danger);color:#fff;padding:2px 10px;border-radius:10px;font-size:0.65em;font-weight:700}
-.followup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:8px}
-.followup-card{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:12px;transition:all 0.25s}
-.followup-card:hover{transform:translateX(3px);border-color:var(--danger);box-shadow:0 4px 14px var(--danger-glow)}
-.followup-card.critical{border-left:4px solid var(--danger)}
-.followup-card.high{border-left:4px solid var(--accent)}
-.followup-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:5px;gap:6px}
-.followup-client{font-weight:700;color:var(--text);font-size:0.85em;line-height:1.3}
-.followup-days{background:var(--danger);color:#fff;padding:2px 8px;border-radius:8px;font-size:0.7em;font-weight:800;flex-shrink:0}
-.followup-details{font-size:0.74em;color:var(--text-muted);line-height:1.5}
-.followup-amount{color:var(--danger-light);font-weight:800;font-size:1em;margin-top:4px;font-family:monospace}
-[data-theme="light"] .followup-amount{color:#991b1b}
-.followup-actions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
-
-/* ─── BUTTONS ─── */
-.btn{padding:8px 16px;border:none;border-radius:9px;font-size:0.83em;font-weight:600;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;text-decoration:none;white-space:nowrap;-webkit-tap-highlight-color:transparent}
-.btn:hover{transform:translateY(-1px)}
-.btn:active{transform:translateY(0) scale(0.97)}
-.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 2px 10px var(--primary-glow)}
-.btn-primary:hover{box-shadow:0 5px 18px var(--primary-glow)}
-.btn-secondary{background:var(--surface-3);color:var(--text-muted);border:1px solid var(--border)}
-.btn-success{background:linear-gradient(135deg,var(--success),var(--success-dark));color:#fff;box-shadow:0 2px 10px var(--success-glow)}
-.btn-danger{background:linear-gradient(135deg,var(--danger),var(--danger-dark));color:#fff;box-shadow:0 2px 10px var(--danger-glow)}
-.btn-sm{padding:6px 11px;font-size:0.76em;border-radius:8px}
-.btn-xs{padding:5px 9px;font-size:0.7em;border-radius:7px;gap:3px;min-height:30px}
-
-/* ─── EXPORT DROPDOWN ─── */
-.export-dropdown{position:relative;display:inline-block}
-.export-dropdown-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:240px;box-shadow:0 12px 36px var(--shadow);z-index:500}
-.export-dropdown.open .export-dropdown-menu{display:block}
-.export-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;color:var(--text-muted);font-size:0.82em;font-weight:600;border:none;background:none;width:100%;text-align:left;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
-.export-item:hover,.export-item:active{background:var(--surface-3);color:var(--text)}
-.export-item .ei-icon{font-size:1.3em;width:24px;text-align:center;flex-shrink:0}
-.export-item .ei-sub{font-size:0.75em;color:var(--text-faint);font-weight:400}
-.export-divider{height:1px;background:var(--border);margin:4px 0}
-
-/* ─── ACTION BUTTONS ─── */
-.action-group{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}
-.act-btn{display:inline-flex;align-items:center;gap:3px;padding:5px 9px;border-radius:7px;border:none;cursor:pointer;font-size:0.7em;font-weight:600;transition:all 0.2s;text-decoration:none;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent;min-height:28px}
-.act-btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
-.act-btn:active{transform:scale(0.95)}
-.act-wa{background:rgba(37,211,102,0.12);color:#22c55e;border:1px solid rgba(37,211,102,0.25)}
-.act-call{background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)}
-.act-pay{background:rgba(168,85,247,0.1);color:#a78bfa;border:1px solid rgba(168,85,247,0.2)}
-.act-ledger{background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2)}
-[data-theme="light"] .act-wa{background:rgba(5,150,105,0.08);color:#059669;border-color:rgba(5,150,105,0.25)}
-[data-theme="light"] .act-call{background:rgba(37,99,235,0.08);color:#2563eb;border-color:rgba(37,99,235,0.2)}
-[data-theme="light"] .act-pay{background:rgba(124,58,237,0.08);color:#7c3aed;border-color:rgba(124,58,237,0.2)}
-[data-theme="light"] .act-ledger{background:rgba(180,83,9,0.08);color:#b45309;border-color:rgba(180,83,9,0.2)}
-.act-edit{background:rgba(34,197,94,0.1);color:#4ade80;border:1px solid rgba(34,197,94,0.2)}
-.act-delete{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2)}
-[data-theme="light"] .act-edit{background:rgba(21,128,61,0.08);color:#15803d;border-color:rgba(21,128,61,0.2)}
-[data-theme="light"] .act-delete{background:rgba(185,28,28,0.08);color:#b91c1c;border-color:rgba(185,28,28,0.2)}
-
-/* ─── CONTROLS ─── */
-.controls-section{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border);box-shadow:0 3px 16px rgba(0,0,0,0.4)}
-.controls-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
-.input-group{display:flex;flex-direction:column;gap:4px}
-label{font-weight:700;color:var(--text-muted);font-size:0.67em;text-transform:uppercase;letter-spacing:0.6px;opacity:0.95}
-input,select{padding:9px 12px;border:1px solid var(--border-light);border-radius:9px;font-size:0.87em;transition:all 0.2s;background:var(--surface-2);color:var(--text);-webkit-appearance:none;min-height:40px;font-weight:500}
-input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
-input::placeholder{color:var(--text-faint)}
-select option{background:var(--surface);color:var(--text)}
-.actions-bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:8px}
-.filter-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
-.filter-tag{background:var(--primary-glow);color:var(--primary-light);padding:3px 10px;border-radius:13px;font-size:0.74em;border:1px solid rgba(99,102,241,0.25)}
-
-/* ─── TABLE ─── */
-.table-container{background:var(--surface);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:0 6px 24px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.3)}
-.table-header{padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:7px}
-.table-scroll{overflow-x:auto;max-height:65vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;font-size:0.78em;min-width:1200px}
 thead{position:sticky;top:0;z-index:10}
 th{background:var(--primary-glow);color:var(--primary-light);padding:11px 9px;text-align:left;font-weight:800;text-transform:uppercase;font-size:0.68em;letter-spacing:0.9px;cursor:pointer;white-space:nowrap;border-bottom:1px solid var(--border);backdrop-filter:blur(10px)}
 th:hover{background:rgba(99,102,241,0.2);color:var(--text)}
@@ -4757,17 +4576,27 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-size:0.84em">
     </div>
 
+    <div class="input-group" style="margin-bottom:14px">
+      <label>CORS Proxy URL (only if connection fails)</label>
+      <input id="corsProxyInput" type="text"
+        placeholder="e.g. https://your-server.com/proxy or leave blank"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--text);font-family:monospace;font-size:0.78em">
+    </div>
+
     <div class="ai-info-box ai-info-green">
       ✅ Pricing: ~$0.09/min · Free trial includes minutes · Supports Indian numbers (+91) · Calls recorded
     </div>
     <div class="ai-info-box ai-info-amber">
-      ℹ️ Some Indian telecom carriers may block automated calls. If a call fails, use WhatsApp or Email fallback.
+      ⚠️ <b>"Connection failed" / "not connected to internet"?</b> This means your browser is blocking the API request (CORS). Fixes:<br>
+      1. <b>Best:</b> Host this HTML on a web server (even localhost) instead of opening the file directly<br>
+      2. <b>Quick:</b> Paste a CORS proxy URL above (e.g. a simple server that forwards requests to api.bland.ai)<br>
+      3. Ensure your internet is working and ad-blockers are disabled for this page
     </div>
 
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
       <button class="btn btn-secondary" onclick="closeModal('aiSettingsModal')">Cancel</button>
       <button class="btn btn-danger btn-sm" id="blandRemoveBtn" style="display:none" onclick="removeBlandToken()">Remove Key</button>
-      <button class="btn btn-primary" onclick="saveBlandSettings()" id="blandSaveBtn">Save & Verify</button>
+      <button class="btn btn-primary" onclick="saveBlandSettings()" id="blandSaveBtn">Save & Test</button>
     </div>
   </div>
 </div>
@@ -4819,9 +4648,35 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   var BLAND_TOKEN_KEY   = 'carnival_bland_api_key';
   var BLAND_CALLER_KEY  = 'carnival_bland_caller_name';
   var CALL_HISTORY_KEY  = 'carnival_ai_call_history';
+  var CORS_PROXY_KEY    = 'carnival_cors_proxy';
   
   // ✅ CORRECT: Official Bland.ai API endpoint
   var BLAND_API_BASE    = 'https://api.bland.ai/v1';
+
+  // ── CORS PROXY HELPERS ────────────────────────────────────────────────────
+  // Bland.ai blocks browser requests from file:// or non-whitelisted domains.
+  // A CORS proxy routes the request through a server that adds proper headers.
+  // The user can configure one in ⚙ Settings.
+  function getCorsProxy() { return (localStorage.getItem(CORS_PROXY_KEY) || '').trim(); }
+  function setCorsProxy(url) { if (url) localStorage.setItem(CORS_PROXY_KEY, url); else localStorage.removeItem(CORS_PROXY_KEY); }
+
+  function apiFetch(url, opts) {
+    var proxy = getCorsProxy();
+    var finalUrl = proxy ? (proxy.replace(/\/$/, '') + '/' + url) : url;
+    // If using a proxy, strip Authorization header from direct request
+    // and send it as a custom header the proxy can forward
+    if (proxy && opts && opts.headers && opts.headers['Authorization']) {
+      opts.headers['x-bland-authorization'] = opts.headers['Authorization'];
+      delete opts.headers['Authorization'];
+    }
+    return fetch(finalUrl, opts);
+  }
+
+  function isLikelyCorsOrNetworkError(err) {
+    if (err && typeof err === 'object' && err.name === 'TypeError') return true;
+    if (err && typeof err === 'string' && /failed\s*to\s*fetch|network|cors|cross-origin/i.test(err)) return true;
+    return false;
+  }
 
   // ── STORAGE HELPERS ───────────────────────────────────────────────────────
   function getBlandToken()  { return localStorage.getItem(BLAND_TOKEN_KEY)  || ''; }
@@ -5007,8 +4862,8 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     if (btn) { btn.disabled = true; btn.innerHTML = '📞 Dialling...'; }
 
     try {
-      // ✅ CORRECT: Official Bland.ai API with proper auth
-      var res = await fetch(BLAND_API_BASE + '/calls', {
+      // ✅ CORRECT: Official Bland.ai API with proper auth (via CORS proxy if configured)
+      var res = await apiFetch(BLAND_API_BASE + '/calls', {
         method: 'POST',
         headers: {
           // ✅ CORRECT: Authorization header (not x-bland-token)
@@ -5017,10 +4872,11 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         },
         body: JSON.stringify({
           // ✅ CORRECT: Bland.ai v1 API payload
+          // max_duration is in SECONDS (Bland.ai API requirement)
           phone_number: '+91' + ph,
           task: script,
           voice: voice,
-          max_duration: maxDur,
+          max_duration: maxDur * 60,
           record: true,
           wait_for_greeting: true,
           model: 'enhanced',
@@ -5061,8 +4917,15 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     } catch(err) {
       console.error('AI Call failed:', err);
-      showToast('Call failed: ' + err.message, 'error');
-      showErrorModal(err.message);
+      var errMsg = (err && err.message) ? err.message : String(err);
+      if (isLikelyCorsOrNetworkError(err)) {
+        errMsg = 'Browser blocked the request (CORS/network). Your key is saved — you may need to: ' +
+          '(1) Host this file on a web server instead of opening it directly, ' +
+          '(2) Configure a CORS proxy in ⚙ Settings, or ' +
+          '(3) Check your internet connection.';
+      }
+      showToast('Call failed: ' + errMsg, 'error');
+      showErrorModal(errMsg);
       if (btn) { btn.disabled = false; btn.innerHTML = '🤖 Call Now'; }
     }
   };
@@ -5096,7 +4959,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     var token = getBlandToken();
     if (!token || !callId) return;
     try {
-      var res = await fetch(BLAND_API_BASE + '/calls/' + callId, {
+      var res = await apiFetch(BLAND_API_BASE + '/calls/' + callId, {
         headers: { 'Authorization': token }
       });
       if (!res.ok) return;
@@ -5167,12 +5030,14 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     var curToken = getBlandToken();
     var inp = document.getElementById('blandTokenInput');
     var cni = document.getElementById('blandCallerName');
+    var prx = document.getElementById('corsProxyInput');
     var rem = document.getElementById('blandRemoveBtn');
     if (inp) {
       inp.value = curToken ? (curToken.slice(0,8) + '...' + curToken.slice(-4)) : '';
       inp.placeholder = curToken ? '(token set — paste new to replace)' : 'org_xxxxxxxxxxxxxxxxxxxxxxxxxxxx';
     }
     if (cni) cni.value = getCallerName();
+    if (prx) prx.value = getCorsProxy() || '';
     if (rem) rem.style.display = curToken ? '' : 'none';
     ['aiCallModal','callHistoryModal','bulkCallModal'].forEach(function(id){ closeModal(id); });
     document.getElementById('aiSettingsModal').classList.add('active');
@@ -5181,38 +5046,49 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   window.saveBlandSettings = async function() {
     var rawToken = document.getElementById('blandTokenInput').value.trim();
     var callerN  = document.getElementById('blandCallerName').value.trim();
+    var proxyUrl = document.getElementById('corsProxyInput') ? document.getElementById('corsProxyInput').value.trim() : '';
 
+    // Always save the key and settings immediately
     if (rawToken && !rawToken.includes('...')) {
       localStorage.setItem(BLAND_TOKEN_KEY, rawToken);
     }
     if (callerN) localStorage.setItem(BLAND_CALLER_KEY, callerN);
+    setCorsProxy(proxyUrl);
 
     var token = getBlandToken();
     if (!token) { showToast('Please enter an API key', 'error'); return; }
 
-    var btn = document.getElementById('blandSaveBtn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
+    // Key is saved — always close modal and update UI so buttons appear
+    closeModal('aiSettingsModal');
+    updateSetupFab();
+    if (typeof setFilterCard === 'function') setFilterCard(activeFilterCard);
+    if (typeof renderFollowups === 'function') renderFollowups();
+    if (typeof renderMobileCards === 'function') renderMobileCards();
 
+    showToast('✅ Key saved! Verifying connection…', 'info');
+
+    // Verify in background (non-blocking)
     try {
-      var res = await fetch(BLAND_API_BASE + '/calls?limit=1', {
+      var res = await apiFetch(BLAND_API_BASE + '/calls?limit=1', {
         headers: { 'Authorization': token }
       });
       if (res.ok) {
-        showToast('✅ API key verified!', 'success');
-        closeModal('aiSettingsModal');
-        updateSetupFab();
-        if (typeof setFilterCard === 'function') setFilterCard(activeFilterCard);
-        if (typeof renderFollowups === 'function') renderFollowups();
+        showToast('✅ Connected to Bland.ai — ready to make calls!', 'success');
       } else {
-        var data = await res.json();
-        showToast('Key saved but verify failed: ' + (data.message || res.status), 'error');
+        var data = await res.json().catch(function(){ return {}; });
+        var errMsg = data.error || data.message || res.status;
+        if (res.status === 401 || res.status === 403) {
+          showToast('⚠️ Invalid API key (error ' + res.status + '). Check your key at app.bland.ai', 'error');
+        } else {
+          showToast('⚠️ Verify returned ' + res.status + ': ' + errMsg, 'error');
+        }
       }
     } catch(e) {
-      showToast('Key saved (network issue during verify)', 'info');
-      closeModal('aiSettingsModal');
-      updateSetupFab();
-    } finally {
-      if (btn) { btn.disabled = false; btn.textContent = 'Save & Verify'; }
+      if (isLikelyCorsOrNetworkError(e)) {
+        showToast('⚠️ Browser blocked the request (CORS). Key is saved — try a CORS proxy or serve from a web server.', 'error');
+      } else {
+        showToast('⚠️ Network error during verify. Key is saved — calls will retry.', 'error');
+      }
     }
   };
 
@@ -5291,14 +5167,14 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
       var script = buildScript(p, 'en', customNote);
       try {
-        var res = await fetch(BLAND_API_BASE + '/calls', {
+        var res = await apiFetch(BLAND_API_BASE + '/calls', {
           method: 'POST',
           headers: { 'Authorization': token, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             phone_number: '+91' + ph,
             task: script,
             voice: 'maya',
-            max_duration: 2,
+            max_duration: 120,
             record: true,
             wait_for_greeting: true,
             model: 'enhanced',
@@ -5319,7 +5195,10 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
           showToast('Failed: ' + p.clientName.split(' ')[0] + ' — ' + (data.message || res.status), 'error');
         }
       } catch(err) {
-        showToast('Network error for ' + p.clientName.split(' ')[0], 'error');
+        var bMsg = isLikelyCorsOrNetworkError(err)
+          ? 'CORS/network error for ' + p.clientName.split(' ')[0] + ' (check settings)'
+          : 'Network error for ' + p.clientName.split(' ')[0];
+        showToast(bMsg, 'error');
       }
       if (i < checked.length - 1) await new Promise(function(r){ setTimeout(r, 5000); });
     }
@@ -5385,6 +5264,33 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     };
   }
 
+  // ── INJECT AI CALL BUTTON INTO MOBILE CARDS ──────────────────────────
+  if (typeof renderMobileCards === 'function') {
+    var _origMC = renderMobileCards;
+    window.renderMobileCards = function() {
+      _origMC();
+      document.querySelectorAll('.mc-actions').forEach(function(actDiv) {
+        if (actDiv.querySelector('.ai-call-injected')) return;
+        var payBtn = actDiv.querySelector('[onclick*="openPayModal"]');
+        if (!payBtn) return;
+        var m = payBtn.getAttribute('onclick').match(/openPayModal\((\d+)\)/);
+        if (!m) return;
+        var idx = parseInt(m[1]);
+        var p   = payments[idx];
+        if (!p) return;
+        var ph  = normalisePhone(p.phone);
+        if (!ph || parseFloat(p.balance||0) <= 0) return;
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-xs act-aicall ai-call-injected';
+        btn.title     = 'AI Reminder Call';
+        btn.innerHTML = '🤖';
+        btn.style.cssText = 'font-size:0.66em;padding:4px 8px';
+        btn.onclick   = function(){ aiCallPayment(idx); };
+        actDiv.insertBefore(btn, actDiv.firstChild);
+      });
+    };
+  }
+
   // ── EVENT LISTENERS ─────────────────────────────────────────────────────
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
@@ -5404,6 +5310,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     if (getBlandToken()) {
       if (typeof setFilterCard === 'function') setFilterCard(activeFilterCard);
       if (typeof renderFollowups === 'function') renderFollowups();
+      if (typeof renderMobileCards === 'function') renderMobileCards();
     }
   }
 
