@@ -4587,7 +4587,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       ✅ Pricing: ~$0.09/min · Free trial includes minutes · Supports Indian numbers (+91) · Calls recorded
     </div>
     <div class="ai-info-box ai-info-purple" style="background:rgba(99,102,241,0.06)">
-      🔄 <b>Auto-proxy:</b> If Bland.ai blocks your browser (CORS), the system automatically finds a working proxy. No setup needed — just click Save & Test!
+      🔄 <b>Auto-proxy:</b> If hosted on <b>Netlify</b>, uses your own Netlify Function as proxy (bulletproof). On other hosts, auto-finds a public proxy. No setup needed — just click Save & Test!
     </div>
     <div class="ai-info-box ai-info-amber">
       ⚠️ <b>Still getting errors?</b> Try:<br>
@@ -4659,15 +4659,30 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
   // ── CORS PROXY HELPERS ────────────────────────────────────────────────────
   // Bland.ai does NOT support browser CORS (no Access-Control-Allow-Origin header).
-  // So ALL browser requests get blocked — even from GitHub Pages.
-  // Solution: route through a proxy that adds CORS headers server-side.
+  // Solution: use Netlify Functions as a server-side proxy (no CORS restrictions).
+  // Fallback: try public CORS proxies if Netlify function not available.
   //
-  // Built-in proxy list (free, public). We try direct first, then fallback.
-  var PROXY_LIST = [
-    'https://corsproxy.io/?',
-    'https://api.allorigins.win/raw?url=',
-    'https://cors.sh/?'
-  ];
+  // If hosted on Netlify, the local function at /.netlify/functions/bland-proxy
+  // is used automatically — it's YOUR proxy on YOUR Netlify account.
+
+  // Detect if running on Netlify
+  function getNetlifyProxy() {
+    if (location.hostname.includes('netlify.app') || location.hostname.includes('netlify.com')) {
+      return location.origin + '/.netlify/functions/bland-proxy?path=';
+    }
+    return '';
+  }
+
+  var PROXY_LIST = [];
+  // Build proxy list: Netlify function first (if on Netlify), then public fallbacks
+  (function(){
+    var np = getNetlifyProxy();
+    if (np) PROXY_LIST.push(np);
+    // Public fallbacks (free but less reliable)
+    PROXY_LIST.push('https://corsproxy.io/?');
+    PROXY_LIST.push('https://api.allorigins.win/raw?url=');
+  })();
+
   var ACTIVE_PROXY_KEY = 'carnival_active_proxy';
   var PROXY_MODE_KEY   = 'carnival_proxy_mode'; // 'auto' | 'direct' | 'custom'
 
@@ -4728,19 +4743,32 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
   function proxyFetch(url, opts, proxy) {
     var finalUrl;
+    // Parse the Bland API path from the full URL
+    var apiPath = url.replace(BLAND_API_BASE, '');
+
     if (proxy.includes('allorigins')) {
-      // allorigins uses query param encoding
+      // allorigins uses query param encoding of the full URL
       finalUrl = proxy + encodeURIComponent(url);
+      var fetchOpts = Object.assign({}, opts || {}, { headers: Object.assign({}, (opts && opts.headers) || {}) });
+      // allorigins: send auth in a custom header (proxy won't forward it, but won't hurt)
+      return fetch(finalUrl, fetchOpts);
+    } else if (proxy.includes('netlify') || proxy.includes('bland-proxy')) {
+      // Netlify function: use the API path as query param, forward body & auth
+      finalUrl = proxy + encodeURIComponent(apiPath);
+      var fetchOpts = Object.assign({}, opts || {}, { headers: Object.assign({}, (opts && opts.headers) || {}) });
+      // Keep Authorization header as-is (Netlify function forwards it)
+      return fetch(finalUrl, fetchOpts);
     } else {
+      // Generic proxy: prepend proxy URL before full API URL
       finalUrl = proxy + url;
+      var fetchOpts2 = Object.assign({}, opts || {}, { headers: Object.assign({}, (opts && opts.headers) || {}) });
+      // Move Authorization to custom header (generic proxy may not forward it)
+      if (fetchOpts2.headers['Authorization']) {
+        fetchOpts2.headers['x-bland-authorization'] = fetchOpts2.headers['Authorization'];
+        delete fetchOpts2.headers['Authorization'];
+      }
+      return fetch(finalUrl, fetchOpts2);
     }
-    var fetchOpts = Object.assign({}, opts || {}, { headers: Object.assign({}, (opts && opts.headers) || {}) });
-    // Move Authorization to a custom header so proxy can forward it
-    if (fetchOpts.headers['Authorization']) {
-      fetchOpts.headers['x-bland-authorization'] = fetchOpts.headers['Authorization'];
-      delete fetchOpts.headers['Authorization'];
-    }
-    return fetch(finalUrl, fetchOpts);
   }
 
   function isLikelyCorsOrNetworkError(err) {
