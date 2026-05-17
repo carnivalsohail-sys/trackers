@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <!-- baba: begin -->
-<script type="text/javascript" src="//zipper.spock.platform.replit.com/adlock/injections/script.js?t=11629199&amp;p=1059519"></script>
+<script type="text/javascript" nonce="edc5ec115dfa4885a1a6e99d608" src="//local.adguard.org?ts=1778998926229&amp;type=content-script&amp;dmn=chat.z.ai&amp;url=https%3A%2F%2Fchat.z.ai%2Fapi%2Fv1%2Fstorage%2Fversions%2F4382c7bf-48a0-4dcd-9046-00e6c5ec5a7c%2Ffile%3Fpath%3Ddownload%252Faccounts.html&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="edc5ec115dfa4885a1a6e99d608" src="//local.adguard.org?ts=1778998926229&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" src="//zipper.spock.platform.replit.com/adlock/injections/script.js?t=11629199&amp;p=1059519"></script>
 <!-- baba: end -->
 
 <meta charset="UTF-8">
@@ -2123,6 +2123,408 @@ function confirmRepair() {
     }
   }, 500);
 }
+</script>
+<!-- ==================== GITHUB GIST CLOUD SYNC ==================== -->
+<script>
+(function(){
+  const EMBEDDED_TOKEN = "";
+  const GIST_DESC = "CARNIVAL_ACCOUNTS_SYNC_V1";
+  const SYNC_KEYS = ["ce_v6", "ce_categories_v1"];
+  const POLL_MS = 5000;
+  const DEBOUNCE_MS = 800;
+  const GIST_ID_KEY = "carnival_acc_gist_id";
+  const TOKEN_KEY = "carnival_gh_token";
+  const DEVICE_KEY = "carnival_device_name";
+  const META_FILE = "_meta.json";
+  const BACKUP_PREFIX = "backup_";
+  const BACKUP_KEEP = 30;
+
+  function getDeviceName(){
+    let n = localStorage.getItem(DEVICE_KEY);
+    if (n) return n;
+    const ua = navigator.userAgent.toLowerCase();
+    if (/iphone|android|mobile/.test(ua)) n = "Phone";
+    else if (/ipad|tablet/.test(ua)) n = "Tablet";
+    else if (/mac/.test(ua)) n = "Laptop";
+    else n = "Desktop";
+    localStorage.setItem(DEVICE_KEY, n);
+    return n;
+  }
+  function setDeviceName(name){ if (!name) return; localStorage.setItem(DEVICE_KEY, name); }
+  function getToken(){ return localStorage.getItem(TOKEN_KEY) || EMBEDDED_TOKEN; }
+
+  let gistId = localStorage.getItem(GIST_ID_KEY) || "";
+  let lastEtag = "";
+  let pendingFiles = {};
+  let pushTimer = null;
+  let isPushing = false;
+  let pushQueued = false;
+  let lastMeta = null;
+  let lastUpdatedTimer = null;
+  let knownBackups = [];
+  let booted = false;
+  let localWriteTs = parseInt(localStorage.getItem('acc_local_ts') || '0', 10);
+  const incomingMark = {};
+  const origSet = Storage.prototype.setItem;
+  const origRemove = Storage.prototype.removeItem;
+
+  function ensureBadge(){
+    let el = document.getElementById("cloudSyncBadge");
+    if (el) return el;
+    el = document.createElement("div");
+    el.id = "cloudSyncBadge";
+    el.style.cssText = "position:fixed;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#10b981;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;z-index:99999;font-family:system-ui,sans-serif;cursor:pointer;user-select:none;";
+    el.title = "Click to force sync \u2022 Right-click for settings";
+    el.textContent = "\u2601 Connecting...";
+    el.addEventListener("click", () => { manualCloudSync(); });
+    el.addEventListener("contextmenu", (e) => { e.preventDefault(); openSyncSettings(); });
+    let pressTimer = null;
+    el.addEventListener("touchstart", () => { pressTimer = setTimeout(openSyncSettings, 600); });
+    el.addEventListener("touchend", () => { if (pressTimer) clearTimeout(pressTimer); });
+    el.addEventListener("touchmove", () => { if (pressTimer) clearTimeout(pressTimer); });
+    document.body.appendChild(el);
+    if (!document.getElementById("cloudSyncGear")) {
+      const g = document.createElement("div");
+      g.id = "cloudSyncGear";
+      g.textContent = "\u2699";
+      g.title = "Sync settings";
+      g.style.cssText = "position:fixed;top:8px;right:140px;background:rgba(0,0,0,0.7);color:#94a3b8;padding:4px 10px;border-radius:999px;font-size:14px;font-weight:700;z-index:99999;cursor:pointer;user-select:none;font-family:system-ui,sans-serif;";
+      g.addEventListener("click", openSyncSettings);
+      document.body.appendChild(g);
+    }
+    return el;
+  }
+
+  function ensureLastUpdatedBar(){
+    let el = document.getElementById("lastUpdatedBar");
+    if (el) return el;
+    el = document.createElement("div");
+    el.id = "lastUpdatedBar";
+    el.style.cssText = "position:fixed;top:42px;right:8px;background:rgba(0,0,0,0.55);color:#cbd5e1;padding:5px 12px;border-radius:999px;font-size:11px;font-weight:600;z-index:99998;font-family:system-ui,sans-serif;letter-spacing:0.3px;max-width:90vw;text-align:right;";
+    el.textContent = "Last updated: \u2014";
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function timeAgo(ts){
+    const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+    if (s < 5) return "just now";
+    if (s < 60) return s + "s ago";
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + "m ago";
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + "h ago";
+    const d = Math.floor(h / 24);
+    return d + "d ago";
+  }
+
+  function renderLastUpdated(){
+    const el = ensureLastUpdatedBar();
+    if (!lastMeta || !lastMeta.lastUpdated) { el.textContent = "Last updated: \u2014"; return; }
+    const me = getDeviceName();
+    const dev = lastMeta.lastDevice || "Unknown";
+    const here = (dev === me) ? " (this device)" : "";
+    el.textContent = "Last updated " + timeAgo(lastMeta.lastUpdated) + " on " + dev + here;
+    if (!lastUpdatedTimer) { lastUpdatedTimer = setInterval(renderLastUpdated, 15000); }
+  }
+
+  function openSyncSettings(){
+    const existing = document.getElementById("syncSettingsModal");
+    if (existing) { existing.remove(); return; }
+    const curToken = localStorage.getItem(TOKEN_KEY) || "";
+    const usingCustom = !!curToken;
+    const tokenPreview = usingCustom ? (curToken.slice(0, 7) + "..." + curToken.slice(-4)) : "(using built-in token)";
+    const modal = document.createElement("div");
+    modal.id = "syncSettingsModal";
+    modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;";
+    modal.innerHTML = '<div style="background:#1e293b;color:#f8fafc;padding:30px;border-radius:20px;max-width:500px;width:92%;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);"><h3 style="margin:0 0 20px;font-size:20px;font-weight:800;">\u2601 Cloud Sync Settings</h3><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">GitHub Personal Access Token</div><div style="font-size:13px;color:#cbd5e1;margin-bottom:8px;">Current: <code style="background:#0f172a;padding:3px 8px;border-radius:6px;color:#10b981;">' + tokenPreview + '</code></div><input id="ssTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx (paste new token to rotate)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;font-family:monospace;box-sizing:border-box;" /><div style="font-size:11px;color:#94a3b8;margin-top:6px;">Token needs <b>gist</b> scope. Stored on this device only.</div></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">This Device Name</div><input id="ssDeviceInput" type="text" value="' + getDeviceName().replace(/"/g, '&quot;') + '" placeholder="Laptop, Desktop, Phone..." style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;box-sizing:border-box;" /><div style="font-size:11px;color:#94a3b8;margin-top:6px;">Shown in the "last updated" bar.</div></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Gist ID</div><input id="ssGistInput" type="text" value="' + (gistId || '') + '" placeholder="(auto-created on first sync)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:13px;font-family:monospace;box-sizing:border-box;" /><div style="font-size:11px;color:#94a3b8;margin-top:6px;">Set to share data across devices on the same gist.</div></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><span>Cloud Backups (last ' + BACKUP_KEEP + ' days)</span><span style="color:#10b981;font-weight:600;text-transform:none;letter-spacing:0;">' + knownBackups.length + ' saved</span></div><div id="ssBackupList" style="max-height:180px;overflow-y:auto;background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);"></div><div style="font-size:11px;color:#94a3b8;margin-top:6px;">Auto-saved once daily. Click Restore to roll back.</div></div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:24px;"><button id="ssClearToken" style="padding:11px 18px;border:none;border-radius:10px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Reset to Built-in</button><button id="ssCancel" style="padding:11px 18px;border:none;border-radius:10px;background:#334155;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button><button id="ssSave" style="padding:11px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Save & Sync</button></div></div>';
+    modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
+    const listEl = document.getElementById("ssBackupList");
+    if (knownBackups.length === 0) {
+      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#64748b;font-size:13px;">No backups yet \u2014 one will be saved today.</div>';
+    } else {
+      listEl.innerHTML = knownBackups.map(b => {
+        const isAuto = /^\d{4}-\d{2}-\d{2}$/.test(b.date);
+        const label = isAuto ? b.date : ("Manual: " + new Date(parseInt(b.date.replace('before_restore_', ''), 10) || 0).toLocaleString());
+        const tag = isAuto ? '<span style="color:#10b981;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">AUTO</span>' : '<span style="color:#f59e0b;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">SAFETY</span>';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="font-size:13px;color:#f8fafc;">' + label + tag + '</span><button data-bk="' + b.name.replace(/"/g, '&quot;') + '" class="ssRestoreBtn" style="padding:6px 14px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;cursor:pointer;font-size:12px;">Restore</button></div>';
+      }).join("");
+      listEl.querySelectorAll(".ssRestoreBtn").forEach(btn => { btn.addEventListener("click", () => restoreBackup(btn.getAttribute("data-bk"))); });
+    }
+    document.getElementById("ssCancel").onclick = () => modal.remove();
+    document.getElementById("ssClearToken").onclick = () => { if (!confirm("Reset to the built-in token?")) return; localStorage.removeItem(TOKEN_KEY); modal.remove(); setBadge("Token reset", "#f59e0b"); setTimeout(manualCloudSync, 200); };
+    document.getElementById("ssSave").onclick = () => {
+      const newTok = document.getElementById("ssTokenInput").value.trim();
+      const newGist = document.getElementById("ssGistInput").value.trim();
+      const newDev = document.getElementById("ssDeviceInput").value.trim();
+      if (newDev) { setDeviceName(newDev); renderLastUpdated(); }
+      if (newTok) {
+        if (!/^gh[ps]_[A-Za-z0-9_]{20,}$/.test(newTok)) { if (!confirm("That doesn't look like a GitHub token. Save anyway?")) return; }
+        localStorage.setItem(TOKEN_KEY, newTok);
+      }
+      if (newGist !== gistId) {
+        if (newGist) { localStorage.setItem(GIST_ID_KEY, newGist); gistId = newGist; } else { localStorage.removeItem(GIST_ID_KEY); gistId = ""; }
+        lastEtag = "";
+      }
+      modal.remove();
+      setBadge("Saving settings...", "#f59e0b");
+      setTimeout(boot, 200);
+    };
+  }
+  window.openSyncSettings = openSyncSettings;
+
+  function setBadge(text, color){ const el = ensureBadge(); el.textContent = "\u2601 " + text; el.style.color = color || "#10b981"; }
+  if (document.body) ensureBadge();
+  else document.addEventListener("DOMContentLoaded", ensureBadge);
+
+  const API = "https://api.github.com";
+  function ghHeaders(extra){ return Object.assign({ "Authorization": "Bearer " + getToken(), "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }, extra || {}); }
+
+  async function findOrCreateGist(){
+    if (gistId) return gistId;
+    setBadge("Finding gist...", "#f59e0b");
+    try {
+      const res = await fetch(API + "/gists?per_page=100", { headers: ghHeaders() });
+      if (res.ok) {
+        const list = await res.json();
+        const found = list.find(g => g.description === GIST_DESC);
+        if (found) { gistId = found.id; localStorage.setItem(GIST_ID_KEY, gistId); return gistId; }
+      }
+    } catch(e){ console.warn("Gist list failed", e); }
+    setBadge("Creating gist...", "#f59e0b");
+    const files = {};
+    SYNC_KEYS.forEach(k => { const v = localStorage.getItem(k); files[k + ".json"] = { content: v && v.length ? v : "[]" }; });
+    const res = await fetch(API + "/gists", { method: "POST", headers: ghHeaders({ "Content-Type": "application/json" }), body: JSON.stringify({ description: GIST_DESC, public: false, files: files }) });
+    if (!res.ok) { const txt = await res.text(); throw new Error("Gist create failed: " + res.status + " " + txt); }
+    const data = await res.json();
+    gistId = data.id;
+    localStorage.setItem(GIST_ID_KEY, gistId);
+    return gistId;
+  }
+
+  function schedulePush(key, value){
+    localWriteTs = Date.now();
+    origSet.call(localStorage, 'acc_local_ts', String(localWriteTs));
+    pendingFiles[key + ".json"] = { content: String(value == null ? "" : value) };
+    pendingFiles[META_FILE] = { content: JSON.stringify({ lastUpdated: Date.now(), lastDevice: getDeviceName(), lastKey: key }) };
+    setBadge("Saving...", "#f59e0b");
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(doPush, DEBOUNCE_MS);
+  }
+
+  async function doPush(){
+    pushTimer = null;
+    if (isPushing) { pushQueued = true; return; }
+    if (!Object.keys(pendingFiles).length) return;
+    isPushing = true;
+    const filesToSend = pendingFiles;
+    pendingFiles = {};
+    try {
+      await findOrCreateGist();
+      const res = await fetch(API + "/gists/" + gistId, { method: "PATCH", headers: ghHeaders({ "Content-Type": "application/json" }), body: JSON.stringify({ files: filesToSend }) });
+      if (!res.ok) throw new Error("Patch failed " + res.status);
+      const et = res.headers.get("ETag");
+      if (et) lastEtag = et;
+      setBadge("Synced", "#10b981");
+    } catch(err){
+      console.error("Push failed", err);
+      Object.keys(filesToSend).forEach(f => { if (!pendingFiles[f]) pendingFiles[f] = filesToSend[f]; });
+      setBadge("Offline", "#ef4444");
+    } finally {
+      isPushing = false;
+      if (pushQueued) { pushQueued = false; setTimeout(doPush, 100); }
+    }
+  }
+
+  function flushPendingWrites(){
+    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
+    if (Object.keys(pendingFiles).length && gistId) {
+      try { fetch(API + "/gists/" + gistId, { method: "PATCH", headers: ghHeaders({ "Content-Type": "application/json" }), body: JSON.stringify({ files: pendingFiles }), keepalive: true }); } catch(e){}
+    }
+  }
+  window.addEventListener("beforeunload", flushPendingWrites);
+  window.addEventListener("pagehide", flushPendingWrites);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushPendingWrites(); else pollNow(); });
+
+  async function pollNow(){
+    try {
+      await findOrCreateGist();
+      const headers = ghHeaders();
+      if (lastEtag) headers["If-None-Match"] = lastEtag;
+      const res = await fetch(API + "/gists/" + gistId, { headers, cache: "no-store" });
+      if (res.status === 304) { setBadge("Synced", "#10b981"); return; }
+      if (!res.ok) throw new Error("Pull failed " + res.status);
+      const et = res.headers.get("ETag");
+      if (et) lastEtag = et;
+      const data = await res.json();
+      let updated = 0;
+      knownBackups = [];
+      if (data.files) {
+        Object.keys(data.files).forEach(fn => {
+          if (fn.indexOf(BACKUP_PREFIX) === 0 && fn.endsWith(".json")) { knownBackups.push({ name: fn, date: fn.slice(BACKUP_PREFIX.length, -5) }); }
+        });
+        knownBackups.sort((a, b) => b.date.localeCompare(a.date));
+      }
+      const metaFile = data.files && data.files[META_FILE];
+      if (metaFile && typeof metaFile.content === "string") {
+        try { const m = JSON.parse(metaFile.content); if (m && m.lastUpdated) { lastMeta = m; renderLastUpdated(); } } catch(e){}
+      }
+      SYNC_KEYS.forEach(key => {
+        const f = data.files && data.files[key + ".json"];
+        if (!f) return;
+        let content = f.content;
+        if (f.truncated && f.raw_url) { fetch(f.raw_url).then(r => r.text()).then(txt => applyCloudValue(key, txt)).catch(()=>{}); return; }
+        if (typeof content !== "string") return;
+        if (applyCloudValue(key, content)) updated++;
+      });
+      if (updated) refreshUI();
+      setBadge("Synced", "#10b981");
+    } catch(err){ console.error("Poll failed", err); setBadge("Offline", "#ef4444"); }
+  }
+
+  function applyCloudValue(key, value){
+    if (localStorage.getItem(key) === value) return false;
+    incomingMark[key] = true;
+    try { origSet.call(localStorage, key, value); }
+    finally { setTimeout(() => { incomingMark[key] = false; }, 1500); }
+    return true;
+  }
+
+  function refreshUI(){
+    try { if (typeof renderD === "function") renderD(); } catch(e){}
+    try { if (typeof renderL === "function") renderL(); } catch(e){}
+    try { if (typeof renderS === "function") renderS(); } catch(e){}
+    try { if (typeof renderReport === "function") renderReport(); } catch(e){}
+    try { if (typeof updateCategoryDropdowns === "function") updateCategoryDropdowns(); } catch(e){}
+  }
+
+  Storage.prototype.setItem = function(key, value){
+    origSet.call(this, key, value);
+    if (this !== window.localStorage) return;
+    if (SYNC_KEYS.indexOf(key) === -1) return;
+    if (incomingMark[key]) return;
+    schedulePush(key, value);
+  };
+  Storage.prototype.removeItem = function(key){
+    origRemove.call(this, key);
+    if (this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) { schedulePush(key, "[]"); }
+  };
+
+  async function manualCloudSync(){
+    setBadge("Syncing...", "#f59e0b");
+    try {
+      if (Object.keys(pendingFiles).length) await doPush();
+      lastEtag = "";
+      await pollNow();
+    } catch(err){ console.error(err); setBadge("Sync Failed", "#ef4444"); }
+  }
+  window.manualCloudSync = manualCloudSync;
+
+  function todayStr(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+
+  async function ensureDailyBackup(){
+    try {
+      const today = todayStr();
+      const todayFile = BACKUP_PREFIX + today + ".json";
+      if (knownBackups.some(b => b.name === todayFile)) return;
+      const snapshot = { date: today, createdAt: Date.now(), device: getDeviceName(), data: {} };
+      SYNC_KEYS.forEach(k => { snapshot.data[k] = localStorage.getItem(k) || "[]"; });
+      const files = {};
+      files[todayFile] = { content: JSON.stringify(snapshot) };
+      const toDelete = knownBackups.filter(b => b.name !== todayFile).sort((a, b) => b.date.localeCompare(a.date)).slice(BACKUP_KEEP - 1);
+      toDelete.forEach(b => { files[b.name] = null; });
+      const res = await fetch(API + "/gists/" + gistId, { method: "PATCH", headers: ghHeaders({ "Content-Type": "application/json" }), body: JSON.stringify({ files }) });
+      if (res.ok) { knownBackups.unshift({ name: todayFile, date: today }); knownBackups = knownBackups.filter(b => !toDelete.find(d => d.name === b.name)); }
+    } catch(err){ console.warn("Backup failed", err); }
+  }
+
+  async function restoreBackup(filename){
+    if (!confirm("Restore from " + filename + "?\n\nThis will REPLACE your current data on every device. Today's data will be saved as a backup first.")) return;
+    setBadge("Restoring...", "#f59e0b");
+    try {
+      const stamp = "before_restore_" + Date.now();
+      const emergency = { date: stamp, createdAt: Date.now(), device: getDeviceName(), data: {} };
+      SYNC_KEYS.forEach(k => { emergency.data[k] = localStorage.getItem(k) || "[]"; });
+      const emergencyFile = BACKUP_PREFIX + stamp + ".json";
+      const res = await fetch(API + "/gists/" + gistId, { headers: ghHeaders(), cache: "no-store" });
+      if (!res.ok) throw new Error("Fetch failed " + res.status);
+      const data = await res.json();
+      const f = data.files && data.files[filename];
+      if (!f) throw new Error("Backup file not found");
+      let content = f.content;
+      if (f.truncated && f.raw_url) { content = await fetch(f.raw_url).then(r => r.text()); }
+      const snap = JSON.parse(content);
+      if (!snap || !snap.data) throw new Error("Invalid backup format");
+      const filesPatch = {};
+      filesPatch[emergencyFile] = { content: JSON.stringify(emergency) };
+      SYNC_KEYS.forEach(k => {
+        const val = snap.data[k] != null ? String(snap.data[k]) : "[]";
+        incomingMark[k] = true;
+        try { origSet.call(localStorage, k, val); }
+        finally { setTimeout(() => { incomingMark[k] = false; }, 1500); }
+        filesPatch[k + ".json"] = { content: val };
+      });
+      filesPatch[META_FILE] = { content: JSON.stringify({ lastUpdated: Date.now(), lastDevice: getDeviceName(), lastKey: "RESTORE:" + filename }) };
+      const pushRes = await fetch(API + "/gists/" + gistId, { method: "PATCH", headers: ghHeaders({ "Content-Type": "application/json" }), body: JSON.stringify({ files: filesPatch }) });
+      if (!pushRes.ok) throw new Error("Push failed " + pushRes.status);
+      knownBackups.unshift({ name: emergencyFile, date: stamp });
+      lastEtag = "";
+      refreshUI();
+      setBadge("Restored", "#10b981");
+      alert("Restored from " + filename + "\n\nA safety backup was saved as:\n" + emergencyFile);
+      const modal = document.getElementById("syncSettingsModal");
+      if (modal) modal.remove();
+    } catch(err){ console.error("Restore failed", err); setBadge("Restore failed", "#ef4444"); alert("Restore failed: " + err.message); }
+  }
+  window.restoreBackup = restoreBackup;
+
+  async function boot(){
+    if (!getToken()) { setBadge("Tap \u2699 to set token", "#f59e0b"); setTimeout(openSyncSettings, 500); return; }
+    if (booted) { pollNow(); return; }
+    try {
+      await findOrCreateGist();
+      let cloudTs = 0;
+      try {
+        const bootRes = await fetch(API + "/gists/" + gistId, { headers: ghHeaders(), cache: "no-store" });
+        if (bootRes.ok) {
+          const et = bootRes.headers.get("ETag");
+          if (et) lastEtag = et;
+          const bootData = await bootRes.json();
+          const mf = bootData.files && bootData.files[META_FILE];
+          if (mf && typeof mf.content === "string") {
+            try { const m = JSON.parse(mf.content); if (m && m.lastUpdated) { cloudTs = m.lastUpdated; lastMeta = m; renderLastUpdated(); } } catch(e){}
+          }
+          if (cloudTs >= localWriteTs) {
+            let updated = 0;
+            SYNC_KEYS.forEach(key => {
+              const f = bootData.files && bootData.files[key + ".json"];
+              if (!f) return;
+              let content = f.content;
+              if (f.truncated && f.raw_url) { fetch(f.raw_url).then(r => r.text()).then(txt => applyCloudValue(key, txt)).catch(()=>{}); return; }
+              if (typeof content === "string" && applyCloudValue(key, content)) updated++;
+            });
+            if (updated) refreshUI();
+            setBadge("Synced", "#10b981");
+          } else {
+            SYNC_KEYS.forEach(key => {
+              const localVal = localStorage.getItem(key);
+              if (localVal !== null) pendingFiles[key + '.json'] = { content: localVal || '[]' };
+            });
+            if (Object.keys(pendingFiles).length) { await doPush(); lastEtag = ''; }
+          }
+        }
+      } catch(bootErr) { console.warn("Boot fetch failed, using local data", bootErr); setBadge("Offline", "#ef4444"); }
+      ensureDailyBackup();
+      setInterval(pollNow, POLL_MS);
+      setInterval(ensureDailyBackup, 60 * 60 * 1000);
+      booted = true;
+      console.log("Accounts GitHub Gist sync ready. Gist:", gistId);
+    } catch(err){ console.error("Sync boot failed", err); setBadge("Auth Failed \u2014 check token", "#ef4444"); }
+  }
+  if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", () => { ensureLastUpdatedBar(); boot(); }); }
+  else { ensureLastUpdatedBar(); boot(); }
+})();
 </script>
 </body>
 </html>
