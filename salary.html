@@ -16,7 +16,7 @@
 <meta name="application-name" content="Carnival Payroll">
 
 <!-- App icon (inline SVG so no external file is needed) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjM2NmYxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0idXJsKCNnKSIvPjx0ZXh0IHg9IjkwIiB5PSIxMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwMCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JCo8L3RleHQ+PC9zdmc+">
+<script type="text/javascript" nonce="edc5ec115dfa4885a1a6e99d608" src="//local.adguard.org?ts=1779000985046&amp;type=content-script&amp;dmn=chat.z.ai&amp;url=https%3A%2F%2Fchat.z.ai%2Fapi%2Fv1%2Fstorage%2Fversions%2F7c236d50-c323-4f06-b644-5fa0b368c813%2Ffile%3Fpath%3Ddownload%252Fsalary.html&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="edc5ec115dfa4885a1a6e99d608" src="//local.adguard.org?ts=1779000985046&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjM2NmYxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0idXJsKCNnKSIvPjx0ZXh0IHg9IjkwIiB5PSIxMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwMCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JCo8L3RleHQ+PC9zdmc+">
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNjM2NmYxIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjOGI1Y2Y2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0idXJsKCNnKSIvPjx0ZXh0IHg9IjkwIiB5PSIxMTUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwMCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+JCo8L3RleHQ+PC9zdmc+">
 
 <!-- Web App Manifest (inline so it works without an extra file upload) -->
@@ -2766,6 +2766,27 @@
             }
 
             const total = workAmount + travelAmount + proratedSalary + proratedMobile + proratedPass;
+
+            // Loan EMI deduction for this month
+            const loanEMI = advances
+                .filter(a => a.empId === emp.id && a.type === 'loan_repay' && a.date && a.date.startsWith(month))
+                .reduce((s, a) => s + (Number(a.amount) || 0), 0);
+
+            // Loan summary (all-time)
+            const loanIssued = advances
+                .filter(a => a.empId === emp.id && a.type === 'loan_issue')
+                .reduce((s, a) => s + (Number(a.amount) || 0), 0);
+            const loanRepaid = advances
+                .filter(a => a.empId === emp.id && a.type === 'loan_repay')
+                .reduce((s, a) => s + (Number(a.amount) || 0), 0);
+            const loanBalance = loanIssued - loanRepaid;
+
+            // Last loan repayment date
+            const loanRepayEntries = advances
+                .filter(a => a.empId === emp.id && a.type === 'loan_repay')
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+            const lastLoanRepay = loanRepayEntries.length > 0 ? loanRepayEntries[0].date : '';
+
             const eventBreakdown = empEvents.map(evt => {
                 const empEvt = evt.employees.find(e => e.empId === emp.id);
                 const extraText = empEvt?.extraAmount ? ` + extra ₹${empEvt.extraAmount}${empEvt.extraReason ? ` (${empEvt.extraReason})` : ''}` : '';
@@ -2786,7 +2807,12 @@
                 rent: proratedRent,
                 lightBill,
                 fine,
-                final: total - onAccount - proratedRent - lightBill - fine,
+                loanEMI,
+                loanIssued,
+                loanRepaid,
+                loanBalance,
+                lastLoanRepay,
+                final: total - onAccount - proratedRent - lightBill - fine - loanEMI,
                 events: empEvents.length,
                 eventBreakdown
             };
@@ -2955,15 +2981,17 @@
             bodyHTML += renderSummaryRow('RENT', 'bg-deduction', 'rent');
             bodyHTML += renderSummaryRow('LIGHT BILL', 'bg-deduction', 'lightBill');
             bodyHTML += renderSummaryRow('FINE', 'bg-deduction', 'fine');
+            bodyHTML += renderSummaryRow('LOAN EMI', 'bg-deduction', 'loanEMI');
 
-            // FINAL = BALANCE - On Account - RENT - LIGHT - FINE
+            // FINAL = BALANCE - On Account - RENT - LIGHT - FINE - LOAN EMI
             bodyHTML += renderSummaryRow('FINAL', 'bg-final', 'final', (col) => {
                 const balRow  = endRow + 6;
                 const accRow  = endRow + 7;
                 const rentRow = endRow + 8;
                 const lightRow= endRow + 9;
                 const fineRow = endRow + 10;
-                return `=${col}${balRow}-${col}${accRow}-${col}${rentRow}-${col}${lightRow}-${col}${fineRow}`;
+                const loanRow = endRow + 11;
+                return `=${col}${balRow}-${col}${accRow}-${col}${rentRow}-${col}${lightRow}-${col}${fineRow}-${col}${loanRow}`;
             });
 
             // No of Events Row
@@ -3024,34 +3052,54 @@
                 });
 
                 const blankRow = exportTable.insertRow();
-                blankRow.innerHTML = '<td colspan="5" style="height:30px;"></td>';
+                blankRow.innerHTML = '<td colspan="8" style="height:30px;"></td>';
 
                 const titleRow = exportTable.insertRow();
-                titleRow.innerHTML = '<td colspan="5" style="font-size:14pt; font-weight:bold; color:#7030A0; text-align:center;">--- FOR SIR (GROUP SUMMARY) ---</td>';
+                titleRow.innerHTML = '<td colspan="8" style="font-size:14pt; font-weight:bold; color:#7030A0; text-align:center;">--- FOR SIR (GROUP SUMMARY) ---</td>';
 
                 const headerRow = exportTable.insertRow();
                 headerRow.innerHTML = `
                     <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Group / Paid To</th>
-                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;" colspan="2">Name</th>
-                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;" colspan="2">Amount</th>
+                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Name</th>
+                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Amount</th>
+                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Loan EMI</th>
+                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Last Deducted</th>
+                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Loan Issued</th>
+                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Loan Repaid</th>
+                    <th style="background:#7030A0; color:#fff; border: 1px solid #000;">Pending Loan</th>
                 `;
 
                 Object.keys(groupedSummary).sort().forEach(grp => {
                     const members = groupedSummary[grp];
                     const sum = members.reduce((s, m) => s + m.final, 0);
+                    const sumLoanEMI = members.reduce((s, m) => s + (m.loanEMI || 0), 0);
+                    const sumLoanIssued = members.reduce((s, m) => s + (m.loanIssued || 0), 0);
+                    const sumLoanRepaid = members.reduce((s, m) => s + (m.loanRepaid || 0), 0);
+                    const sumLoanBalance = sumLoanIssued - sumLoanRepaid;
                     members.forEach(m => {
+                        const lastDeducted = m.lastLoanRepay ? formatDate(m.lastLoanRepay) : '-';
                         const tr = exportTable.insertRow();
                         tr.innerHTML = `
                             <td style="border: 1px solid #ccc;">${escapeHtml(grp)}</td>
-                            <td colspan="2" style="border: 1px solid #ccc;">${escapeHtml(m.name)}</td>
-                            <td colspan="2" style="border: 1px solid #ccc;">₹${m.final.toLocaleString('en-IN')}</td>
+                            <td style="border: 1px solid #ccc;">${escapeHtml(m.name)}</td>
+                            <td style="border: 1px solid #ccc;">₹${m.final.toLocaleString('en-IN')}</td>
+                            <td style="border: 1px solid #ccc; color:#FF0000; font-weight:bold;">${(m.loanEMI || 0) > 0 ? '₹' + m.loanEMI.toLocaleString('en-IN') : '-'}</td>
+                            <td style="border: 1px solid #ccc;">${lastDeducted}</td>
+                            <td style="border: 1px solid #ccc;">${(m.loanIssued || 0) > 0 ? '₹' + m.loanIssued.toLocaleString('en-IN') : '-'}</td>
+                            <td style="border: 1px solid #ccc;">${(m.loanRepaid || 0) > 0 ? '₹' + m.loanRepaid.toLocaleString('en-IN') : '-'}</td>
+                            <td style="border: 1px solid #ccc; color:#FF0000; font-weight:bold;">${(m.loanBalance || 0) > 0 ? '₹' + m.loanBalance.toLocaleString('en-IN') : '-'}</td>
                         `;
                     });
                     if (members.length > 1) {
                         const tr = exportTable.insertRow();
                         tr.innerHTML = `
-                            <td colspan="3" style="text-align:right; font-weight:bold; background:#FFFF00; border: 1px solid #ccc;">${escapeHtml(grp)} TOTAL</td>
-                            <td colspan="2" style="font-weight:bold; background:#FFFF00; border: 1px solid #ccc;">₹${sum.toLocaleString('en-IN')}</td>
+                            <td colspan="2" style="text-align:right; font-weight:bold; background:#FFFF00; border: 1px solid #ccc;">${escapeHtml(grp)} TOTAL</td>
+                            <td style="font-weight:bold; background:#FFFF00; border: 1px solid #ccc;">₹${sum.toLocaleString('en-IN')}</td>
+                            <td style="font-weight:bold; background:#FFFF00; border: 1px solid #ccc; color:#FF0000;">${sumLoanEMI > 0 ? '₹' + sumLoanEMI.toLocaleString('en-IN') : '-'}</td>
+                            <td style="background:#FFFF00; border: 1px solid #ccc;"></td>
+                            <td style="font-weight:bold; background:#FFFF00; border: 1px solid #ccc;">${sumLoanIssued > 0 ? '₹' + sumLoanIssued.toLocaleString('en-IN') : '-'}</td>
+                            <td style="font-weight:bold; background:#FFFF00; border: 1px solid #ccc;">${sumLoanRepaid > 0 ? '₹' + sumLoanRepaid.toLocaleString('en-IN') : '-'}</td>
+                            <td style="font-weight:bold; background:#FFFF00; border: 1px solid #ccc; color:#FF0000;">${sumLoanBalance > 0 ? '₹' + sumLoanBalance.toLocaleString('en-IN') : '-'}</td>
                         `;
                     }
                 });
@@ -3257,14 +3305,7 @@ ${html}
                 eventLines = '\n*Work Details:* No events this month\n';
             }
 
-            // Loan EMI for this month
-            const empId = (window.sortedEmployees && window.sortedEmployees.find(e => e.name === data.name))?.id;
-            let loanEMI = 0;
-            if (empId && monthVal) {
-                loanEMI = advances
-                    .filter(a => a.empId === empId && a.type === 'loan_repay' && a.date && a.date.startsWith(monthVal))
-                    .reduce((s, a) => s + (Number(a.amount) || 0), 0);
-            }
+            // Loan data now comes directly from buildEmployeeMonthTotals (data.loanEMI, data.loanIssued, etc.)
 
             const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧' };
             const emoji = catEmoji[data.category] || '👤';
@@ -3296,11 +3337,25 @@ ${eventLines}
   🏦 On Account     -₹${data.onAccount.toLocaleString('en-IN')}
   🏠 Rent           -₹${data.rent.toLocaleString('en-IN')}
   💡 Light Bill     -₹${data.lightBill.toLocaleString('en-IN')}
-  ✋ Fine           -₹${data.fine.toLocaleString('en-IN')}`;
+  ✋ Fine           -₹${data.fine.toLocaleString('en-IN')}
+  🏦 Loan EMI       -₹${(data.loanEMI || 0).toLocaleString('en-IN')}`;
             
-            let dedTotal = data.onAccount + data.rent + data.lightBill + data.fine;
+            let dedTotal = data.onAccount + data.rent + data.lightBill + data.fine + (data.loanEMI || 0);
+
+            let loanInfo = '';
+            if ((data.loanIssued || 0) > 0) {
+                loanInfo = `
+━━━━━━━━━━━━━━━━━━━━
+*LOAN DETAILS*
+━━━━━━━━━━━━━━━━━━━━
+  💰 Loan Issued    ₹${data.loanIssued.toLocaleString('en-IN')}
+  ✅ Loan Repaid    ₹${data.loanRepaid.toLocaleString('en-IN')}
+  🔴 Pending Loan   ₹${data.loanBalance.toLocaleString('en-IN')}
+  📅 Last Deducted  ${data.lastLoanRepay || '-'}
+`;
+            }
             
-            const msg2 = `  ─────────────────────
+            const msg2 = `${loanInfo}  ─────────────────────
   *Total Deductions* *-₹${dedTotal.toLocaleString('en-IN')}*
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -3860,6 +3915,11 @@ ${travelTotalSheetHTML}
                     rent: totals.rent,
                     lightBill: totals.lightBill,
                     fine: totals.fine,
+                    loanEMI: totals.loanEMI,
+                    loanIssued: totals.loanIssued,
+                    loanRepaid: totals.loanRepaid,
+                    loanBalance: totals.loanBalance,
+                    lastLoanRepay: totals.lastLoanRepay,
                     final: totals.final
                 };
             });
@@ -3998,7 +4058,7 @@ ${travelTotalSheetHTML}
                             </thead>
                             <tbody>
                                 ${data.salarySummary.map(item => {
-                                    const totalDeductions = item.onAccount + item.rent + item.lightBill + item.fine;
+                                    const totalDeductions = item.onAccount + item.rent + item.lightBill + item.fine + (item.loanEMI || 0);
                                     return `
                                         <tr>
                                             <td style="font-weight:700; color:var(--text-main);">${escapeHtml(item.name)}</td>
@@ -4145,7 +4205,7 @@ ${travelTotalSheetHTML}
                 <tfoot>
                     <tr><td colspan="5" style="border:none; height:15px;"></td></tr>
                     <tr><td colspan="4" style="text-align:right; padding:6px; color:var(--text-muted);">Gross Earnings</td><td style="text-align:right; padding:6px; font-weight:700; color:var(--text-main);">₹${empSum.gross.toLocaleString('en-IN')}</td></tr>
-                    <tr><td colspan="4" style="text-align:right; padding:6px; color:#ef4444;">Total Deductions</td><td style="text-align:right; padding:6px; font-weight:700; color:#ef4444;">-₹${(empSum.onAccount + empSum.rent + empSum.lightBill + empSum.fine).toLocaleString('en-IN')}</td></tr>
+                    <tr><td colspan="4" style="text-align:right; padding:6px; color:#ef4444;">Total Deductions</td><td style="text-align:right; padding:6px; font-weight:700; color:#ef4444;">-₹${(empSum.onAccount + empSum.rent + empSum.lightBill + empSum.fine + (empSum.loanEMI || 0)).toLocaleString('en-IN')}</td></tr>
                     <tr><td colspan="4" style="text-align:right; padding:12px; font-size: 1.1em; font-weight:800; color:#10b981; border-top:1px solid rgba(16,185,129,0.3);">NET PAYABLE</td><td style="text-align:right; padding:12px; font-size: 1.1em; font-weight:800; color:#10b981; border-top:1px solid rgba(16,185,129,0.3);">₹${empSum.final.toLocaleString('en-IN')}</td></tr>
                 </tfoot>
                 </table></div>`;
