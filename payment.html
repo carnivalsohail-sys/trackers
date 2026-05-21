@@ -5642,7 +5642,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       setBadge('Connecting…', '#f59e0b');
       // Start polling if not already
       if (!pollInterval) pollInterval = setInterval(doPull, POLL_MS);
-      setTimeout(manualSync, 300);
+      setTimeout(connectFromSheet, 300);
     };
   }
 
@@ -5804,6 +5804,12 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   }
 
   // ── MANUAL SYNC: push then pull ───────────────────────────────────────────
+  async function connectFromSheet() {
+    if (!sheetsUrl) return;
+    setBadge('Connecting...', '#f59e0b');
+    await doPull();
+  }
+
   async function manualSync() {
     if (!sheetsUrl) { openSettings(); return; }
     setBadge('Syncing…', '#f59e0b');
