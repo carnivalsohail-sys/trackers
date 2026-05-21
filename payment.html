@@ -5443,5 +5443,435 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 <!-- ══════════════════════════════════════════════════════════════════════
   END AI AUTOMATIC CALLS — FIXED VERSION
   ══════════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════════════════════════
+  GOOGLE SHEETS BIDIRECTIONAL SYNC — payment.html
+  ──────────────────────────────────────────────────────────────────────────
+  PASTE THIS ENTIRE BLOCK just before the closing </body> tag in payment.html.
+  Do NOT modify any existing code. This is 100% additive.
+
+  HOW IT WORKS:
+  • App → Sheet: Every time a payment is saved/edited/deleted, a push to
+    Google Sheets is scheduled (1.5-second debounce). Sheet updates in ~2s.
+  • Sheet → App: Every 30 seconds the app polls Sheets. If Sheets has newer
+    data (e.g. you edited a cell directly in the Sheet), the app refreshes.
+  • Manual Sync: Click the 📊 green badge (bottom-left) → "Sync Now".
+
+  FIRST-TIME SETUP:
+  1. Open the .gs file → deploy as Web App → copy the URL.
+  2. In the app, click the 📊 badge (bottom-left) → paste URL → Save & Connect.
+  3. Done. First pull will import your existing Sheet data into the app.
+══════════════════════════════════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  // ── CONFIG ──────────────────────────────────────────────────────────────
+  var URL_KEY      = 'carnival_sheets_url';    // localStorage key for the web app URL
+  var POLL_MS      = 30000;                    // pull from Sheet every 30s
+  var DEBOUNCE_MS  = 1500;                     // push debounce after each save
+
+  // ── STATE ────────────────────────────────────────────────────────────────
+  var sheetsUrl    = localStorage.getItem(URL_KEY) || '';
+  var pushTimer    = null;
+  var isPushing    = false;
+  var pushQueued   = false;
+  var isPulling    = false;
+  var pollInterval = null;
+
+  // ── BADGE ────────────────────────────────────────────────────────────────
+  // Shows in the bottom-left corner. Click it to open settings.
+  function ensureBadge() {
+    if (document.getElementById('gSheetsBadge')) return;
+
+    var badge = document.createElement('div');
+    badge.id = 'gSheetsBadge';
+    badge.title = 'Google Sheets Sync — click to configure';
+    badge.style.cssText = [
+      'position:fixed;bottom:14px;left:14px;z-index:9998;',
+      'background:var(--surface,#1e293b);',
+      'border:1px solid var(--border,rgba(255,255,255,0.1));',
+      'border-radius:10px;padding:7px 13px;',
+      'font-size:0.72em;font-weight:700;',
+      'color:#6b6b80;cursor:pointer;',
+      'box-shadow:0 3px 14px rgba(0,0,0,0.5);',
+      'display:flex;align-items:center;gap:7px;',
+      'font-family:inherit;transition:all 0.2s;',
+      'user-select:none;-webkit-user-select:none;'
+    ].join('');
+    badge.innerHTML = '<span id="gSheetsIcon">📊</span><span id="gSheetsTxt">Sheets: Not configured</span>';
+    badge.addEventListener('click', openSettings);
+    badge.addEventListener('mouseenter', function () {
+      badge.style.transform = 'translateY(-2px)';
+      badge.style.boxShadow = '0 6px 20px rgba(0,0,0,0.6)';
+    });
+    badge.addEventListener('mouseleave', function () {
+      badge.style.transform = '';
+      badge.style.boxShadow = '0 3px 14px rgba(0,0,0,0.5)';
+    });
+    document.body.appendChild(badge);
+  }
+
+  function setBadge(text, color) {
+    var el = document.getElementById('gSheetsTxt');
+    if (el) el.textContent = text;
+    var badge = document.getElementById('gSheetsBadge');
+    if (badge) badge.style.color = color || '#10b981';
+  }
+
+  // ── SETTINGS MODAL ───────────────────────────────────────────────────────
+  function openSettings() {
+    var existing = document.getElementById('gSheetsModal');
+    if (existing) { existing.remove(); return; }
+
+    var modal = document.createElement('div');
+    modal.id = 'gSheetsModal';
+    modal.style.cssText = [
+      'position:fixed;inset:0;background:rgba(0,0,0,0.78);',
+      'z-index:100002;display:flex;align-items:center;',
+      'justify-content:center;padding:16px;',
+      'font-family:var(--font-sans,system-ui,sans-serif);'
+    ].join('');
+
+    var urlVal = sheetsUrl || '';
+    modal.innerHTML = [
+      '<div style="background:var(--surface,#1e293b);color:var(--text,#f8fafc);',
+        'padding:26px;border-radius:18px;max-width:520px;width:100%;',
+        'box-shadow:0 28px 70px rgba(0,0,0,0.65);',
+        'border:1px solid var(--border,rgba(255,255,255,0.1));box-sizing:border-box;">',
+
+        // Header
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">',
+          '<span style="font-size:1.4em;">📊</span>',
+          '<h3 style="margin:0;font-size:1.05em;font-weight:800;">Google Sheets Sync</h3>',
+        '</div>',
+        '<p style="margin:0 0 20px;font-size:0.76em;color:var(--text-dim,#94a3b8);">',
+          'Two-way: save in app → updates Sheet instantly. Edit Sheet → app refreshes every 30 s.',
+        '</p>',
+
+        // URL field
+        '<div style="margin-bottom:16px;">',
+          '<div style="font-size:0.68em;color:var(--text-dim,#94a3b8);text-transform:uppercase;',
+            'letter-spacing:1.2px;font-weight:700;margin-bottom:7px;">Apps Script Web App URL</div>',
+          '<input id="gsUrlInput" type="text" spellcheck="false"',
+            ' value="', urlVal, '"',
+            ' placeholder="https://script.google.com/macros/s/…/exec"',
+            ' style="width:100%;padding:11px 13px;border-radius:9px;',
+              'border:1px solid rgba(255,255,255,0.15);',
+              'background:var(--surface-2,#0f172a);',
+              'color:var(--text,#f8fafc);font-size:0.82em;',
+              'box-sizing:border-box;font-family:monospace;outline:none;" />',
+          '<div style="font-size:0.68em;color:var(--text-dim,#94a3b8);margin-top:6px;">',
+            'Deploy the .gs file as a Web App → Execute as: Me, Access: Anyone. ',
+            '<a href="https://script.google.com" target="_blank" ',
+              'style="color:var(--primary-light,#a5b4fc);">Open Apps Script →</a>',
+          '</div>',
+        '</div>',
+
+        // Setup guide box
+        '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);',
+          'border-radius:10px;padding:13px 14px;margin-bottom:20px;',
+          'font-size:0.73em;color:var(--text-muted,#cbd5e1);line-height:1.75;">',
+          '<strong style="color:var(--primary-light,#a5b4fc);">One-time setup (≈ 3 min):</strong><br>',
+          '1. Open <a href="https://script.google.com" target="_blank" ',
+            'style="color:var(--primary-light,#a5b4fc);">script.google.com</a> → New Project<br>',
+          '2. Paste the <code>.gs</code> file contents → Save → Deploy → New Deployment<br>',
+          '3. Type: Web App · Execute as: <strong>Me</strong> · Access: <strong>Anyone</strong><br>',
+          '4. Authorize → copy Web App URL → paste above → Save &amp; Connect<br>',
+          '5. Your existing Sheet data will import automatically on first pull ✓',
+        '</div>',
+
+        // Status (shown when connected)
+        sheetsUrl
+          ? '<div id="gsSyncStatus" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:9px;padding:9px 13px;font-size:0.74em;color:var(--success-light,#6ee7b7);margin-bottom:16px;font-weight:600;">✅ Connected — polling every 30 s</div>'
+          : '',
+
+        // Buttons
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">',
+          sheetsUrl
+            ? '<button id="gsDisconnect" style="padding:10px 15px;border:none;border-radius:9px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:0.8em;">Disconnect</button>'
+            : '',
+          '<button id="gsCancel" style="padding:10px 15px;border:none;border-radius:9px;background:#334155;color:#fff;font-weight:700;cursor:pointer;font-size:0.8em;">Cancel</button>',
+          sheetsUrl
+            ? '<button id="gsSyncNow" style="padding:10px 15px;border:none;border-radius:9px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-weight:700;cursor:pointer;font-size:0.8em;">↺ Sync Now</button>'
+            : '',
+          '<button id="gsSave" style="padding:10px 18px;border:none;border-radius:9px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-weight:700;cursor:pointer;font-size:0.8em;">',
+            sheetsUrl ? '💾 Update' : '🔗 Save &amp; Connect',
+          '</button>',
+        '</div>',
+      '</div>'
+    ].join('');
+
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+
+    // Wire buttons
+    document.getElementById('gsCancel').onclick = function () { modal.remove(); };
+
+    var discBtn = document.getElementById('gsDisconnect');
+    if (discBtn) {
+      discBtn.onclick = function () {
+        if (!confirm('Disconnect Google Sheets sync?\n\nYour existing data stays safe in the app and GitHub Gist.')) return;
+        sheetsUrl = '';
+        localStorage.removeItem(URL_KEY);
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+        modal.remove();
+        setBadge('Disconnected', '#ef4444');
+        setTimeout(function () { setBadge('Not configured', '#6b6b80'); }, 3000);
+      };
+    }
+
+    var syncNowBtn = document.getElementById('gsSyncNow');
+    if (syncNowBtn) {
+      syncNowBtn.onclick = function () {
+        modal.remove();
+        manualSync();
+      };
+    }
+
+    document.getElementById('gsSave').onclick = function () {
+      var url = (document.getElementById('gsUrlInput').value || '').trim();
+      if (!url) { alert('Please paste your Apps Script Web App URL.'); return; }
+      if (url.indexOf('script.google.com') === -1) {
+        if (!confirm('This URL doesn\'t look like a Google Apps Script URL.\nSave anyway?')) return;
+      }
+      sheetsUrl = url;
+      localStorage.setItem(URL_KEY, url);
+      modal.remove();
+      setBadge('Connecting…', '#f59e0b');
+      // Start polling if not already
+      if (!pollInterval) pollInterval = setInterval(doPull, POLL_MS);
+      setTimeout(manualSync, 300);
+    };
+  }
+
+  // ── PUSH: App → Sheet ─────────────────────────────────────────────────────
+  // Debounced — triggered whenever savePaymentsToStorage is called by the app
+  function schedulePush() {
+    if (!sheetsUrl) return;
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(doPush, DEBOUNCE_MS);
+  }
+
+  async function doPush() {
+    pushTimer = null;
+    if (!sheetsUrl) return;
+    if (isPushing) { pushQueued = true; return; }
+    isPushing = true;
+    setBadge('Saving to Sheet…', '#f59e0b');
+
+    try {
+      // Read current payments from localStorage
+      var raw = localStorage.getItem('pt_payments');
+      var data = raw ? JSON.parse(raw) : [];
+
+      // Stamp a stable ID on any record that lacks one
+      var dirty = false;
+      data.forEach(function (p) {
+        if (!p.id) {
+          p.id = 'pt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+          dirty = true;
+        }
+      });
+      if (dirty) {
+        // Write back via raw origSet to avoid triggering GitHub Gist push loop
+        try {
+          if (typeof Storage.prototype._gsOrig === 'function') {
+            Storage.prototype._gsOrig.call(localStorage, 'pt_payments', JSON.stringify(data));
+          } else {
+            localStorage.setItem('pt_payments', JSON.stringify(data));
+          }
+        } catch (e) {
+          localStorage.setItem('pt_payments', JSON.stringify(data));
+        }
+      }
+
+      // POST to Apps Script (use text/plain to avoid CORS preflight)
+      var res = await fetch(sheetsUrl, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'push', payments: data }),
+        headers: { 'Content-Type': 'text/plain' }
+      });
+
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var json = await res.json();
+      if (json.error) throw new Error(json.error);
+
+      setBadge('Synced ✓ ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), '#10b981');
+
+    } catch (err) {
+      console.error('[Sheets push]', err);
+      setBadge('Push error — check URL', '#ef4444');
+    } finally {
+      isPushing = false;
+      if (pushQueued) { pushQueued = false; setTimeout(doPush, 200); }
+    }
+  }
+
+  // ── PULL: Sheet → App ─────────────────────────────────────────────────────
+  // Fetches all rows from Sheets. If data differs from localStorage, applies it.
+  async function doPull() {
+    if (!sheetsUrl || isPulling) return;
+    isPulling = true;
+
+    try {
+      var url = sheetsUrl + (sheetsUrl.indexOf('?') === -1 ? '?' : '&') + '_cb=' + Date.now();
+      var res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var rows = await res.json();
+
+      if (rows && rows.error) throw new Error(rows.error);
+      if (!Array.isArray(rows)) throw new Error('Unexpected response from Apps Script');
+
+      if (rows.length === 0) {
+        setBadge('Synced ✓ (Sheet empty)', '#10b981');
+        isPulling = false;
+        return;
+      }
+
+      // Normalise sheet rows → payment objects
+      var normalized = rows
+        .filter(function (r) { return r.clientName && r.clientName.trim(); })
+        .map(function (r) {
+          var inv = parseFloat(r.invoiceAmount) || 0;
+          var rec = parseFloat(r.amountReceived) || 0;
+          var bal = parseFloat(r.balance);
+          if (isNaN(bal)) bal = inv - rec;
+          return {
+            id:             r.id            || '',
+            eventDate:      r.eventDate     || '',
+            clientName:     (r.clientName   || '').trim(),
+            venue:          r.venue         || '',
+            company:        r.company       || '',
+            invoiceNo:      r.invoiceNo     || '',
+            invoiceAmount:  inv,
+            amountReceived: rec,
+            balance:        isNaN(bal) ? 0 : bal,
+            dueDate:        r.dueDate       || '',
+            phone:          (r.phone        || '').trim(),
+            email:          (r.email        || '').trim(),
+            reference:      r.reference     || '',
+            notes:          r.notes         || '',
+            status:         r.status        || ''
+          };
+        });
+
+      // Compare with current local data to avoid unnecessary refreshes
+      var localRaw  = localStorage.getItem('pt_payments');
+      var localStr  = localRaw || '[]';
+      var sheetStr  = JSON.stringify(normalized);
+
+      // Quick count comparison first (cheap), then full compare
+      var localArr  = JSON.parse(localStr);
+      var changed   = localArr.length !== normalized.length || localStr !== sheetStr;
+
+      if (changed) {
+        // Write via _gsOrig to bypass GitHub Gist's push intercept (it would
+        // push to Gist via its own incomingMark mechanism anyway — that's fine —
+        // but we don't want it double-pushing the same data we just pulled)
+        var writeTarget = (typeof Storage.prototype._gsOrig === 'function')
+          ? function (v) { Storage.prototype._gsOrig.call(localStorage, 'pt_payments', v); }
+          : function (v) { localStorage.setItem('pt_payments', v); };
+
+        writeTarget(sheetStr);
+        refreshUI();
+        setBadge('Pulled from Sheet ✓', '#10b981');
+        if (typeof showToast === 'function') showToast('📊 Synced from Google Sheets', 'info');
+      } else {
+        setBadge('Synced ✓ ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), '#10b981');
+      }
+
+    } catch (err) {
+      console.error('[Sheets pull]', err);
+      setBadge('Pull failed — check URL', '#ef4444');
+    } finally {
+      isPulling = false;
+    }
+  }
+
+  // ── REFRESH UI after pull ──────────────────────────────────────────────────
+  function refreshUI() {
+    try { if (typeof loadPaymentsFromStorage === 'function') loadPaymentsFromStorage(); } catch (e) {}
+    try { if (typeof populateFilters         === 'function') populateFilters();         } catch (e) {}
+    try {
+      if (typeof setFilterCard === 'function') {
+        setFilterCard(typeof activeFilterCard !== 'undefined' ? activeFilterCard : 'all');
+      }
+    } catch (e) {}
+    try { if (typeof updateStats     === 'function') updateStats();     } catch (e) {}
+    try { if (typeof renderFollowups === 'function') renderFollowups(); } catch (e) {}
+  }
+
+  // ── MANUAL SYNC: push then pull ───────────────────────────────────────────
+  async function manualSync() {
+    if (!sheetsUrl) { openSettings(); return; }
+    setBadge('Syncing…', '#f59e0b');
+    await doPush();
+    await doPull();
+  }
+  window.manualSheetsSync = manualSync; // expose globally for console use
+
+  // ── HOOK INTO savePaymentsToStorage ──────────────────────────────────────
+  // Every time the app saves locally (add, edit, delete, pay), we push to Sheet.
+  // Additive wrapper — the original function always runs first.
+  function hookSave() {
+    var origFn = window.savePaymentsToStorage;
+    if (typeof origFn !== 'function') {
+      console.warn('[Sheets sync] savePaymentsToStorage not found — pushes rely on manual sync only.');
+      return;
+    }
+    window.savePaymentsToStorage = function () {
+      origFn.apply(this, arguments); // run original save first
+      schedulePush();                // then schedule Sheets push
+    };
+  }
+
+  // ── Store original localStorage.setItem before any patches ────────────────
+  // Gives us a way to write to localStorage silently (without re-triggering
+  // our own or GitHub Gist's push interceptors) when pulling from Sheets.
+  if (typeof Storage.prototype._gsOrig !== 'function') {
+    // Only store if not already done (idempotent)
+    Storage.prototype._gsOrig = Storage.prototype.setItem;
+  }
+
+  // ── BOOT ──────────────────────────────────────────────────────────────────
+  function boot() {
+    ensureBadge();
+    hookSave();
+
+    if (sheetsUrl) {
+      setBadge('Connecting…', '#f59e0b');
+      doPull().then(function () {
+        if (!pollInterval) pollInterval = setInterval(doPull, POLL_MS);
+      });
+    } else {
+      setBadge('Not configured', '#6b6b80');
+      // Check once per 5 s in case user configures later (without page reload)
+      var checkCfg = setInterval(function () {
+        sheetsUrl = localStorage.getItem(URL_KEY) || '';
+        if (sheetsUrl) {
+          clearInterval(checkCfg);
+          setBadge('Connecting…', '#f59e0b');
+          doPull().then(function () {
+            if (!pollInterval) pollInterval = setInterval(doPull, POLL_MS);
+          });
+        }
+      }, 5000);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    setTimeout(boot, 300); // small delay so existing scripts finish booting
+  }
+
+})();
+</script>
+<!-- ══════════════════════════════════════════════════════════════════════════
+  END GOOGLE SHEETS SYNC
+══════════════════════════════════════════════════════════════════════════ -->
+
 </body>
 </html>
