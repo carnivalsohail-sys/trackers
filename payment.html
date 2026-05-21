@@ -5803,7 +5803,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     try { if (typeof renderFollowups === 'function') renderFollowups(); } catch (e) {}
   }
 
-  // ── MANUAL SYNC: push then pull ───────────────────────────────────────────
+  // ── MANUAL SYNC: pull only ────────────────────────────────────────────────
   async function connectFromSheet() {
     if (!sheetsUrl) return;
     setBadge('Connecting...', '#f59e0b');
@@ -5813,7 +5813,6 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   async function manualSync() {
     if (!sheetsUrl) { openSettings(); return; }
     setBadge('Syncing…', '#f59e0b');
-    await doPush();
     await doPull();
   }
   window.manualSheetsSync = manualSync; // expose globally for console use
