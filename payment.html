@@ -537,6 +537,7 @@ tr:hover{background:var(--primary-glow)}
       <button class="btn btn-danger" style="width:100%;justify-content:center;padding:12px" onclick="exportRedFlagsPDF();closeModal('exportSheet')">🔴 Red Flags (PDF)</button>
       <div style="height:1px;background:var(--border);margin:4px 0"></div>
       <button class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px;border-color:var(--primary);color:var(--primary-light)" onclick="closeModal('exportSheet');openImportModal()">📥 Import JSON</button>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;padding:12px;border-color:var(--success);color:var(--success-light);margin-top:8px" onclick="setGoogleScriptUrl()">🔗 Set Google Sheets URL</button>
     </div>
   </div>
 </div>
@@ -1633,9 +1634,10 @@ function savePayment(e){
     payments[window._editIdx] = entry;
     showToast('Invoice updated successfully','success');
   } else {
-    payments.unshift(entry);
+    payments.push(entry);
     showToast('Invoice added successfully','success');
   }
+  syncToGoogleSheets(entry);
   if(nv&&![...document.getElementById('filterVenue').options].some(o=>o.value===nv)){
     document.getElementById('filterVenue').innerHTML+=`<option value="${nv}">${nv}</option>`;
     document.getElementById('venueSelect').innerHTML+=`<option value="${nv}">${nv}</option>`;
@@ -4063,9 +4065,10 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         payments[window._editIdx] = entry;
         showToast('Invoice updated successfully', 'success');
       } else {
-        payments.unshift(entry);
+        payments.push(entry);
         showToast('Invoice added successfully', 'success');
       }
+      syncToGoogleSheets(entry);
 
       if (nv && ![...document.getElementById('filterVenue').options]
                   .some(o => o.value === nv)) {
@@ -4280,9 +4283,10 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         payments[window._editIdx] = entry;
         showToast('Invoice updated successfully', 'success');
       } else {
-        payments.unshift(entry);
+        payments.push(entry);
         showToast('Invoice added successfully', 'success');
       }
+      syncToGoogleSheets(entry);
 
       if (nv && ![...document.getElementById('filterVenue').options]
                   .some(o => o.value === nv)) {
