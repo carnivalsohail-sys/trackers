@@ -5721,14 +5721,22 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       });
 
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      var json = await res.json();
+      var _resText = await res.text();
+      var json;
+      try { json = JSON.parse(_resText); }
+      catch (e) {
+        // Apps Script returned HTML (auth redirect / quota page) — surface useful snippet
+        var _snippet = _resText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+        throw new Error('Non-JSON response: ' + (_snippet || '(empty)'));
+      }
       if (json.error) throw new Error(json.error);
 
       setBadge('Synced ✓ ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), '#10b981');
 
     } catch (err) {
       console.error('[Sheets push]', err);
-      setBadge('Push error — check URL', '#ef4444');
+      var _msg = (err && err.message) ? err.message.slice(0, 40) : 'Push failed';
+      setBadge('⚠ ' + _msg, '#ef4444');
     } finally {
       isPushing = false;
       if (pushQueued) { pushQueued = false; setTimeout(doPush, 200); }
