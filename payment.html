@@ -1930,7 +1930,7 @@ async function buildAndDownloadExcel(dataToExport, reportTitle, includeAllSheets
         {v:String(p.invoiceNo||'-'),fmt:null},
         {v:invAmt,fmt:'#,##0.00'},                // G — Invoice
         {v:recAmt,fmt:'#,##0.00'},                // H — Received
-        {formula:`${gRef}-${hRef}`,result:bal,fmt:'#,##0.00'}, // I — Balance FORMULA
+        {v:bal,fmt:'#,##0.00'}, // I — Balance (static value — prevents Google Sheets recalc from showing TDS as outstanding)
         {v:st.status,fmt:null},
         {v:st.daysOverdue>0?st.daysOverdue:0,fmt:'0'},
         {v:p.dueDate?new Date(p.dueDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'-',fmt:null},
@@ -1980,7 +1980,7 @@ async function buildAndDownloadExcel(dataToExport, reportTitle, includeAllSheets
       {v:'',fmt:null},{v:'',fmt:null},
       {formula:`SUM(G${firstDataRow}:G${lastDataRow})`,result:data.reduce((s,p)=>s+parseFloat(p.invoiceAmount||0),0),fmt:'#,##0.00'}, // G total
       {formula:`SUM(H${firstDataRow}:H${lastDataRow})`,result:data.reduce((s,p)=>s+parseFloat(p.amountReceived||0),0),fmt:'#,##0.00'}, // H total
-      {formula:`G${totRowNum}-H${totRowNum}`,result:data.reduce((s,p)=>s+parseFloat(p.balance||0),0),fmt:'#,##0.00'}, // I total formula
+      {formula:`SUM(I${firstDataRow}:I${lastDataRow})`,result:data.reduce((s,p)=>s+parseFloat(p.balance||0),0),fmt:'#,##0.00'}, // I total — sums static balance values
       {v:'',fmt:null},{v:'',fmt:null},{v:'',fmt:null},
       {formula:`IF(G${totRowNum}=0,0,H${totRowNum}/G${totRowNum})`,result:0,fmt:'0.00%'}, // M total formula
       {v:'',fmt:null},{v:'',fmt:null},{v:'',fmt:null}
@@ -3921,7 +3921,10 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   }
 
   p.amountReceived = parseFloat(p.amountReceived) + amt;
-  p.balance        = parseFloat(p.invoiceAmount) - p.amountReceived;
+  // When TDS is deducted, the remaining gap is a tax credit — invoice is fully settled
+  p.balance        = tdsDeducted > 0.01
+                       ? 0
+                       : parseFloat(p.invoiceAmount) - p.amountReceived;
   p.status         = calcStatus(p).status;   // ← sync stored status after payment
   const nr = [p.reference, document.getElementById('payDate').value + ' ' + method + (ref ? ' ' + ref : '')].filter(Boolean).join(' | ');
   p.reference = nr;
