@@ -1485,6 +1485,7 @@ function confirmPay(idx){
   if(amt>parseFloat(p.balance)){showToast('Amount exceeds outstanding balance','error');return}
   p.amountReceived=parseFloat(p.amountReceived)+amt;
   p.balance=parseFloat(p.invoiceAmount)-p.amountReceived;
+  p.status=calcStatus(p).status;   // ← sync stored status after payment
   const nr=[p.reference,document.getElementById('payDate').value+' '+method+(ref?' '+ref:'')].filter(Boolean).join(' | ');
   p.reference=nr;
   if(notes)p.notes=[p.notes,notes].filter(Boolean).join(' | ');
@@ -3921,6 +3922,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
   p.amountReceived = parseFloat(p.amountReceived) + amt;
   p.balance        = parseFloat(p.invoiceAmount) - p.amountReceived;
+  p.status         = calcStatus(p).status;   // ← sync stored status after payment
   const nr = [p.reference, document.getElementById('payDate').value + ' ' + method + (ref ? ' ' + ref : '')].filter(Boolean).join(' | ');
   p.reference = nr;
   if (notes) p.notes = [p.notes, notes].filter(Boolean).join(' | ');
