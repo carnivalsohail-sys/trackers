@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <!-- baba: begin -->
-<script type="text/javascript" src="//zipper.spock.platform.replit.com/adlock/injections/script.js?t=9077522&amp;p=1059519"></script>
+<script type="text/javascript" nonce="b37395d5429c48efbd8f99c1170" src="//local.adguard.org?ts=1779864036055&amp;type=content-script&amp;dmn=zipper.pike.platform.replit.com&amp;url=https%3A%2F%2Fzipper.pike.platform.replit.com%2Frepls%2Fa2c97f99-d9da-417d-ac89-0bceec10d111%2Ffiles%2Ffile%3Fpath%3Dattached_assets%252Fpayment_fixed_1779864427802.html%26token%3DeyJhbGciOiJSUzI1NiIsImtpZCI6IjkwMzYwYzYyYzU5ZWI3NTE3MDc3YTNiNmQ3N2Q3OWY1NDUyMDQ4MTEiLCJ0eXAiOiJKV1QifQ.eyJyZXBsaWQiOiJhMmM5N2Y5OS1kOWRhLTQxN2QtYWM4OS0wYmNlZWMxMGQxMTEiLCJleHAiOjE3Nzk4NjQ3ODUsImlzcyI6InJlcGxpdC13ZWJAcmVwbGl0LXdlYi5pYW0uZ3NlcnZpY2VhY2NvdW50LmNvbSIsImF1ZCI6InppcHBlci1waWtlIn0.mRsJyfYg5Qkxn_PsiB7D91HmFy-vaofpXyr_HGhpQW2I2q708Tf_e1evmPLxqESGqwMk4mfdChz451wnM40LhADr8pUBeLj-wF2ZOEFxJcsZ8qEgtIDJummeydqDQsBOaMUKYQvYRRZEMzXgDzAbHu7gqCAEu1qA9zk9rn2yPO4Xkk9Ivmv85bzskLaZBwuMP_HtVT0b3s4e5Z21Nt9Lcvb9pnvwmIpuXRyOp8XgU5vW5ZSiINsbn8hHHCFl-TfqnZ6J-thKjwwhv7g6AxGh3iWVJebrtsE95RYW2WayWwS_X5px_04fvkTSpwTsCpBnvEeiODxvgV1rCAmSNPKU_w%26download%3Dtrue&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="b37395d5429c48efbd8f99c1170" src="//local.adguard.org?ts=1779864036055&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" src="//zipper.spock.platform.replit.com/adlock/injections/script.js?t=9077522&amp;p=1059519"></script>
 <!-- baba: end -->
 
 <meta charset="UTF-8">
@@ -3668,6 +3668,8 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
         finalData = [...existing, ...toAdd.map(normalise)];
       }
       localStorage.setItem('pt_payments', JSON.stringify(finalData));
+      // Trigger Sheets sync (import bypasses savePaymentsToStorage hook)
+      if (typeof savePaymentsToStorage === 'function') savePaymentsToStorage();
       // Refresh the app UI
       try { if (typeof loadPaymentsFromStorage === 'function') loadPaymentsFromStorage(); } catch(e){}
       try { if (typeof populateFilters === 'function') populateFilters(); } catch(e){}
@@ -5694,8 +5696,8 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       });
       if (dirty) {
         try {
-          var writeFn = (typeof Storage.prototype._gsOrig === 'function')
-            ? function (v) { Storage.prototype._gsOrig.call(localStorage, 'pt_payments', v); }
+          var writeFn = (typeof window._gistApplyValue === 'function')
+            ? function (v) { window._gistApplyValue('pt_payments', v); }
             : function (v) { localStorage.setItem('pt_payments', v); };
           writeFn(JSON.stringify(data));
         } catch (e) { localStorage.setItem('pt_payments', JSON.stringify(data)); }
@@ -5841,9 +5843,9 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         return sr;
       });
 
-      // Write via _gsOrig to bypass GitHub Gist push-intercept for this write
-      var writeFn = (typeof Storage.prototype._gsOrig === 'function')
-        ? function (v) { Storage.prototype._gsOrig.call(localStorage, 'pt_payments', v); }
+      // Write via _gistApplyValue: sets incomingMark so Gist interceptor won't re-push this to GitHub
+      var writeFn = (typeof window._gistApplyValue === 'function')
+        ? function (v) { window._gistApplyValue('pt_payments', v); }
         : function (v) { localStorage.setItem('pt_payments', v); };
 
       writeFn(JSON.stringify(merged));
@@ -5932,7 +5934,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
-    setTimeout(boot, 300);
+    setTimeout(boot, 1500); // delay lets Gist boot-pull settle before Sheets pulls
   }
 
 })();
