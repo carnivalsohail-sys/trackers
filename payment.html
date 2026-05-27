@@ -5475,31 +5475,32 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   END AI AUTOMATIC CALLS — FIXED VERSION
   ══════════════════════════════════════════════════════════════════════ -->
 <!-- ══════════════════════════════════════════════════════════════════════════
-  GOOGLE SHEETS BIDIRECTIONAL SYNC — payment.html
+  GOOGLE SHEETS BIDIRECTIONAL SYNC — payment.html (FIXED v2)
   ──────────────────────────────────────────────────────────────────────────
-  PASTE THIS ENTIRE BLOCK just before the closing </body> tag in payment.html.
-  Do NOT modify any existing code. This is 100% additive.
-
-  HOW IT WORKS:
-  • App → Sheet: Every time a payment is saved/edited/deleted, a push to
-    Google Sheets is scheduled (1.5-second debounce). Sheet updates in ~2s.
-  • Sheet → App: Every 30 seconds the app polls Sheets. If Sheets has newer
-    data (e.g. you edited a cell directly in the Sheet), the app refreshes.
-  • Manual Sync: Click the 📊 green badge (bottom-left) → "Sync Now".
-
-  FIRST-TIME SETUP:
-  1. Open the .gs file → deploy as Web App → copy the URL.
-  2. In the app, click the 📊 badge (bottom-left) → paste URL → Save & Connect.
-  3. Done. First pull will import your existing Sheet data into the app.
+  FIXES:
+  • Smart merge on pull — preserves all local-only fields (TDS, follow-up
+    logs, PDC, payment history, etc.) that the Sheet doesn't track.
+  • Correct change detection — compares only Sheet-tracked fields, not the
+    full serialised object (old bug: always detected "changed" → destroyed
+    extended data every 30 s).
+  • ID-based reconciliation — matches records by id; new sheet rows are
+    appended; deleted sheet rows are removed.
 ══════════════════════════════════════════════════════════════════════════ -->
 <script>
 (function () {
   'use strict';
 
   // ── CONFIG ──────────────────────────────────────────────────────────────
-  var URL_KEY      = 'carnival_sheets_url';    // localStorage key for the web app URL
-  var POLL_MS      = 30000;                    // pull from Sheet every 30s
-  var DEBOUNCE_MS  = 1500;                     // push debounce after each save
+  var URL_KEY     = 'carnival_sheets_url';
+  var POLL_MS     = 30000;
+  var DEBOUNCE_MS = 1500;
+
+  // Fields the Sheet knows about — ONLY these are compared / merged from sheet
+  var SHEET_FIELDS = [
+    'id','eventDate','clientName','venue','company','invoiceNo',
+    'invoiceAmount','amountReceived','balance','dueDate',
+    'phone','email','reference','notes','status'
+  ];
 
   // ── STATE ────────────────────────────────────────────────────────────────
   var sheetsUrl    = localStorage.getItem(URL_KEY) || '';
@@ -5510,10 +5511,8 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   var pollInterval = null;
 
   // ── BADGE ────────────────────────────────────────────────────────────────
-  // Shows in the bottom-left corner. Click it to open settings.
   function ensureBadge() {
     if (document.getElementById('gSheetsBadge')) return;
-
     var badge = document.createElement('div');
     badge.id = 'gSheetsBadge';
     badge.title = 'Google Sheets Sync — click to configure';
@@ -5570,7 +5569,6 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         'box-shadow:0 28px 70px rgba(0,0,0,0.65);',
         'border:1px solid var(--border,rgba(255,255,255,0.1));box-sizing:border-box;">',
 
-        // Header
         '<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">',
           '<span style="font-size:1.4em;">📊</span>',
           '<h3 style="margin:0;font-size:1.05em;font-weight:800;">Google Sheets Sync</h3>',
@@ -5579,7 +5577,6 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
           'Two-way: save in app → updates Sheet instantly. Edit Sheet → app refreshes every 30 s.',
         '</p>',
 
-        // URL field
         '<div style="margin-bottom:16px;">',
           '<div style="font-size:0.68em;color:var(--text-dim,#94a3b8);text-transform:uppercase;',
             'letter-spacing:1.2px;font-weight:700;margin-bottom:7px;">Apps Script Web App URL</div>',
@@ -5598,7 +5595,6 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
           '</div>',
         '</div>',
 
-        // Setup guide box
         '<div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.25);',
           'border-radius:10px;padding:13px 14px;margin-bottom:20px;',
           'font-size:0.73em;color:var(--text-muted,#cbd5e1);line-height:1.75;">',
@@ -5611,12 +5607,10 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
           '5. Your existing Sheet data will import automatically on first pull ✓',
         '</div>',
 
-        // Status (shown when connected)
         sheetsUrl
           ? '<div id="gsSyncStatus" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:9px;padding:9px 13px;font-size:0.74em;color:var(--success-light,#6ee7b7);margin-bottom:16px;font-weight:600;">✅ Connected — polling every 30 s</div>'
           : '',
 
-        // Buttons
         '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">',
           sheetsUrl
             ? '<button id="gsDisconnect" style="padding:10px 15px;border:none;border-radius:9px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:0.8em;">Disconnect</button>'
@@ -5637,7 +5631,6 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     });
     document.body.appendChild(modal);
 
-    // Wire buttons
     document.getElementById('gsCancel').onclick = function () { modal.remove(); };
 
     var discBtn = document.getElementById('gsDisconnect');
@@ -5655,10 +5648,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     var syncNowBtn = document.getElementById('gsSyncNow');
     if (syncNowBtn) {
-      syncNowBtn.onclick = function () {
-        modal.remove();
-        manualSync();
-      };
+      syncNowBtn.onclick = function () { modal.remove(); manualSync(); };
     }
 
     document.getElementById('gsSave').onclick = function () {
@@ -5671,14 +5661,12 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       localStorage.setItem(URL_KEY, url);
       modal.remove();
       setBadge('Connecting…', '#f59e0b');
-      // Start polling if not already
       if (!pollInterval) pollInterval = setInterval(doPull, POLL_MS);
       setTimeout(connectFromSheet, 300);
     };
   }
 
   // ── PUSH: App → Sheet ─────────────────────────────────────────────────────
-  // Debounced — triggered whenever savePaymentsToStorage is called by the app
   function schedulePush() {
     if (!sheetsUrl) return;
     if (pushTimer) clearTimeout(pushTimer);
@@ -5693,11 +5681,10 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     setBadge('Saving to Sheet…', '#f59e0b');
 
     try {
-      // Read current payments from localStorage
-      var raw = localStorage.getItem('pt_payments');
+      var raw  = localStorage.getItem('pt_payments');
       var data = raw ? JSON.parse(raw) : [];
 
-      // Stamp a stable ID on any record that lacks one
+      // Stamp stable IDs on any record that lacks one
       var dirty = false;
       data.forEach(function (p) {
         if (!p.id) {
@@ -5706,31 +5693,23 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         }
       });
       if (dirty) {
-        // Write back via raw origSet to avoid triggering GitHub Gist push loop
         try {
-          if (typeof Storage.prototype._gsOrig === 'function') {
-            Storage.prototype._gsOrig.call(localStorage, 'pt_payments', JSON.stringify(data));
-          } else {
-            localStorage.setItem('pt_payments', JSON.stringify(data));
-          }
-        } catch (e) {
-          localStorage.setItem('pt_payments', JSON.stringify(data));
-        }
+          var writeFn = (typeof Storage.prototype._gsOrig === 'function')
+            ? function (v) { Storage.prototype._gsOrig.call(localStorage, 'pt_payments', v); }
+            : function (v) { localStorage.setItem('pt_payments', v); };
+          writeFn(JSON.stringify(data));
+        } catch (e) { localStorage.setItem('pt_payments', JSON.stringify(data)); }
       }
 
-      // POST to Apps Script (use text/plain to avoid CORS preflight)
       var res = await fetch(sheetsUrl, {
         method: 'POST',
         body: JSON.stringify({ action: 'push', payments: data }),
         headers: { 'Content-Type': 'text/plain' }
       });
-
       if (!res.ok) throw new Error('HTTP ' + res.status);
       var _resText = await res.text();
       var json;
-      try { json = JSON.parse(_resText); }
-      catch (e) {
-        // Apps Script returned HTML (auth redirect / quota page) — surface useful snippet
+      try { json = JSON.parse(_resText); } catch (e) {
         var _snippet = _resText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
         throw new Error('Non-JSON response: ' + (_snippet || '(empty)'));
       }
@@ -5740,8 +5719,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
     } catch (err) {
       console.error('[Sheets push]', err);
-      var _msg = (err && err.message) ? err.message.slice(0, 40) : 'Push failed';
-      setBadge('⚠ ' + _msg, '#ef4444');
+      setBadge('⚠ ' + ((err && err.message) ? err.message.slice(0, 40) : 'Push failed'), '#ef4444');
     } finally {
       isPushing = false;
       if (pushQueued) { pushQueued = false; setTimeout(doPush, 200); }
@@ -5749,7 +5727,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   }
 
   // ── PULL: Sheet → App ─────────────────────────────────────────────────────
-  // Fetches all rows from Sheets. If data differs from localStorage, applies it.
+  // KEY FIX: uses ID-based smart merge so local-only fields are never lost.
   async function doPull() {
     if (!sheetsUrl || isPulling) return;
     isPulling = true;
@@ -5769,8 +5747,8 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
         return;
       }
 
-      // Normalise sheet rows → payment objects
-      var normalized = rows
+      // Normalise sheet rows to objects (sheet-tracked fields only)
+      var sheetRecords = rows
         .filter(function (r) { return r.clientName && r.clientName.trim(); })
         .map(function (r) {
           var inv = parseFloat(r.invoiceAmount) || 0;
@@ -5796,30 +5774,82 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
           };
         });
 
-      // Compare with current local data to avoid unnecessary refreshes
-      var localRaw  = localStorage.getItem('pt_payments');
-      var localStr  = localRaw || '[]';
-      var sheetStr  = JSON.stringify(normalized);
+      // Load current local data
+      var localRaw = localStorage.getItem('pt_payments');
+      var localArr = localRaw ? JSON.parse(localRaw) : [];
 
-      // Quick count comparison first (cheap), then full compare
-      var localArr  = JSON.parse(localStr);
-      var changed   = localArr.length !== normalized.length || localStr !== sheetStr;
+      // Build lookup maps
+      var localById  = {};
+      localArr.forEach(function (p) { if (p.id) localById[p.id] = p; });
+      var sheetById  = {};
+      sheetRecords.forEach(function (r) { if (r.id) sheetById[r.id] = r; });
 
-      if (changed) {
-        // Write via _gsOrig to bypass GitHub Gist's push intercept (it would
-        // push to Gist via its own incomingMark mechanism anyway — that's fine —
-        // but we don't want it double-pushing the same data we just pulled)
-        var writeTarget = (typeof Storage.prototype._gsOrig === 'function')
-          ? function (v) { Storage.prototype._gsOrig.call(localStorage, 'pt_payments', v); }
-          : function (v) { localStorage.setItem('pt_payments', v); };
-
-        writeTarget(sheetStr);
-        refreshUI();
-        setBadge('Pulled from Sheet ✓', '#10b981');
-        if (typeof showToast === 'function') showToast('📊 Synced from Google Sheets', 'info');
-      } else {
-        setBadge('Synced ✓ ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), '#10b981');
+      // ── CHANGE DETECTION ──────────────────────────────────────────────────
+      // Compare ONLY the sheet-tracked fields to decide if anything changed.
+      // This avoids the old bug where local extra fields always triggered
+      // a false "changed" → destructive overwrite every 30 s.
+      function sheetSnapshot(p) {
+        var snap = {};
+        SHEET_FIELDS.forEach(function (f) { snap[f] = p[f] !== undefined ? p[f] : ''; });
+        return JSON.stringify(snap);
       }
+
+      var localSnapshots = {};
+      localArr.forEach(function (p) {
+        if (p.id) localSnapshots[p.id] = sheetSnapshot(p);
+      });
+
+      var changed = false;
+
+      // Check for any sheet record that differs from local
+      sheetRecords.forEach(function (sr) {
+        if (!sr.id) { changed = true; return; }  // no ID → can't match → treat as new
+        if (!localSnapshots[sr.id]) { changed = true; return; } // new record in sheet
+        if (localSnapshots[sr.id] !== sheetSnapshot(sr)) { changed = true; } // field changed
+      });
+
+      // Check if sheet deleted any record that exists locally
+      if (!changed) {
+        localArr.forEach(function (p) {
+          if (p.id && !sheetById[p.id]) { changed = true; }
+        });
+      }
+
+      if (!changed) {
+        setBadge('Synced ✓ ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }), '#10b981');
+        isPulling = false;
+        return;
+      }
+
+      // ── SMART MERGE ───────────────────────────────────────────────────────
+      // For each sheet record:
+      //   • If it exists locally by ID → merge sheet fields INTO the local
+      //     object (preserving all local-only fields like TDS, follow-up logs).
+      //   • If it's new (no local match) → add it as-is.
+      // Local records NOT in sheet are removed (sheet is authoritative for
+      // record existence, but not for local-only field values).
+
+      var merged = sheetRecords.map(function (sr) {
+        var localRec = sr.id ? localById[sr.id] : null;
+        if (localRec) {
+          // Shallow-merge: sheet fields overwrite local; all other local keys kept
+          var result = Object.assign({}, localRec);
+          SHEET_FIELDS.forEach(function (f) { result[f] = sr[f]; });
+          return result;
+        }
+        // New record from sheet — no local counterpart
+        return sr;
+      });
+
+      // Write via _gsOrig to bypass GitHub Gist push-intercept for this write
+      var writeFn = (typeof Storage.prototype._gsOrig === 'function')
+        ? function (v) { Storage.prototype._gsOrig.call(localStorage, 'pt_payments', v); }
+        : function (v) { localStorage.setItem('pt_payments', v); };
+
+      writeFn(JSON.stringify(merged));
+      refreshUI();
+      setBadge('Pulled from Sheet ✓', '#10b981');
+      if (typeof showToast === 'function') showToast('📊 Synced from Google Sheets', 'info');
 
     } catch (err) {
       console.error('[Sheets pull]', err);
@@ -5842,7 +5872,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     try { if (typeof renderFollowups === 'function') renderFollowups(); } catch (e) {}
   }
 
-  // ── MANUAL SYNC: pull only ────────────────────────────────────────────────
+  // ── MANUAL SYNC ───────────────────────────────────────────────────────────
   async function connectFromSheet() {
     if (!sheetsUrl) return;
     setBadge('Connecting...', '#f59e0b');
@@ -5854,11 +5884,9 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
     setBadge('Syncing…', '#f59e0b');
     await doPull();
   }
-  window.manualSheetsSync = manualSync; // expose globally for console use
+  window.manualSheetsSync = manualSync;
 
   // ── HOOK INTO savePaymentsToStorage ──────────────────────────────────────
-  // Every time the app saves locally (add, edit, delete, pay), we push to Sheet.
-  // Additive wrapper — the original function always runs first.
   function hookSave() {
     var origFn = window.savePaymentsToStorage;
     if (typeof origFn !== 'function') {
@@ -5866,16 +5894,13 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       return;
     }
     window.savePaymentsToStorage = function () {
-      origFn.apply(this, arguments); // run original save first
-      schedulePush();                // then schedule Sheets push
+      origFn.apply(this, arguments);
+      schedulePush();
     };
   }
 
-  // ── Store original localStorage.setItem before any patches ────────────────
-  // Gives us a way to write to localStorage silently (without re-triggering
-  // our own or GitHub Gist's push interceptors) when pulling from Sheets.
+  // ── Preserve the true original setItem before any patches ────────────────
   if (typeof Storage.prototype._gsOrig !== 'function') {
-    // Only store if not already done (idempotent)
     Storage.prototype._gsOrig = Storage.prototype.setItem;
   }
 
@@ -5891,7 +5916,6 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
       });
     } else {
       setBadge('Not configured', '#6b6b80');
-      // Check once per 5 s in case user configures later (without page reload)
       var checkCfg = setInterval(function () {
         sheetsUrl = localStorage.getItem(URL_KEY) || '';
         if (sheetsUrl) {
@@ -5908,7 +5932,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
-    setTimeout(boot, 300); // small delay so existing scripts finish booting
+    setTimeout(boot, 300);
   }
 
 })();
@@ -5916,6 +5940,7 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 <!-- ══════════════════════════════════════════════════════════════════════════
   END GOOGLE SHEETS SYNC
 ══════════════════════════════════════════════════════════════════════════ -->
+
 
 </body>
 </html>
