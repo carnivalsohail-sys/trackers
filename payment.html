@@ -3498,7 +3498,8 @@ function doPost(e) {
                 }
             }
 
-            var isoDate = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s);
+            // Plain YYYY-MM-DD only ($ ensures ISO timestamps with T fall through below)
+            var isoDate = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
             if (isoDate) {
                 return isoDate[1] + '-' + String(isoDate[2]).padStart(2, '0') + '-' + String(isoDate[3]).padStart(2, '0');
             }
@@ -3518,20 +3519,14 @@ function doPost(e) {
                 return y + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
             }
 
-            // If it's an ISO timestamp like "2026-04-30T18:30:00.000Z", convert UTC to local YYYY-MM-DD
+            // ISO timestamp (e.g. "2026-05-25T18:30:00.000Z" = midnight IST May 26).
+            // Use LOCAL time methods so the date matches the user's timezone (IST etc.).
             if (s.indexOf('T') !== -1) {
-                // Extract the YYYY-MM-DD portion directly from the ISO string.
-                // Avoids timezone-conversion bugs (e.g. Sheets sends UTC "2026-05-25T18:30Z"
-                // for midnight IST May 26 — local getDate() in UTC gives 25 instead of 26).
-                var datePart = s.substring(0, 10);
-                var dpMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
-                if (dpMatch) return datePart;
-                // Fallback: parse & use UTC methods (still timezone-safe)
                 var d = new Date(s);
                 if (!isNaN(d.getTime())) {
-                    return d.getUTCFullYear() + '-' +
-                        String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
-                        String(d.getUTCDate()).padStart(2, '0');
+                    return d.getFullYear() + '-' +
+                        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                        String(d.getDate()).padStart(2, '0');
                 }
             }
             return s;
