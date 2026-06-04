@@ -2314,11 +2314,6 @@
             renderEventEmployeeAdjustments();
         }
 
-        function getSelectedEventEmployees() {
-            const chips = document.querySelectorAll('.employee-chip.selected');
-            return Array.from(chips).map(c => parseInt(c.dataset.index));
-        }
-
         function toggleEmployeeChip(chip) {
             chip.classList.toggle('selected');
             renderEventEmployeeAdjustments();
@@ -2400,7 +2395,7 @@
                 document.getElementById('cancelEditEventBtn').style.display = 'none';
             } else {
                 events.push({
-                    id: Date.now(),
+                    id: Date.now() + Math.floor(Math.random() * 1000),
                     date,
                     venue,
                     category,
@@ -2871,6 +2866,7 @@
             });
 
             return {
+                id: emp.id,
                 name: emp.name,
                 category: emp.category,
                 group: emp.group || emp.name,
@@ -3126,7 +3122,7 @@
                 html += `<td colspan="4" style="border: none;"></td>`;
                 html += `<td style="background:var(--stat-card-bg); color:var(--accent-primary); font-weight:bold; text-align:right; border:1px solid var(--border-color); font-size: 10px; padding: 4px;" class="${bgClass}">${label}</td>`;
                 sortedEmployees.forEach((emp, i) => {
-                    const data = salaryData.find(d => d.name === emp.name);
+                    const data = salaryData.find(d => d.id === emp.id);
                     const colLetter = getColLetter(i + 5); // F is index 5
                     let formula = '';
                     if (customFormulaGen) {
@@ -3175,7 +3171,7 @@
             // No of Events Row
             bodyHTML += `<tr><td colspan="4" style="border: none;"></td><td style="font-weight:bold; text-align:right; color:var(--text-muted); padding:6px; border:1px solid var(--border-color); font-size: 10px;">Number of Events</td>`;
             sortedEmployees.forEach((emp, i) => {
-                const data = salaryData.find(d => d.name === emp.name);
+                const data = salaryData.find(d => d.id === emp.id);
                 const colLetter = getColLetter(i + 5);
                 const formula = `=COUNT(${colLetter}${startRow}:${colLetter}${endRow})`;
                 bodyHTML += `<td style="font-weight:bold; text-align:center; color:var(--text-main); border:1px solid var(--border-color); font-size: 10px; padding: 4px;" data-formula="${formula}">${data ? data.events : 0}</td>`;
