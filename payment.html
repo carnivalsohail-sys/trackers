@@ -971,11 +971,8 @@ function loadPaymentsFromStorage(){
       if(isNaN(p.balance)) p.balance = 0;
       payments.push(p);
     });
-    filteredPayments = [...payments];
-    populateFilters();
-    setFilterCard(activeFilterCard);
-    updateStats();
-    renderFollowups();
+    // Use syncRefreshUI so cloud-triggered reloads don't reset search inputs or scroll
+    syncRefreshUI();
   } catch(e){ console.warn('Load failed:', e); }
 }
 
@@ -1539,7 +1536,37 @@ function openLedger(clientName){
   document.getElementById('ledgerModal').classList.add('active');
 }
 
-// ─── FILTERS ──────────────────────────────────────────────────────────────────
+// ─── SYNC-SAFE UI REFRESH ─────────────────────────────────────────────────────
+// Called by cloud sync events. Re-renders the current view without:
+//   • resetting active search/filter inputs
+//   • scrolling the page to the table
+// Use setFilterCard() for user-initiated filter clicks (which should scroll + reset).
+function syncRefreshUI(){
+  populateFilters();
+  if(activeFilterCard==='custom'){
+    applyFilters(); // re-run with whatever is in the search inputs right now
+  } else {
+    switch(activeFilterCard){
+      case'all':filteredPayments=[...payments];break;
+      case'redflag':filteredPayments=payments.filter(p=>calcStatus(p).isRedFlag);break;
+      case'critical':filteredPayments=payments.filter(p=>calcStatus(p).urgency==='critical');break;
+      case'overdue':filteredPayments=payments.filter(p=>{const s=calcStatus(p);return s.status==='Overdue'||s.status==='Critical'});break;
+      case'unpaid':filteredPayments=payments.filter(p=>calcStatus(p).status==='Unpaid');break;
+      case'paid':filteredPayments=payments.filter(p=>calcStatus(p).status==='Paid');break;
+      default:filteredPayments=[...payments];
+    }
+    filteredPayments.sort((a,b)=>{
+      const sa=calcStatus(a),sb=calcStatus(b);
+      if(sa.isRedFlag&&!sb.isRedFlag)return -1;if(!sa.isRedFlag&&sb.isRedFlag)return 1;
+      if(sa.isRedFlag&&sb.isRedFlag)return sb.daysOverdue-sa.daysOverdue;
+      return new Date(b.eventDate||0)-new Date(a.eventDate||0);
+    });
+    renderTable();renderMobileCards();
+  }
+  updateStats();renderFollowups();
+}
+
+
 function applyFilters(){
   const search=document.getElementById('searchClient').value.toLowerCase();
   const venue=document.getElementById('filterVenue').value;
@@ -1647,11 +1674,20 @@ function savePayment(e){
 }
 
 function populateFilters(){
+  const vs=document.getElementById('filterVenue');
+  const va=document.getElementById('venueSelect');
+  const fc=document.getElementById('filterCompany');
+  // Reset to initial state first — prevents duplicate options building up across sync calls
+  vs.innerHTML='<option value="">All Venues</option>';
+  va.innerHTML='<option value="">Select Venue</option>';
+  fc.innerHTML='<option value="">All Companies</option>';
   const venues=[...new Set(payments.map(p=>p.venue).filter(v=>v))].sort();
-  const vs=document.getElementById('filterVenue'),va=document.getElementById('venueSelect');
-  venues.forEach(v=>{vs.innerHTML+=`<option value="${v}">${v}</option>`;va.innerHTML+=`<option value="${v}">${v}</option>`});
+  venues.forEach(v=>{
+    vs.innerHTML+=`<option value="${v}">${v}</option>`;
+    va.innerHTML+=`<option value="${v}">${v}</option>`;
+  });
   [...new Set(payments.map(p=>p.company).filter(c=>c))].sort()
-    .forEach(c=>{document.getElementById('filterCompany').innerHTML+=`<option value="${c}">${c}</option>`});
+    .forEach(c=>{fc.innerHTML+=`<option value="${c}">${c}</option>`});
 }
 
 function openModal(editIdx){
@@ -2902,12 +2938,13 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
     return true;
   }
 
+  // Expose so the Sheets IIFE can write locally without triggering a Gist echo-push
+  window._gistApplyValue = function(key, value){ applyCloudValue(key, value); };
+
+  // refreshUI: loadPaymentsFromStorage now handles all UI updates via syncRefreshUI()
+  // so we only need to call it once — no double-rendering
   function refreshUI(){
     try { if (typeof loadPaymentsFromStorage === "function") loadPaymentsFromStorage(); } catch(e){}
-    try { if (typeof populateFilters === "function") populateFilters(); } catch(e){}
-    try { if (typeof setFilterCard === "function" && typeof activeFilterCard !== "undefined") setFilterCard(activeFilterCard); } catch(e){}
-    try { if (typeof updateStats === "function") updateStats(); } catch(e){}
-    try { if (typeof renderFollowups === "function") renderFollowups(); } catch(e){}
   }
 
   // ===== INTERCEPT localStorage writes =====
@@ -3670,12 +3707,8 @@ document.getElementById('lastUpdated').textContent='Last updated: '+new Date().t
       localStorage.setItem('pt_payments', JSON.stringify(finalData));
       // Trigger Sheets sync (import bypasses savePaymentsToStorage hook)
       if (typeof savePaymentsToStorage === 'function') savePaymentsToStorage();
-      // Refresh the app UI
+      // Refresh the app UI — loadPaymentsFromStorage calls syncRefreshUI() for all rendering
       try { if (typeof loadPaymentsFromStorage === 'function') loadPaymentsFromStorage(); } catch(e){}
-      try { if (typeof populateFilters === 'function') populateFilters(); } catch(e){}
-      try { if (typeof setFilterCard === 'function') setFilterCard(typeof activeFilterCard !== 'undefined' ? activeFilterCard : 'all'); } catch(e){}
-      try { if (typeof updateStats === 'function') updateStats(); } catch(e){}
-      try { if (typeof renderFollowups === 'function') renderFollowups(); } catch(e){}
       const added = importMode === 'replace' ? importData.length : (function(){
         const raw = localStorage.getItem('pt_payments');
         const ex = raw ? JSON.parse(raw) : [];
@@ -5863,15 +5896,9 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
 
   // ── REFRESH UI after pull ──────────────────────────────────────────────────
   function refreshUI() {
+    // loadPaymentsFromStorage calls syncRefreshUI() which handles all rendering —
+    // no need to call populateFilters / setFilterCard / updateStats separately
     try { if (typeof loadPaymentsFromStorage === 'function') loadPaymentsFromStorage(); } catch (e) {}
-    try { if (typeof populateFilters         === 'function') populateFilters();         } catch (e) {}
-    try {
-      if (typeof setFilterCard === 'function') {
-        setFilterCard(typeof activeFilterCard !== 'undefined' ? activeFilterCard : 'all');
-      }
-    } catch (e) {}
-    try { if (typeof updateStats     === 'function') updateStats();     } catch (e) {}
-    try { if (typeof renderFollowups === 'function') renderFollowups(); } catch (e) {}
   }
 
   // ── MANUAL SYNC ───────────────────────────────────────────────────────────
