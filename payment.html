@@ -5531,10 +5531,13 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   var DEBOUNCE_MS = 1500;
 
   // Fields the Sheet knows about — ONLY these are compared / merged from sheet
+  // NOTE: 'balance' is intentionally excluded — it's always recomputed from invoiceAmount-amountReceived
+  // NOTE: 'status' is intentionally excluded — it's always computed by calcStatus() from balance+dueDate
+  //       Importing either from the Sheet causes stale-data bugs (paid records showing as Overdue, etc.)
   var SHEET_FIELDS = [
     'id','eventDate','clientName','venue','company','invoiceNo',
-    'invoiceAmount','amountReceived','balance','dueDate',
-    'phone','email','reference','notes','status'
+    'invoiceAmount','amountReceived','dueDate',
+    'phone','email','reference','notes'
   ];
 
   // ── STATE ────────────────────────────────────────────────────────────────
