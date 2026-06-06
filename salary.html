@@ -6015,26 +6015,23 @@ document.addEventListener('keydown', function(e) {
 });
 
 </script>
-<!-- ==================== GITHUB GIST CLOUD SYNC ==================== -->
-<!-- Replaces Firebase. Hosted on OneDrive across phone + laptop + desktop. -->
+<!-- ==================== GITHUB GIST CLOUD SYNC (FIXED) ==================== -->
 <script>
 (function(){
   // ===== CONFIG =====
-  // Obfuscated split so casual scrapers don't grab token in plaintext.
-  // Token is still readable to anyone with browser devtools - this is for
-  // a private OneDrive-hosted file shared only with your devices.
   const TOK_PARTS = ["ghp_","V1oSbPdfUJpYdjU9","ouSG3rQYjdmnZv3qYOFg"];
   const EMBEDDED_TOKEN = TOK_PARTS.join("");
   const GIST_DESC = "CARNIVAL_PAYROLL_SYNC_V1";
   const SYNC_KEYS = ["carnival_employees","carnival_rates","carnival_events","carnival_advances","carnival_extras"];
-  const POLL_MS = 5000;        // pull interval
-  const DEBOUNCE_MS = 800;     // push debounce
+  const POLL_MS = 15000;
+  const DEBOUNCE_MS = 1200;
   const GIST_ID_KEY = "carnival_gist_id";
   const TOKEN_KEY = "carnival_gh_token";
   const DEVICE_KEY = "carnival_device_name";
+  const TS_KEY = "carnival_last_push_ts";
   const META_FILE = "_meta.json";
   const BACKUP_PREFIX = "backup_";
-  const BACKUP_KEEP = 30;       // keep the last 30 daily backups
+  const BACKUP_KEEP = 30;
 
   function getDeviceName(){
     let n = localStorage.getItem(DEVICE_KEY);
@@ -6047,30 +6044,28 @@ document.addEventListener('keydown', function(e) {
     localStorage.setItem(DEVICE_KEY, n);
     return n;
   }
-  function setDeviceName(name){
-    if (!name) return;
-    localStorage.setItem(DEVICE_KEY, name);
-  }
-
-  function getToken(){
-    return localStorage.getItem(TOKEN_KEY) || EMBEDDED_TOKEN;
-  }
+  function setDeviceName(name){ if (name) localStorage.setItem(DEVICE_KEY, name); }
+  function getToken(){ return localStorage.getItem(TOKEN_KEY) || EMBEDDED_TOKEN; }
 
   // ===== STATE =====
   let gistId = localStorage.getItem(GIST_ID_KEY) || "";
   let lastEtag = "";
-  let pendingFiles = {};       // { "carnival_employees.json": { content: "..." } }
+  let pendingFiles = {};
   let pushTimer = null;
   let isPushing = false;
   let pushQueued = false;
-  let lastMeta = null;        // { lastUpdated, lastDevice, lastKey }
+  let lastMeta = null;
   let lastUpdatedTimer = null;
-  let knownBackups = [];      // [{name, date}]  populated from latest pull
-  const incomingMark = {};     // suppress echo loop on cloud→local writes
+  let knownBackups = [];
+  let lastPushTs = parseInt(localStorage.getItem(TS_KEY) || "0", 10);
+  let isInitialPull = true;
+  let suppressPullUntil = 0;
+
   const origSet = Storage.prototype.setItem;
   const origRemove = Storage.prototype.removeItem;
+  const incomingMark = {};
 
-  // ===== UI BADGE =====
+  // ===== UI =====
   function ensureBadge(){
     let el = document.getElementById("cloudSyncBadge");
     if (el) return el;
@@ -6079,15 +6074,13 @@ document.addEventListener('keydown', function(e) {
     el.style.cssText = "position:fixed;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#10b981;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;z-index:99999;font-family:system-ui,sans-serif;cursor:pointer;user-select:none;";
     el.title = "Click to force sync • Right-click for settings";
     el.textContent = "☁ Connecting...";
-    el.addEventListener("click", () => { manualCloudSync(); });
+    el.addEventListener("click", () => manualCloudSync());
     el.addEventListener("contextmenu", (e) => { e.preventDefault(); openSyncSettings(); });
-    // Long-press for mobile (no right-click on touch)
     let pressTimer = null;
     el.addEventListener("touchstart", () => { pressTimer = setTimeout(openSyncSettings, 600); });
     el.addEventListener("touchend", () => { if (pressTimer) clearTimeout(pressTimer); });
     el.addEventListener("touchmove", () => { if (pressTimer) clearTimeout(pressTimer); });
     document.body.appendChild(el);
-    // Settings gear button next to badge
     if (!document.getElementById("cloudSyncGear")) {
       const g = document.createElement("div");
       g.id = "cloudSyncGear";
@@ -6099,7 +6092,6 @@ document.addEventListener('keydown', function(e) {
     }
     return el;
   }
-
   function ensureLastUpdatedBar(){
     let el = document.getElementById("lastUpdatedBar");
     if (el) return el;
@@ -6110,7 +6102,6 @@ document.addEventListener('keydown', function(e) {
     document.body.appendChild(el);
     return el;
   }
-
   function timeAgo(ts){
     const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
     if (s < 5) return "just now";
@@ -6119,116 +6110,53 @@ document.addEventListener('keydown', function(e) {
     if (m < 60) return m + "m ago";
     const h = Math.floor(m / 60);
     if (h < 24) return h + "h ago";
-    const d = Math.floor(h / 24);
-    return d + "d ago";
+    return Math.floor(h / 24) + "d ago";
   }
-
   function renderLastUpdated(){
     const el = ensureLastUpdatedBar();
-    if (!lastMeta || !lastMeta.lastUpdated) {
-      el.textContent = "Last updated: —";
-      return;
-    }
+    if (!lastMeta || !lastMeta.lastUpdated){ el.textContent = "Last updated: —"; return; }
     const me = getDeviceName();
     const dev = lastMeta.lastDevice || "Unknown";
     const here = (dev === me) ? " (this device)" : "";
     el.textContent = "Last updated " + timeAgo(lastMeta.lastUpdated) + " on " + dev + here;
-    if (!lastUpdatedTimer) {
-      lastUpdatedTimer = setInterval(renderLastUpdated, 15000);
-    }
-
-    // ===== AUTO-BACKUP REMINDER: Check if 7+ days since last cloud sync =====
+    if (!lastUpdatedTimer) lastUpdatedTimer = setInterval(renderLastUpdated, 15000);
     checkBackupReminder(lastMeta.lastUpdated);
   }
-
-  // Auto-backup reminder logic
   let backupReminderShown = false;
-  function checkBackupReminder(lastUpdatedTimestamp) {
+  function checkBackupReminder(ts){
     if (backupReminderShown) return;
-    const now = Date.now();
-    const daysSinceSync = (now - lastUpdatedTimestamp) / (1000 * 60 * 60 * 24);
-    const SEVEN_DAYS = 7;
-
-    if (daysSinceSync >= SEVEN_DAYS) {
-      backupReminderShown = true;
-      const days = Math.floor(daysSinceSync);
-      // Show a non-intrusive warning bar at the top
-      const existingBar = document.getElementById('backupReminderBar');
-      if (existingBar) return;
-
-      const bar = document.createElement('div');
-      bar.id = 'backupReminderBar';
-      bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(245,158,11,0.4);';
-      bar.innerHTML = `
-        <span>⚠️ DATA RISK: Last cloud sync was ${days} days ago. Your data is not backed up!</span>
-        <div style="display:flex;gap:10px;">
-          <button onclick="manualCloudSync(); document.getElementById('backupReminderBar').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:#000;color:#fff;font-weight:800;cursor:pointer;font-size:13px;">Sync Now</button>
-          <button onclick="document.getElementById('backupReminderBar').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:rgba(0,0,0,0.2);color:#000;font-weight:700;cursor:pointer;font-size:13px;">Dismiss</button>
-        </div>
-      `;
-      document.body.appendChild(bar);
-      // Push content down so bar doesn't overlap
-      document.body.style.paddingTop = '52px';
-    }
+    const days = (Date.now() - ts) / 86400000;
+    if (days < 7) return;
+    backupReminderShown = true;
+    if (document.getElementById('backupReminderBar')) return;
+    const bar = document.createElement('div');
+    bar.id = 'backupReminderBar';
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(245,158,11,0.4);';
+    bar.innerHTML = '<span>⚠️ DATA RISK: Last cloud sync was ' + Math.floor(days) + ' days ago!</span><div style="display:flex;gap:10px;"><button onclick="manualCloudSync();document.getElementById(\'backupReminderBar\').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:#000;color:#fff;font-weight:800;cursor:pointer;font-size:13px;">Sync Now</button><button onclick="document.getElementById(\'backupReminderBar\').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:rgba(0,0,0,0.2);color:#000;font-weight:700;cursor:pointer;font-size:13px;">Dismiss</button></div>';
+    document.body.appendChild(bar);
+    document.body.style.paddingTop = '52px';
   }
 
   function openSyncSettings(){
     const existing = document.getElementById("syncSettingsModal");
-    if (existing) { existing.remove(); return; }
+    if (existing){ existing.remove(); return; }
     const curToken = localStorage.getItem(TOKEN_KEY) || "";
-    const usingCustom = !!curToken;
-    const tokenPreview = usingCustom
-      ? (curToken.slice(0, 7) + "..." + curToken.slice(-4))
-      : "(using built-in token)";
+    const tokenPreview = curToken ? (curToken.slice(0,7)+"..."+curToken.slice(-4)) : "(using built-in token)";
     const modal = document.createElement("div");
     modal.id = "syncSettingsModal";
     modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;";
-    modal.innerHTML = `
-      <div style="background:#1e293b;color:#f8fafc;padding:30px;border-radius:20px;max-width:500px;width:92%;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);">
-        <h3 style="margin:0 0 20px;font-size:20px;font-weight:800;">☁ Cloud Sync Settings</h3>
-        <div style="margin-bottom:18px;">
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">GitHub Personal Access Token</div>
-          <div style="font-size:13px;color:#cbd5e1;margin-bottom:8px;">Current: <code style="background:#0f172a;padding:3px 8px;border-radius:6px;color:#10b981;">${tokenPreview}</code></div>
-          <input id="ssTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx (paste new token to rotate)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;font-family:monospace;box-sizing:border-box;" />
-          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Token needs <b>gist</b> scope. Stored on this device only.</div>
-        </div>
-        <div style="margin-bottom:18px;">
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">This Device's Name</div>
-          <input id="ssDeviceInput" type="text" value="${getDeviceName().replace(/"/g,'&quot;')}" placeholder="Laptop, Desktop, Phone..." style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;box-sizing:border-box;" />
-          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Shown in the "last updated" bar so you know which device made the change.</div>
-        </div>
-        <div style="margin-bottom:18px;">
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Gist ID</div>
-          <input id="ssGistInput" type="text" value="${gistId || ''}" placeholder="(auto-created on first sync)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:13px;font-family:monospace;box-sizing:border-box;" />
-          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Set this to share data with another set of devices on the same gist.</div>
-        </div>
-        <div style="margin-bottom:18px;">
-          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-            <span>Cloud Backups (last ${BACKUP_KEEP} days)</span>
-            <span style="color:#10b981;font-weight:600;text-transform:none;letter-spacing:0;">${knownBackups.length} saved</span>
-          </div>
-          <div id="ssBackupList" style="max-height:180px;overflow-y:auto;background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);"></div>
-          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">A snapshot is saved automatically once a day. Click Restore to roll back. Your current data is always backed up first.</div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:24px;">
-          <button id="ssClearToken" style="padding:11px 18px;border:none;border-radius:10px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Reset to Built-in</button>
-          <button id="ssCancel" style="padding:11px 18px;border:none;border-radius:10px;background:#334155;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button>
-          <button id="ssSave" style="padding:11px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Save & Sync</button>
-        </div>
-      </div>
-    `;
+    modal.innerHTML = '<div style="background:#1e293b;color:#f8fafc;padding:30px;border-radius:20px;max-width:500px;width:92%;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);max-height:90vh;overflow-y:auto;"><h3 style="margin:0 0 20px;font-size:20px;font-weight:800;">☁ Cloud Sync Settings</h3><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">GitHub Token</div><div style="font-size:13px;color:#cbd5e1;margin-bottom:8px;">Current: <code style="background:#0f172a;padding:3px 8px;border-radius:6px;color:#10b981;">' + tokenPreview + '</code></div><input id="ssTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;font-family:monospace;box-sizing:border-box;" /></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Device Name</div><input id="ssDeviceInput" type="text" value="' + getDeviceName().replace(/"/g,'&quot;') + '" placeholder="Laptop, Desktop, Phone..." style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;box-sizing:border-box;" /></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Gist ID</div><input id="ssGistInput" type="text" value="' + (gistId||'') + '" placeholder="(auto-created on first sync)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:13px;font-family:monospace;box-sizing:border-box;" /></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><span>Cloud Backups</span><span style="color:#10b981;font-weight:600;text-transform:none;letter-spacing:0;">' + knownBackups.length + ' saved</span></div><div id="ssBackupList" style="max-height:180px;overflow-y:auto;background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);"></div></div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:24px;"><button id="ssClearToken" style="padding:11px 18px;border:none;border-radius:10px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Reset to Built-in</button><button id="ssCancel" style="padding:11px 18px;border:none;border-radius:10px;background:#334155;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button><button id="ssSave" style="padding:11px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Save & Sync</button></div></div>';
     modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
     document.body.appendChild(modal);
-    // Render backup list
     const listEl = document.getElementById("ssBackupList");
-    if (knownBackups.length === 0) {
-      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#64748b;font-size:13px;">No backups yet — one will be saved today.</div>';
+    if (!knownBackups.length){
+      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#64748b;font-size:13px;">No backups yet.</div>';
     } else {
       listEl.innerHTML = knownBackups.map(b => {
         const isAuto = /^\d{4}-\d{2}-\d{2}$/.test(b.date);
-        const label = isAuto ? b.date : ("Manual: " + new Date(parseInt(b.date.replace('before_restore_', ''), 10) || 0).toLocaleString());
-        const tag = isAuto ? '<span style="color:#10b981;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">AUTO</span>' : '<span style="color:#f59e0b;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">SAFETY</span>';
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="font-size:13px;color:#f8fafc;">' + label + tag + '</span><button data-bk="' + b.name.replace(/"/g, '&quot;') + '" class="ssRestoreBtn" style="padding:6px 14px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;cursor:pointer;font-size:12px;">Restore</button></div>';
+        const label = isAuto ? b.date : ("Safety: " + new Date(parseInt(b.date.replace('before_restore_',''),10)||0).toLocaleString());
+        const tag = isAuto ? '<span style="color:#10b981;font-size:10px;font-weight:700;margin-left:8px;">AUTO</span>' : '<span style="color:#f59e0b;font-size:10px;font-weight:700;margin-left:8px;">SAFETY</span>';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="font-size:13px;color:#f8fafc;">' + label + tag + '</span><button data-bk="' + b.name.replace(/"/g,'&quot;') + '" class="ssRestoreBtn" style="padding:6px 14px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;cursor:pointer;font-size:12px;">Restore</button></div>';
       }).join("");
       listEl.querySelectorAll(".ssRestoreBtn").forEach(btn => {
         btn.addEventListener("click", () => restoreBackup(btn.getAttribute("data-bk")));
@@ -6248,27 +6176,23 @@ document.addEventListener('keydown', function(e) {
       const newDev = document.getElementById("ssDeviceInput").value.trim();
       if (newDev) { setDeviceName(newDev); renderLastUpdated(); }
       if (newTok) {
-        if (!/^gh[ps]_[A-Za-z0-9_]{20,}$/.test(newTok)) {
+        if (!/^gh[ps]_[A-Za-z0-9_]{20,}$/.test(newTok)){
           if (!confirm("That doesn't look like a GitHub token. Save anyway?")) return;
         }
         localStorage.setItem(TOKEN_KEY, newTok);
       }
-      if (newGist !== gistId) {
-        if (newGist) {
-          localStorage.setItem(GIST_ID_KEY, newGist);
-          gistId = newGist;
-        } else {
-          localStorage.removeItem(GIST_ID_KEY);
-          gistId = "";
-        }
+      if (newGist !== gistId){
+        if (newGist){ localStorage.setItem(GIST_ID_KEY, newGist); gistId = newGist; }
+        else { localStorage.removeItem(GIST_ID_KEY); gistId = ""; }
         lastEtag = "";
       }
       modal.remove();
-      setBadge("Saving settings...", "#f59e0b");
+      setBadge("Saving...", "#f59e0b");
       setTimeout(manualCloudSync, 200);
     };
   }
   window.openSyncSettings = openSyncSettings;
+
   function setBadge(text, color){
     const el = ensureBadge();
     el.textContent = "☁ " + text;
@@ -6289,22 +6213,15 @@ document.addEventListener('keydown', function(e) {
 
   async function findOrCreateGist(){
     if (gistId) return gistId;
-    // Search existing gists for our description
     setBadge("Finding gist...", "#f59e0b");
     try {
       const res = await fetch(API + "/gists?per_page=100", { headers: ghHeaders() });
-      if (res.ok) {
+      if (res.ok){
         const list = await res.json();
         const found = list.find(g => g.description === GIST_DESC);
-        if (found) {
-          gistId = found.id;
-          localStorage.setItem(GIST_ID_KEY, gistId);
-          return gistId;
-        }
+        if (found){ gistId = found.id; localStorage.setItem(GIST_ID_KEY, gistId); return gistId; }
       }
     } catch(e){ console.warn("Gist list failed", e); }
-
-    // Create new gist seeded with current local data
     setBadge("Creating gist...", "#f59e0b");
     const files = {};
     SYNC_KEYS.forEach(k => {
@@ -6314,22 +6231,18 @@ document.addEventListener('keydown', function(e) {
     const res = await fetch(API + "/gists", {
       method: "POST",
       headers: ghHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ description: GIST_DESC, public: false, files: files })
+      body: JSON.stringify({ description: GIST_DESC, public: false, files })
     });
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error("Gist create failed: " + res.status + " " + txt);
-    }
+    if (!res.ok) throw new Error("Gist create failed: " + res.status);
     const data = await res.json();
     gistId = data.id;
     localStorage.setItem(GIST_ID_KEY, gistId);
     return gistId;
   }
 
-  // ===== PUSH (debounced) =====
+  // ===== PUSH =====
   function schedulePush(key, value){
     pendingFiles[key + ".json"] = { content: String(value == null ? "" : value) };
-    // Always update meta on every push
     pendingFiles[META_FILE] = { content: JSON.stringify({
       lastUpdated: Date.now(),
       lastDevice: getDeviceName(),
@@ -6341,10 +6254,9 @@ document.addEventListener('keydown', function(e) {
   }
 
   let pushRetryCount = 0;
-
   async function doPush(){
     pushTimer = null;
-    if (isPushing) { pushQueued = true; return; }
+    if (isPushing){ pushQueued = true; return; }
     if (!Object.keys(pendingFiles).length) return;
     isPushing = true;
     const filesToSend = pendingFiles;
@@ -6357,33 +6269,29 @@ document.addEventListener('keydown', function(e) {
         body: JSON.stringify({ files: filesToSend })
       });
       if (!res.ok) throw new Error("Patch failed " + res.status);
-      // Update etag so the next poll doesn't immediately re-pull our own write
       const et = res.headers.get("ETag");
       if (et) lastEtag = et;
+      lastPushTs = Date.now();
+      origSet.call(localStorage, TS_KEY, String(lastPushTs));
+      suppressPullUntil = Date.now() + 5000;
       pushRetryCount = 0;
-      setBadge("Synced", "#10b981");
+      setBadge("Synced ✓", "#10b981");
     } catch(err){
       console.error("Push failed", err);
-      // Re-queue what we tried so it isn't lost
       Object.keys(filesToSend).forEach(f => { if (!pendingFiles[f]) pendingFiles[f] = filesToSend[f]; });
       setBadge("Offline", "#ef4444");
-      // Exponential backoff retry (max 60s)
       pushRetryCount++;
       const delay = Math.min(60000, 2000 * Math.pow(2, pushRetryCount - 1));
-      if (navigator.onLine !== false) {
-        setTimeout(doPush, delay);
-      }
+      if (navigator.onLine !== false) setTimeout(doPush, delay);
     } finally {
       isPushing = false;
-      if (pushQueued) { pushQueued = false; setTimeout(doPush, 100); }
+      if (pushQueued){ pushQueued = false; setTimeout(doPush, 100); }
     }
   }
 
-  // Best-effort flush on tab close / background
   function flushPendingWrites(){
-    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
-    if (Object.keys(pendingFiles).length && gistId) {
-      // Cannot await; fire and forget
+    if (pushTimer){ clearTimeout(pushTimer); pushTimer = null; }
+    if (Object.keys(pendingFiles).length && gistId){
       try {
         fetch(API + "/gists/" + gistId, {
           method: "PATCH",
@@ -6398,68 +6306,64 @@ document.addEventListener('keydown', function(e) {
   window.addEventListener("pagehide", flushPendingWrites);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") flushPendingWrites();
-    else pollNow();
+    else { if (Date.now() - lastPushTs > 30000) pollNow(); }
   });
+  window.addEventListener("online", () => { setBadge("Reconnected...", "#f59e0b"); setTimeout(manualCloudSync, 500); });
+  window.addEventListener("offline", () => { setBadge("Offline", "#ef4444"); });
 
-  // ===== NETWORK ONLINE / OFFLINE =====
-  window.addEventListener("online", () => {
-    setBadge("Reconnected...", "#f59e0b");
-    setTimeout(manualCloudSync, 500);
-  });
-  window.addEventListener("offline", () => {
-    setBadge("Offline", "#ef4444");
-  });
-
-  // ===== PULL (poll) =====
+  // ===== PULL =====
   async function pollNow(){
+    if (Date.now() < suppressPullUntil) return;
     try {
       await findOrCreateGist();
       const headers = ghHeaders();
       if (lastEtag) headers["If-None-Match"] = lastEtag;
       const res = await fetch(API + "/gists/" + gistId, { headers, cache: "no-store" });
-      if (res.status === 304) { setBadge("Synced", "#10b981"); return; }
+      if (res.status === 304){ setBadge("Synced ✓", "#10b981"); return; }
       if (!res.ok) throw new Error("Pull failed " + res.status);
       const et = res.headers.get("ETag");
       if (et) lastEtag = et;
       const data = await res.json();
-      let updated = 0;
-      // Collect existing backup filenames
+
       knownBackups = [];
-      if (data.files) {
+      if (data.files){
         Object.keys(data.files).forEach(fn => {
-          if (fn.indexOf(BACKUP_PREFIX) === 0 && fn.endsWith(".json")) {
-            const date = fn.slice(BACKUP_PREFIX.length, -5);
-            knownBackups.push({ name: fn, date });
+          if (fn.indexOf(BACKUP_PREFIX) === 0 && fn.endsWith(".json")){
+            knownBackups.push({ name: fn, date: fn.slice(BACKUP_PREFIX.length, -5) });
           }
         });
-        knownBackups.sort((a, b) => b.date.localeCompare(a.date));
+        knownBackups.sort((a,b) => b.date.localeCompare(a.date));
       }
-      // Read meta if present
+
       const metaFile = data.files && data.files[META_FILE];
-      if (metaFile && typeof metaFile.content === "string") {
+      let cloudTs = 0;
+      if (metaFile && typeof metaFile.content === "string"){
         try {
           const m = JSON.parse(metaFile.content);
-          if (m && m.lastUpdated) {
-            lastMeta = m;
-            renderLastUpdated();
-          }
+          if (m && m.lastUpdated){ cloudTs = m.lastUpdated; lastMeta = m; renderLastUpdated(); }
         } catch(e){}
       }
+
+      // KEY FIX: only apply cloud data if cloud is newer than our last push
+      const shouldApply = isInitialPull || (cloudTs > lastPushTs + 2000);
+      if (!shouldApply){ setBadge("Synced ✓", "#10b981"); isInitialPull = false; return; }
+
+      let updated = 0;
       SYNC_KEYS.forEach(key => {
         const f = data.files && data.files[key + ".json"];
         if (!f) return;
         let content = f.content;
-        // Truncated content (large file): fetch raw
-        if (f.truncated && f.raw_url) {
-          // fire-and-forget refetch on next tick
-          fetch(f.raw_url).then(r => r.text()).then(txt => applyCloudValue(key, txt)).catch(()=>{});
+        if (f.truncated && f.raw_url){
+          fetch(f.raw_url).then(r => r.text()).then(txt => { if (applyCloudValue(key, txt)) refreshUI(); }).catch(()=>{});
           return;
         }
         if (typeof content !== "string") return;
         if (applyCloudValue(key, content)) updated++;
       });
+
       if (updated) refreshUI();
-      setBadge("Synced", "#10b981");
+      isInitialPull = false;
+      setBadge("Synced ✓", "#10b981");
     } catch(err){
       console.error("Poll failed", err);
       setBadge("Offline", "#ef4444");
@@ -6467,10 +6371,15 @@ document.addEventListener('keydown', function(e) {
   }
 
   function applyCloudValue(key, value){
+    // Never overwrite real local data with empty cloud data
+    if (!value || value === "[]" || value === "null" || value === "undefined"){
+      const local = localStorage.getItem(key);
+      if (local && local !== "[]" && local !== "null") return false;
+    }
     if (localStorage.getItem(key) === value) return false;
     incomingMark[key] = true;
     try { origSet.call(localStorage, key, value); }
-    finally { setTimeout(() => { incomingMark[key] = false; }, 200); }
+    finally { setTimeout(() => { incomingMark[key] = false; }, 300); }
     return true;
   }
 
@@ -6483,12 +6392,12 @@ document.addEventListener('keydown', function(e) {
     try { if (typeof loadEmployees === "function") loadEmployees(); } catch(e){}
     try { if (typeof loadEvents === "function") loadEvents(); } catch(e){}
     try { if (typeof loadAdvances === "function") loadAdvances(); } catch(e){}
-    try { if (typeof loadRates === "function") loadRates(); } catch(e){}
-    try { if (typeof loadExtras === "function") loadExtras(); } catch(e){}
+    try { if (typeof loadRateCards === "function") loadRateCards(); } catch(e){}
+    try { if (typeof loadExtrasTable === "function") loadExtrasTable(); } catch(e){}
     try { if (typeof updateDashboard === "function") updateDashboard(); } catch(e){}
   }
 
-  // ===== INTERCEPT localStorage writes =====
+  // ===== INTERCEPT localStorage =====
   Storage.prototype.setItem = function(key, value){
     origSet.call(this, key, value);
     if (this !== window.localStorage) return;
@@ -6498,26 +6407,23 @@ document.addEventListener('keydown', function(e) {
   };
   Storage.prototype.removeItem = function(key){
     origRemove.call(this, key);
-    if (this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) {
-      schedulePush(key, "[]");
-    }
+    if (this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) schedulePush(key, "[]");
   };
 
-  // ===== MANUAL SYNC (button hook) =====
+  // ===== MANUAL SYNC =====
   async function manualCloudSync(){
     const status = document.getElementById("syncStatus");
     setBadge("Syncing...", "#f59e0b");
     try {
-      // First push any local pending changes
       if (Object.keys(pendingFiles).length) await doPush();
-      // Then force-pull (ignore etag)
+      suppressPullUntil = 0;
       lastEtag = "";
       await pollNow();
       if (status) status.textContent = "✔ Cloud Synced at " + new Date().toLocaleTimeString();
     } catch(err){
       console.error(err);
       setBadge("Sync Failed", "#ef4444");
-      if (status) status.textContent = "✘ Sync failed — check internet connection";
+      if (status) status.textContent = "✘ Sync failed — check connection";
     }
   }
   window.manualCloudSync = manualCloudSync;
@@ -6525,79 +6431,58 @@ document.addEventListener('keydown', function(e) {
   // ===== DAILY BACKUPS =====
   function todayStr(){
     const d = new Date();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return d.getFullYear() + "-" + m + "-" + day;
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
   }
-
   async function ensureDailyBackup(){
     try {
       const today = todayStr();
       const todayFile = BACKUP_PREFIX + today + ".json";
       if (knownBackups.some(b => b.name === todayFile)) return;
       const snapshot = { date: today, createdAt: Date.now(), device: getDeviceName(), data: {} };
-      SYNC_KEYS.forEach(k => {
-        snapshot.data[k] = localStorage.getItem(k) || "[]";
-      });
+      SYNC_KEYS.forEach(k => { snapshot.data[k] = localStorage.getItem(k) || "[]"; });
       const files = {};
       files[todayFile] = { content: JSON.stringify(snapshot) };
-      // Prune old backups (keep newest BACKUP_KEEP, plus today)
-      const toDelete = knownBackups
-        .filter(b => b.name !== todayFile)
-        .sort((a, b) => b.date.localeCompare(a.date))
-        .slice(BACKUP_KEEP - 1);
+      const toDelete = knownBackups.filter(b => b.name !== todayFile).sort((a,b) => b.date.localeCompare(a.date)).slice(BACKUP_KEEP - 1);
       toDelete.forEach(b => { files[b.name] = null; });
       const res = await fetch(API + "/gists/" + gistId, {
         method: "PATCH",
         headers: ghHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ files })
       });
-      if (res.ok) {
+      if (res.ok){
         knownBackups.unshift({ name: todayFile, date: today });
         knownBackups = knownBackups.filter(b => !toDelete.find(d => d.name === b.name));
-        console.log("Daily backup saved:", todayFile);
       }
-    } catch(err){
-      console.warn("Backup failed", err);
-    }
+    } catch(err){ console.warn("Backup failed", err); }
   }
 
   async function restoreBackup(filename){
-    if (!confirm("Restore from " + filename + "?\n\nThis will REPLACE your current data on every device. Today's data will be saved as a backup first.")) return;
+    if (!confirm("Restore from " + filename + "?\n\nThis REPLACES current data on all devices. Today's state will be saved first.")) return;
     setBadge("Restoring...", "#f59e0b");
     try {
-      // Save current state as an emergency backup
       const stamp = "before_restore_" + Date.now();
       const emergency = { date: stamp, createdAt: Date.now(), device: getDeviceName(), data: {} };
       SYNC_KEYS.forEach(k => { emergency.data[k] = localStorage.getItem(k) || "[]"; });
       const emergencyFile = BACKUP_PREFIX + stamp + ".json";
-      // Fetch the chosen backup
       const res = await fetch(API + "/gists/" + gistId, { headers: ghHeaders(), cache: "no-store" });
       if (!res.ok) throw new Error("Fetch failed " + res.status);
       const data = await res.json();
       const f = data.files && data.files[filename];
       if (!f) throw new Error("Backup file not found");
       let content = f.content;
-      if (f.truncated && f.raw_url) {
-        content = await fetch(f.raw_url).then(r => r.text());
-      }
+      if (f.truncated && f.raw_url) content = await fetch(f.raw_url).then(r => r.text());
       const snap = JSON.parse(content);
       if (!snap || !snap.data) throw new Error("Invalid backup format");
-      // Apply locally + push to cloud
       const filesPatch = {};
       filesPatch[emergencyFile] = { content: JSON.stringify(emergency) };
       SYNC_KEYS.forEach(k => {
         const val = snap.data[k] != null ? String(snap.data[k]) : "[]";
         incomingMark[k] = true;
         try { origSet.call(localStorage, k, val); }
-        finally { setTimeout(() => { incomingMark[k] = false; }, 200); }
+        finally { setTimeout(() => { incomingMark[k] = false; }, 300); }
         filesPatch[k + ".json"] = { content: val };
       });
-      filesPatch[META_FILE] = { content: JSON.stringify({
-        lastUpdated: Date.now(),
-        lastDevice: getDeviceName(),
-        lastKey: "RESTORE:" + filename
-      }) };
+      filesPatch[META_FILE] = { content: JSON.stringify({ lastUpdated: Date.now(), lastDevice: getDeviceName(), lastKey: "RESTORE:" + filename }) };
       const pushRes = await fetch(API + "/gists/" + gistId, {
         method: "PATCH",
         headers: ghHeaders({ "Content-Type": "application/json" }),
@@ -6607,8 +6492,8 @@ document.addEventListener('keydown', function(e) {
       knownBackups.unshift({ name: emergencyFile, date: stamp });
       lastEtag = "";
       refreshUI();
-      setBadge("Restored", "#10b981");
-      alert("Restored from " + filename + "\n\nA safety backup of your previous data was saved as:\n" + emergencyFile);
+      setBadge("Restored ✓", "#10b981");
+      alert("Restored from " + filename + "\n\nSafety backup saved as: " + emergencyFile);
       const modal = document.getElementById("syncSettingsModal");
       if (modal) modal.remove();
     } catch(err){
@@ -6623,21 +6508,16 @@ document.addEventListener('keydown', function(e) {
   async function boot(){
     try {
       await findOrCreateGist();
-      // Initial pull so this device starts in sync with cloud
       await pollNow();
-      // Make today's backup if needed (after we know what already exists)
       ensureDailyBackup();
-      // Background polling loop
       setInterval(pollNow, POLL_MS);
-      // Hourly backup check (in case the app stays open across midnight)
       setInterval(ensureDailyBackup, 60 * 60 * 1000);
-      console.log("GitHub Gist sync ready. Gist:", gistId);
     } catch(err){
       console.error("Sync boot failed", err);
       setBadge("Auth Failed", "#ef4444");
     }
   }
-  if (document.readyState === "loading") {
+  if (document.readyState === "loading"){
     document.addEventListener("DOMContentLoaded", () => { ensureLastUpdatedBar(); boot(); });
   } else {
     ensureLastUpdatedBar();
