@@ -810,14 +810,15 @@
                     <h3>💰 Rate Card Management</h3>
                     <div class="rate-card-grid" id="rateCardsContainer"></div>
                     <div class="special-box" style="margin-top:20px;">
-                        <h4 style="margin-bottom:12px; font-size:13px;">➕ Add New Rate Category</h4>
+                        <h4 id="rateFormTitle" style="margin-bottom:12px; font-size:13px;">➕ Add New Rate Category</h4>
                         <div class="form-grid">
                             <input type="text" id="rateCode" placeholder="Code (e.g. NE.987)">
                             <input type="text" id="rateDesc" placeholder="Description">
                             <input type="number" id="rateOperator" placeholder="Operator Rate">
                             <input type="number" id="rateSemi" placeholder="Semi-Op Rate">
                             <input type="number" id="rateHelper" placeholder="Helper Rate">
-                            <button class="btn btn-primary" onclick="addRateCard()">Save Rate</button>
+                            <button class="btn btn-primary" id="rateSaveBtn" onclick="addRateCard()">Save Rate</button>
+                            <button class="btn" id="rateCancelBtn" onclick="cancelRateEdit()" style="display:none; background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-main);">✕ Cancel Edit</button>
                             <button class="btn btn-warning" onclick="resetRateCardsToDefaults()" style="background:linear-gradient(135deg,#f59e0b,#d97706);">Restore Defaults</button>
                         </div>
                     </div>
@@ -1476,6 +1477,7 @@
 
         let editingEmpIndex = -1;
         let editingEventId = null;
+        let editingRateIndex = -1;
 
         // Theme Management
         function toggleTheme() {
@@ -1774,7 +1776,10 @@
                         <span>Helper</span>
                         <span class="amount" style="color:#10b981; font-weight:700; font-size:15px;">₹${rate.helper.toLocaleString('en-IN')}</span>
                     </div>
-                    <button class="btn btn-danger" style="margin-top: 12px; width: 100%; font-size:11px; padding:8px;" onclick="deleteRateCard(${index})">Delete</button>
+                    <div style="display:flex; gap:8px; margin-top:12px;">
+                        <button class="btn btn-primary" style="flex:1; font-size:11px; padding:8px;" onclick="editRateCard(${index})">✏️ Edit</button>
+                        <button class="btn btn-danger" style="flex:1; font-size:11px; padding:8px;" onclick="deleteRateCard(${index})">🗑️ Delete</button>
+                    </div>
                 `;
                 container.appendChild(card);
             });
@@ -1788,8 +1793,8 @@
         }
 
         function addRateCard() {
-            const code = document.getElementById('rateCode').value;
-            const desc = document.getElementById('rateDesc').value;
+            const code = document.getElementById('rateCode').value.trim();
+            const desc = document.getElementById('rateDesc').value.trim();
             const operator = parseInt(document.getElementById('rateOperator').value) || 0;
             const semi = parseInt(document.getElementById('rateSemi').value) || 0;
             const helper = parseInt(document.getElementById('rateHelper').value) || 0;
@@ -1799,7 +1804,18 @@
                 return;
             }
 
-            rateCards.push({code, desc, operator, semi, helper});
+            if (editingRateIndex >= 0) {
+                // UPDATE existing
+                rateCards[editingRateIndex] = { code, desc, operator, semi, helper };
+                editingRateIndex = -1;
+                document.getElementById('rateFormTitle').textContent = '➕ Add New Rate Category';
+                document.getElementById('rateSaveBtn').textContent = 'Save Rate';
+                document.getElementById('rateCancelBtn').style.display = 'none';
+            } else {
+                // ADD new
+                rateCards.push({ code, desc, operator, semi, helper });
+            }
+
             saveRates();
             loadRateCards();
 
@@ -1809,6 +1825,37 @@
             document.getElementById('rateOperator').value = '';
             document.getElementById('rateSemi').value = '';
             document.getElementById('rateHelper').value = '';
+        }
+
+        function editRateCard(index) {
+            const rate = rateCards[index];
+            if (!rate) return;
+            editingRateIndex = index;
+
+            document.getElementById('rateCode').value = rate.code;
+            document.getElementById('rateDesc').value = rate.desc;
+            document.getElementById('rateOperator').value = rate.operator;
+            document.getElementById('rateSemi').value = rate.semi;
+            document.getElementById('rateHelper').value = rate.helper;
+
+            document.getElementById('rateFormTitle').textContent = `✏️ Editing: ${rate.code}`;
+            document.getElementById('rateSaveBtn').textContent = '💾 Update Rate';
+            document.getElementById('rateCancelBtn').style.display = '';
+
+            // Scroll form into view smoothly
+            document.getElementById('rateFormTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function cancelRateEdit() {
+            editingRateIndex = -1;
+            document.getElementById('rateCode').value = '';
+            document.getElementById('rateDesc').value = '';
+            document.getElementById('rateOperator').value = '';
+            document.getElementById('rateSemi').value = '';
+            document.getElementById('rateHelper').value = '';
+            document.getElementById('rateFormTitle').textContent = '➕ Add New Rate Category';
+            document.getElementById('rateSaveBtn').textContent = 'Save Rate';
+            document.getElementById('rateCancelBtn').style.display = 'none';
         }
 
         function resetRateCardsToDefaults() {
@@ -1831,6 +1878,8 @@
         function deleteRateCard(index) {
             if (confirm('Delete this rate card?')) {
                 rateCards.splice(index, 1);
+                if (editingRateIndex === index) cancelRateEdit();
+                else if (editingRateIndex > index) editingRateIndex--;
                 saveRates();
                 loadRateCards();
             }
