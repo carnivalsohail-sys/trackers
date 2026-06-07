@@ -64,6 +64,10 @@
             --deduction-text: #FF0000;
             --onacc-bg: #C6E0B4;
             --onacc-text: #FF0000;
+            --sashi-bg: #FFD966;
+            --sashi-text: #000000;
+            --shiv-bg: #B4A7D6;
+            --shiv-text: #000000;
         }
 
         [data-theme="light"] {
@@ -235,6 +239,8 @@
         .bg-operator { background-color: var(--operator-bg) !important; color: var(--operator-text) !important; }
         .bg-semi { background-color: var(--semi-bg) !important; color: var(--semi-text) !important; }
         .bg-helper { background-color: var(--helper-bg) !important; color: var(--helper-text) !important; }
+        .bg-sashi { background-color: var(--sashi-bg) !important; color: var(--sashi-text) !important; }
+        .bg-shiv  { background-color: var(--shiv-bg)  !important; color: var(--shiv-text)  !important; }
         .bg-final { background-color: var(--final-bg) !important; color: var(--final-text) !important; font-weight: 800; }
         .bg-balance { background-color: var(--balance-bg) !important; color: var(--balance-text) !important; }
         .bg-work { background-color: var(--work-bg) !important; color: var(--work-text) !important; }
@@ -257,6 +263,8 @@
         .badge-operator { background:var(--operator-bg); color:var(--operator-text); border:1px solid #E67E22; }
         .badge-semi { background:var(--semi-bg); color:var(--semi-text); border:1px solid #2980B9; }
         .badge-helper { background:var(--helper-bg); color:var(--helper-text); border:1px solid #7F8C8D; }
+        .badge-sashi { background:var(--sashi-bg); color:var(--sashi-text); border:1px solid #F1B800; }
+        .badge-shiv  { background:var(--shiv-bg);  color:var(--shiv-text);  border:1px solid #8E79C0; }
 
         /* BIG Stats Grid */
         .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:30px; }
@@ -321,6 +329,12 @@
 
         .employee-chip.helper { border-color: var(--helper-bg); background: rgba(174,170,170,0.15); color: var(--text-main); }
         .employee-chip.helper.selected { background: var(--helper-bg); color: var(--helper-text); box-shadow: 0 8px 25px rgba(174,170,170,0.5); }
+
+        .employee-chip.sashi { border-color: var(--sashi-bg); background: rgba(255,217,102,0.15); color: var(--text-main); }
+        .employee-chip.sashi.selected { background: var(--sashi-bg); color: var(--sashi-text); box-shadow: 0 8px 25px rgba(255,217,102,0.5); }
+
+        .employee-chip.shiv { border-color: var(--shiv-bg); background: rgba(180,167,214,0.15); color: var(--text-main); }
+        .employee-chip.shiv.selected { background: var(--shiv-bg); color: var(--shiv-text); box-shadow: 0 8px 25px rgba(180,167,214,0.5); }
 
         [data-theme="light"] .employee-select { background: rgba(0,0,0,0.02); }
 
@@ -681,7 +695,7 @@
             .card { background:white; color:black; border:1px solid #eee; } 
             .report-section { background:white; border:1px solid #ddd; color:black; } 
             .report-pill { color:black; border:1px solid #ccc; }
-            .bg-operator, .bg-semi, .bg-helper, .bg-final, .bg-balance, .bg-work, .bg-extras, .bg-travel, .bg-salary, .bg-deduction, .bg-onacc {
+            .bg-operator, .bg-semi, .bg-helper, .bg-sashi, .bg-shiv, .bg-final, .bg-balance, .bg-work, .bg-extras, .bg-travel, .bg-salary, .bg-deduction, .bg-onacc {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -817,6 +831,8 @@
                             <input type="number" id="rateOperator" placeholder="Operator Rate">
                             <input type="number" id="rateSemi" placeholder="Semi-Op Rate">
                             <input type="number" id="rateHelper" placeholder="Helper Rate">
+                            <input type="number" id="rateSashi" placeholder="Sashi Commission (₹)" style="border-color:var(--sashi-bg);">
+                            <input type="number" id="rateShiv" placeholder="Shiv Commission (₹)" style="border-color:var(--shiv-bg);">
                             <button class="btn btn-primary" id="rateSaveBtn" onclick="addRateCard()">Save Rate</button>
                             <button class="btn" id="rateCancelBtn" onclick="cancelRateEdit()" style="display:none; background:var(--input-bg); border:1px solid var(--border-color); color:var(--text-main);">✕ Cancel Edit</button>
                             <button class="btn btn-warning" onclick="resetRateCardsToDefaults()" style="background:linear-gradient(135deg,#f59e0b,#d97706);">Restore Defaults</button>
@@ -870,6 +886,8 @@
                                 <option value="operator">Operator</option>
                                 <option value="semi-operator">Semi-Operator</option>
                                 <option value="helper">Helper</option>
+                                <option value="sashi">Sashi (Commission)</option>
+                                <option value="shiv">Shiv (Commission)</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -994,6 +1012,16 @@
                         <div class="employee-select" id="eventEmployeeSelect"></div>
                     </div>
                     <div class="employee-adjustments" id="eventEmployeeAdjustments"></div>
+
+                    <!-- Commission box for Sashi / Shiv - optional per event -->
+                    <div id="commissionBox" style="display:none; margin:15px 0; padding:16px; border-radius:12px; background:var(--input-bg); border:1px solid var(--border-color);">
+                        <h4 style="font-size:13px; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                            <span>💰</span>
+                            <span style="color:var(--text-main);">Commission</span>
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:400;">— tick to include for this event</span>
+                        </h4>
+                        <div id="commissionRows"></div>
+                    </div>
                     <div id="ratePreview" class="preview-box" style="display: none;">
                         <strong>Rate Preview:</strong> <span id="ratePreviewText"></span>
                     </div>
@@ -1425,17 +1453,17 @@
         let employees = JSON.parse(localStorage.getItem('carnival_employees')) || [];
 
         const DEFAULT_RATE_CARDS = [
-            {code: 'NE.987',       desc: 'Normal PA Sound (2 Spkr)',    operator: 900,  semi: 800,  helper: 700},
-            {code: 'ME.11109',     desc: 'PA Sound + Projector',         operator: 1100, semi: 1000, helper: 900},
-            {code: 'BE.131210',    desc: 'Big Event (4 Spkr + Projector)', operator: 1300, semi: 1200, helper: 1000},
-            {code: 'NSB.986',      desc: 'Night Setup',                  operator: 900,  semi: 800,  helper: 600},
-            {code: 'LOCATION.PA.5',       desc: 'Fixed Venue PA',         operator: 1500, semi: 1300, helper: 1100},
-            {code: 'LOCATION.PA.7',       desc: 'VIHANG PA 7',            operator: 1800, semi: 1500, helper: 1200},
-            {code: 'LOCATION.PA.PR.9',    desc: 'VIHANG PA PR 9',         operator: 2000, semi: 1700, helper: 1400},
-            {code: 'LOCATION.DJ.PR.9',    desc: 'VIHANG DJ PR 9',         operator: 2200, semi: 1900, helper: 1600},
-            {code: 'LOCATION.PR.7',       desc: 'VIHANG PR 7',            operator: 1800, semi: 1500, helper: 1200},
-            {code: 'NP/DP',               desc: 'Packup',                  operator: 500,  semi: 500,  helper: 500},
-            {code: 'BNDRY.DJ.9',          desc: 'Boundary Hall DJ',       operator: 900,  semi: 900,  helper: 900}
+            {code: 'NE.987',       desc: 'Normal PA Sound (2 Spkr)',    operator: 900,  semi: 800,  helper: 700, sashi: 0, shiv: 0},
+            {code: 'ME.11109',     desc: 'PA Sound + Projector',         operator: 1100, semi: 1000, helper: 900, sashi: 0, shiv: 0},
+            {code: 'BE.131210',    desc: 'Big Event (4 Spkr + Projector)', operator: 1300, semi: 1200, helper: 1000, sashi: 0, shiv: 0},
+            {code: 'NSB.986',      desc: 'Night Setup',                  operator: 900,  semi: 800,  helper: 600, sashi: 0, shiv: 0},
+            {code: 'LOCATION.PA.5',       desc: 'Fixed Venue PA',         operator: 1500, semi: 1300, helper: 1100, sashi: 0, shiv: 0},
+            {code: 'LOCATION.PA.7',       desc: 'VIHANG PA 7',            operator: 1800, semi: 1500, helper: 1200, sashi: 0, shiv: 0},
+            {code: 'LOCATION.PA.PR.9',    desc: 'VIHANG PA PR 9',         operator: 2000, semi: 1700, helper: 1400, sashi: 0, shiv: 0},
+            {code: 'LOCATION.DJ.PR.9',    desc: 'VIHANG DJ PR 9',         operator: 2200, semi: 1900, helper: 1600, sashi: 0, shiv: 0},
+            {code: 'LOCATION.PR.7',       desc: 'VIHANG PR 7',            operator: 1800, semi: 1500, helper: 1200, sashi: 0, shiv: 0},
+            {code: 'NP/DP',               desc: 'Packup',                  operator: 500,  semi: 500,  helper: 500, sashi: 0, shiv: 0},
+            {code: 'BNDRY.DJ.9',          desc: 'Boundary Hall DJ',       operator: 900,  semi: 900,  helper: 900, sashi: 0, shiv: 0}
         ];
 
         // FORCE load rate cards from HTML defaults — never rely on localStorage alone
@@ -1559,6 +1587,8 @@
         function categoryLabel(category) {
             if (category === 'semi-operator') return 'Semi-Operator';
             if (category === 'helper') return 'Helper';
+            if (category === 'sashi') return 'Sashi (Commission)';
+            if (category === 'shiv') return 'Shiv (Commission)';
             return 'Operator';
         }
 
@@ -1776,6 +1806,14 @@
                         <span>Helper</span>
                         <span class="amount" style="color:#10b981; font-weight:700; font-size:15px;">₹${rate.helper.toLocaleString('en-IN')}</span>
                     </div>
+                    <div class="rate-row">
+                        <span>💛 Sashi</span>
+                        <span class="amount" style="color:#F1B800; font-weight:700; font-size:15px;">₹${(rate.sashi||0).toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="rate-row">
+                        <span>💜 Shiv</span>
+                        <span class="amount" style="color:#8E79C0; font-weight:700; font-size:15px;">₹${(rate.shiv||0).toLocaleString('en-IN')}</span>
+                    </div>
                     <div style="display:flex; gap:8px; margin-top:12px;">
                         <button class="btn btn-primary" style="flex:1; font-size:11px; padding:8px;" onclick="editRateCard(${index})">✏️ Edit</button>
                         <button class="btn btn-danger" style="flex:1; font-size:11px; padding:8px;" onclick="deleteRateCard(${index})">🗑️ Delete</button>
@@ -1798,6 +1836,8 @@
             const operator = parseInt(document.getElementById('rateOperator').value) || 0;
             const semi = parseInt(document.getElementById('rateSemi').value) || 0;
             const helper = parseInt(document.getElementById('rateHelper').value) || 0;
+            const sashi = parseInt(document.getElementById('rateSashi').value) || 0;
+            const shiv  = parseInt(document.getElementById('rateShiv').value)  || 0;
 
             if (!code || !desc) {
                 alert('Please fill in Rate Code and Description');
@@ -1806,14 +1846,14 @@
 
             if (editingRateIndex >= 0) {
                 // UPDATE existing
-                rateCards[editingRateIndex] = { code, desc, operator, semi, helper };
+                rateCards[editingRateIndex] = { code, desc, operator, semi, helper, sashi, shiv };
                 editingRateIndex = -1;
                 document.getElementById('rateFormTitle').textContent = '➕ Add New Rate Category';
                 document.getElementById('rateSaveBtn').textContent = 'Save Rate';
                 document.getElementById('rateCancelBtn').style.display = 'none';
             } else {
                 // ADD new
-                rateCards.push({ code, desc, operator, semi, helper });
+                rateCards.push({ code, desc, operator, semi, helper, sashi, shiv });
             }
 
             saveRates();
@@ -1825,6 +1865,8 @@
             document.getElementById('rateOperator').value = '';
             document.getElementById('rateSemi').value = '';
             document.getElementById('rateHelper').value = '';
+            document.getElementById('rateSashi').value = '';
+            document.getElementById('rateShiv').value = '';
         }
 
         function editRateCard(index) {
@@ -1837,6 +1879,8 @@
             document.getElementById('rateOperator').value = rate.operator;
             document.getElementById('rateSemi').value = rate.semi;
             document.getElementById('rateHelper').value = rate.helper;
+            document.getElementById('rateSashi').value = rate.sashi || 0;
+            document.getElementById('rateShiv').value  = rate.shiv  || 0;
 
             document.getElementById('rateFormTitle').textContent = `✏️ Editing: ${rate.code}`;
             document.getElementById('rateSaveBtn').textContent = '💾 Update Rate';
@@ -1853,6 +1897,8 @@
             document.getElementById('rateOperator').value = '';
             document.getElementById('rateSemi').value = '';
             document.getElementById('rateHelper').value = '';
+            document.getElementById('rateSashi').value = '';
+            document.getElementById('rateShiv').value = '';
             document.getElementById('rateFormTitle').textContent = '➕ Add New Rate Category';
             document.getElementById('rateSaveBtn').textContent = 'Save Rate';
             document.getElementById('rateCancelBtn').style.display = 'none';
@@ -1964,7 +2010,7 @@
             const emps = targetedIndexes.map(idx => ({
                 idx,
                 emp: employees[idx],
-                rank: employees[idx].category === 'operator' ? 3 : (employees[idx].category === 'semi-operator' ? 2 : 1)
+                rank: employees[idx].category === 'operator' ? 3 : (employees[idx].category === 'semi-operator' ? 2 : (employees[idx].category === 'sashi' || employees[idx].category === 'shiv') ? 3 : 1)
             }));
 
             let distribution = {};
@@ -2065,10 +2111,10 @@
             const tbody = document.getElementById('employeesTableBody');
             tbody.innerHTML = '';
 
-            // Sort employees by category: Operators first, then Semi-Operators, then Helpers
+            // Sort employees by category: Operators first, then Semi-Operators, then Helpers, then Commission
             const sortedEmployees = [...employees].sort((a, b) => {
-                const catOrder = { 'operator': 0, 'semi-operator': 1, 'helper': 2 };
-                return catOrder[a.category] - catOrder[b.category];
+                const catOrder = { 'operator': 0, 'semi-operator': 1, 'helper': 2, 'sashi': 3, 'shiv': 4 };
+                return (catOrder[a.category] ?? 5) - (catOrder[b.category] ?? 5);
             });
 
             sortedEmployees.forEach((emp, index) => {
@@ -2080,6 +2126,8 @@
                 let categoryClass = '';
                 if (emp.category === 'operator') categoryClass = 'bg-operator';
                 else if (emp.category === 'semi-operator') categoryClass = 'bg-semi';
+                else if (emp.category === 'sashi') categoryClass = 'bg-sashi';
+                else if (emp.category === 'shiv')  categoryClass = 'bg-shiv';
                 else categoryClass = 'bg-helper';
 
                 row.innerHTML = `
@@ -2227,6 +2275,8 @@
             if (!rate) return 0;
             if (category === 'operator') return Number(rate.operator || 0);
             if (category === 'semi-operator') return Number(rate.semi || 0);
+            if (category === 'sashi') return Number(rate.sashi || 0);
+            if (category === 'shiv')  return Number(rate.shiv  || 0);
             return Number(rate.helper || 0);
         }
 
@@ -2284,6 +2334,8 @@
                 let borderColor = '#AEAAAA';
                 if (emp.category === 'operator') borderColor = '#F8CBAD';
                 else if (emp.category === 'semi-operator') borderColor = '#8EA9DB';
+                else if (emp.category === 'sashi') borderColor = '#FFD966';
+                else if (emp.category === 'shiv')  borderColor = '#B4A7D6';
 
                 card.style.borderLeft = `4px solid ${borderColor}`;
 
@@ -2360,6 +2412,7 @@
             };
 
             container.innerHTML = renderGroup(ops, 'Operators') + renderGroup(sops, 'Semi-Operators') + renderGroup(helpers, 'Helpers');
+            updateCommissionBox();
             renderEventEmployeeAdjustments();
         }
 
@@ -2378,15 +2431,171 @@
                 if (rate) {
                     previewText.innerHTML = `
                         ${rate.desc}<br>
-                        Operator: ₹${rate.operator} | Semi-Op: ₹${rate.semi} | Helper: ₹${rate.helper}
+                        Operator: ₹${rate.operator} | Semi-Op: ₹${rate.semi} | Helper: ₹${rate.helper} | 💛 Sashi: ₹${rate.sashi||0} | 💜 Shiv: ₹${rate.shiv||0}
                     `;
                     preview.style.display = 'block';
                     renderEventEmployeeAdjustments();
+                    updateCommissionBox();
                 }
             } else {
                 preview.style.display = 'none';
                 renderEventEmployeeAdjustments();
             }
+        }
+
+        function updateCommissionBox() {
+            const box    = document.getElementById('commissionBox');
+            const rows   = document.getElementById('commissionRows');
+            if (!box || !rows) return;
+
+            const code = document.getElementById('eventRateCategory').value;
+            const rate = code ? rateCards.find(r => r.code === code) : null;
+
+            // Find sashi & shiv employees in the system
+            const sashiEmps = employees.map((e, i) => ({e, i})).filter(x => x.e.category === 'sashi');
+            const shivEmps  = employees.map((e, i) => ({e, i})).filter(x => x.e.category === 'shiv');
+
+            const commPeople = [
+                ...sashiEmps.map(x => ({ empIdx: x.i, emp: x.e, type: 'sashi', color: '#FFD966', tcolor: '#000', border: '#F1B800', icon: '💛', defaultAmt: rate ? (rate.sashi || 0) : 0 })),
+                ...shivEmps.map( x => ({ empIdx: x.i, emp: x.e, type: 'shiv',  color: '#B4A7D6', tcolor: '#000', border: '#8E79C0', icon: '💜', defaultAmt: rate ? (rate.shiv  || 0) : 0 })),
+            ];
+
+            if (!commPeople.length) {
+                box.style.display = 'none';
+                return;
+            }
+
+            box.style.display = 'block';
+
+            // Preserve existing checked state & amounts before re-render
+            const prev = {};
+            rows.querySelectorAll('.comm-row').forEach(row => {
+                const idx = row.dataset.empIdx;
+                const cb  = row.querySelector('input[type="checkbox"]');
+                const amt = row.querySelector('input[type="number"]');
+                if (cb && amt) prev[idx] = { checked: cb.checked, amt: amt.value };
+            });
+
+            rows.innerHTML = commPeople.map(p => {
+                const saved = prev[p.empIdx];
+                const isChecked = saved ? saved.checked : false;
+                const amount   = saved ? saved.amt : p.defaultAmt;
+                return `
+                <div class="comm-row" data-emp-idx="${p.empIdx}" style="display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; margin-bottom:8px; background:${p.color}22; border:1px solid ${p.border}44; transition: opacity 0.2s;">
+                    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; flex:1; min-width:0;">
+                        <input type="checkbox" data-emp-idx="${p.empIdx}" onchange="toggleCommRow(this)"
+                               style="width:18px; height:18px; cursor:pointer; accent-color:${p.border};"
+                               ${isChecked ? 'checked' : ''}>
+                        <span style="font-size:15px;">${p.icon}</span>
+                        <strong style="font-size:13px; color:var(--text-main);">${escapeHtml(p.emp.name)}</strong>
+                        <span style="font-size:11px; color:var(--text-muted); background:${p.color}; color:${p.tcolor}; padding:2px 8px; border-radius:20px; font-weight:700; border:1px solid ${p.border};">Commission</span>
+                    </label>
+                    <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                        <span style="font-size:13px; color:var(--text-muted);">₹</span>
+                        <input type="number" value="${amount}" min="0"
+                               style="width:90px; padding:6px 10px; border-radius:8px; border:1px solid ${p.border}; background:var(--input-bg); color:var(--text-main); font-size:13px; font-weight:700; text-align:right;"
+                               ${!isChecked ? 'disabled' : ''}
+                               onchange="updateCommTotal()" oninput="updateCommTotal()">
+                    </div>
+                    <div style="font-size:11px; color:var(--text-muted); flex-shrink:0; width:80px; text-align:right;" class="comm-total-label">
+                        ${isChecked ? `<span style="color:${p.border}; font-weight:800;">✓ ₹${Number(amount).toLocaleString('en-IN')}</span>` : '<span style="opacity:0.4;">—</span>'}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleCommRow(cb) {
+            const row = cb.closest('.comm-row');
+            const numInput = row.querySelector('input[type="number"]');
+            const label = row.querySelector('.comm-total-label');
+            numInput.disabled = !cb.checked;
+            if (cb.checked) {
+                row.style.opacity = '1';
+                const amt = Number(numInput.value) || 0;
+                const empIdx = parseInt(row.dataset.empIdx);
+                const cat = employees[empIdx]?.category || 'sashi';
+                const color = cat === 'sashi' ? '#F1B800' : '#8E79C0';
+                label.innerHTML = `<span style="color:${color}; font-weight:800;">✓ ₹${amt.toLocaleString('en-IN')}</span>`;
+            } else {
+                row.style.opacity = '0.6';
+                label.innerHTML = '<span style="opacity:0.4;">—</span>';
+            }
+        }
+
+        function updateCommTotal() {
+            document.querySelectorAll('.comm-row').forEach(row => {
+                const cb = row.querySelector('input[type="checkbox"]');
+                const amt = Number(row.querySelector('input[type="number"]').value) || 0;
+                const label = row.querySelector('.comm-total-label');
+                const empIdx = parseInt(row.dataset.empIdx);
+                const cat = employees[empIdx]?.category || 'sashi';
+                const color = cat === 'sashi' ? '#F1B800' : '#8E79C0';
+                if (cb.checked) {
+                    label.innerHTML = `<span style="color:${color}; font-weight:800;">✓ ₹${amt.toLocaleString('en-IN')}</span>`;
+                }
+            });
+        }
+
+        function getCommissionEntries() {
+            const entries = [];
+            document.querySelectorAll('.comm-row').forEach(row => {
+                const cb     = row.querySelector('input[type="checkbox"]');
+                const numInp = row.querySelector('input[type="number"]');
+                if (!cb || !cb.checked) return;
+                const empIdx = parseInt(row.dataset.empIdx);
+                const emp    = employees[empIdx];
+                if (!emp) return;
+                const baseAmt = Number(numInp.value) || 0;
+                entries.push({
+                    index: empIdx,
+                    empId: emp.id,
+                    name: emp.name,
+                    category: emp.category,
+                    baseAmount: baseAmt,
+                    extraAmount: 0,
+                    extraDetails: [],
+                    extraReason: 'Commission',
+                    amount: baseAmt
+                });
+            });
+            return entries;
+        }
+
+        function restoreCommissionBox(savedEmps) {
+            // Called from editEvent — check the right boxes and set amounts
+            const box = document.getElementById('commissionBox');
+            if (!box) return;
+            // Wait for commissionBox to render, then restore
+            setTimeout(() => {
+                document.querySelectorAll('.comm-row').forEach(row => {
+                    const empIdx = parseInt(row.dataset.empIdx);
+                    const emp    = employees[empIdx];
+                    if (!emp) return;
+                    const saved = savedEmps.find(e => e.empId === emp.id && (e.category === 'sashi' || e.category === 'shiv'));
+                    if (!saved) return;
+                    const cb     = row.querySelector('input[type="checkbox"]');
+                    const numInp = row.querySelector('input[type="number"]');
+                    if (cb && numInp) {
+                        cb.checked    = true;
+                        numInp.value  = saved.baseAmount || 0;
+                        numInp.disabled = false;
+                        toggleCommRow(cb);
+                    }
+                });
+            }, 0);
+        }
+
+        function clearCommissionBox() {
+            const rows = document.getElementById('commissionRows');
+            if (rows) rows.querySelectorAll('.comm-row').forEach(row => {
+                const cb  = row.querySelector('input[type="checkbox"]');
+                const num = row.querySelector('input[type="number"]');
+                if (cb)  { cb.checked = false; }
+                if (num) { num.disabled = true; }
+                const label = row.querySelector('.comm-total-label');
+                if (label) label.innerHTML = '<span style="opacity:0.4;">—</span>';
+                row.style.opacity = '0.6';
+            });
         }
 
         function addEvent() {
@@ -2398,13 +2607,9 @@
             const travel = parseInt(document.getElementById('eventTravel').value) || 0;
 
             const empIndices = getSelectedEventEmployees();
-
-            if (!date || !venue || !category || empIndices.length === 0) {
-                alert('Please fill in all required fields and select at least one employee');
-                return;
-            }
-
             const rate = rateCards.find(r => r.code === category);
+
+            // Build regular employee entries first
             const eventEmps = empIndices.map(idx => {
                 const extraStr = document.querySelector(`#eventEmployeeAdjustments input[data-role="extra"][data-index="${idx}"]`)?.value || '0';
                 let parsedExtra = 0;
@@ -2414,7 +2619,6 @@
                 } catch(e) {}
 
                 const extraDetailsStr = document.querySelector(`#eventEmployeeAdjustments input[data-role="extra"][data-index="${idx}"]`)?.dataset.details || '[]';
-
                 const baseAmt = getRateAmountForCategory(rate, employees[idx].category);
                 const extraAmt = Number(parsedExtra);
                 return {
@@ -2426,9 +2630,19 @@
                     extraAmount: extraAmt,
                     extraDetails: JSON.parse(extraDetailsStr),
                     extraReason: document.querySelector(`#eventEmployeeAdjustments input[data-role="reason"][data-index="${idx}"]`)?.value.trim() || '',
-                    amount: baseAmt + extraAmt  // Always calculate from base + extra for accuracy
+                    amount: baseAmt + extraAmt
                 };
             });
+
+            // Merge commission entries (Sashi / Shiv) — optional per event
+            const commEntries = getCommissionEntries();
+            const regularEmps = eventEmps.filter(e => e.category !== 'sashi' && e.category !== 'shiv');
+            const finalEmps = [...regularEmps, ...commEntries];
+
+            if (!date || !venue || !category || finalEmps.length === 0) {
+                alert('Please fill in all required fields and select at least one employee');
+                return;
+            }
 
             if (editingEventId) {
                 const existingIdx = events.findIndex(e => e.id === editingEventId);
@@ -2436,7 +2650,7 @@
                     events[existingIdx] = {
                         ...events[existingIdx],
                         date, venue, category, material, extras, travel,
-                        employees: eventEmps
+                        employees: finalEmps
                     };
                 }
                 editingEventId = null;
@@ -2451,7 +2665,7 @@
                     material,
                     extras,
                     travel,
-                    employees: eventEmps,
+                    employees: finalEmps,
                     timestamp: new Date().toISOString()
                 });
             }
@@ -2481,11 +2695,13 @@
             updateRateDisplay();
             updateEventEmployeeSelect();
 
-            // Select chips
+            // Select chips (exclude commission employees — they go in commissionBox)
             document.querySelectorAll('.employee-chip').forEach(chip => {
                 const empIdx = parseInt(chip.dataset.index);
                 const empId = employees[empIdx].id;
-                if (evt.employees.some(ee => ee.empId === empId)) {
+                const savedEmp = evt.employees.find(ee => ee.empId === empId);
+                // Don't auto-select sashi/shiv chips (they're handled by commissionBox)
+                if (savedEmp && savedEmp.category !== 'sashi' && savedEmp.category !== 'shiv') {
                     chip.classList.add('selected');
                 } else {
                     chip.classList.remove('selected');
@@ -2493,6 +2709,9 @@
             });
 
             renderEventEmployeeAdjustments();
+
+            // Restore commission box state
+            restoreCommissionBox(evt.employees);
 
             // Set adjustment values
             evt.employees.forEach(ee => {
@@ -2527,6 +2746,9 @@
             document.getElementById('ratePreview').style.display = 'none';
             document.getElementById('saveEventBtn').textContent = 'Save';
             document.getElementById('cancelEditEventBtn').style.display = 'none';
+
+            clearCommissionBox();
+            document.getElementById('commissionBox').style.display = 'none';
 
             // Reset Auto-Calculate select
             document.getElementById('extraTemplateSelect').value = '';
@@ -3067,10 +3289,10 @@
             const thead = document.getElementById('salaryTableHead');
             const tbody = document.getElementById('salaryTableBody');
 
-            // Sort employees by category: Operators, Semi-Operators, Helpers
+            // Sort employees by category: Operators, Semi-Operators, Helpers, Commission
             const sortedEmployees = [...employees].sort((a, b) => {
-                const catOrder = { 'operator': 0, 'semi-operator': 1, 'helper': 2 };
-                return catOrder[a.category] - catOrder[b.category];
+                const catOrder = { 'operator': 0, 'semi-operator': 1, 'helper': 2, 'sashi': 3, 'shiv': 4 };
+                return (catOrder[a.category] ?? 5) - (catOrder[b.category] ?? 5);
             });
 
             // Build Headers with Excel Color Coding
@@ -3089,6 +3311,8 @@
                 if (emp.category === 'operator') { bgColor = '#F8CBAD'; textColor = '#000000'; }
                 else if (emp.category === 'semi-operator') { bgColor = '#8EA9DB'; textColor = '#000000'; }
                 else if (emp.category === 'helper') { bgColor = '#AEAAAA'; textColor = '#000000'; }
+                else if (emp.category === 'sashi') { bgColor = '#FFD966'; textColor = '#000000'; }
+                else if (emp.category === 'shiv')  { bgColor = '#B4A7D6'; textColor = '#000000'; }
 
                 headHTML += `<th style="background:${bgColor}; color:${textColor}; border: 1px solid ${borderCol}; font-size:10px; padding:6px; text-align: center;">${escapeHtml(emp.name.toUpperCase())}</th>`;
             });
@@ -3465,6 +3689,8 @@
         .bg-operator { background-color: #F8CBAD !important; color: #000000 !important; }
         .bg-semi { background-color: #8EA9DB !important; color: #000000 !important; }
         .bg-helper { background-color: #AEAAAA !important; color: #000000 !important; }
+        .bg-sashi { background-color: #FFD966 !important; color: #000000 !important; }
+        .bg-shiv  { background-color: #B4A7D6 !important; color: #000000 !important; }
         .bg-final { background-color: #C6E0B4 !important; color: #000000 !important; font-weight: bold !important; }
         .bg-balance { background-color: #D9EAD3 !important; color: #000000 !important; }
         .bg-work { background-color: #FFFF00 !important; color: #000000 !important; }
@@ -3618,7 +3844,7 @@ ${html}
 
             // Loan data now comes directly from buildEmployeeMonthTotals (data.loanEMI, data.loanIssued, etc.)
 
-            const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧' };
+            const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧', 'sashi': '💛', 'shiv': '💜' };
             const emoji = catEmoji[data.category] || '👤';
 
             // Build extras breakdown lines
@@ -3734,7 +3960,7 @@ _Generated on ${new Date().toLocaleString('en-IN')}_`;
             let delay = 0;
             window.currentSalaryData.forEach((data, i) => {
                 setTimeout(() => {
-                    const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧' };
+                    const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧', 'sashi': '💛', 'shiv': '💜' };
                     const emoji = catEmoji[data.category] || '👤';
 
                     let eventLines = '';
@@ -4110,6 +4336,18 @@ ${travelTotalSheetHTML}
             window.URL.revokeObjectURL(url);
         }
 
+        function exportTableToCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            if (!table) { alert('Table not found'); return; }
+            const rows = Array.from(table.querySelectorAll('tr'));
+            const csv = rows.map(row =>
+                Array.from(row.querySelectorAll('th, td'))
+                    .map(cell => '"' + cell.innerText.replace(/"/g, '""').replace(/\n/g, ' ') + '"')
+                    .join(',')
+            ).join('\n');
+            downloadCSV(csv, filename);
+        }
+
         function downloadTextFile(content, filename, mimeType) {
             const blob = new Blob([content], { type: mimeType });
             const url = window.URL.createObjectURL(blob);
@@ -4190,7 +4428,7 @@ ${travelTotalSheetHTML}
                 })
                 .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            const groupedNames = {operator: new Set(), 'semi-operator': new Set(), helper: new Set()};
+            const groupedNames = {operator: new Set(), 'semi-operator': new Set(), helper: new Set(), sashi: new Set(), shiv: new Set()};
             const categoryBuckets = {};
 
             monthEvents.forEach(evt => {
@@ -4205,6 +4443,8 @@ ${travelTotalSheetHTML}
                         operator: new Set(),
                         'semi-operator': new Set(),
                         helper: new Set(),
+                        sashi: new Set(),
+                        shiv: new Set(),
                         venues: new Set(),
                         events: []
                     };
@@ -4263,7 +4503,9 @@ ${travelTotalSheetHTML}
                 groupedNames: {
                     operator: Array.from(groupedNames.operator).sort(),
                     'semi-operator': Array.from(groupedNames['semi-operator']).sort(),
-                    helper: Array.from(groupedNames.helper).sort()
+                    helper: Array.from(groupedNames.helper).sort(),
+                    sashi: Array.from(groupedNames.sashi).sort(),
+                    shiv: Array.from(groupedNames.shiv).sort()
                 },
                 categoryBuckets,
                 salarySummary
@@ -4365,6 +4607,14 @@ ${travelTotalSheetHTML}
                                 <strong style="color:#7f8c8d; font-size:9px; display:block; margin-bottom:8px; letter-spacing:1px;">HELPERS (${helpersCount})</strong>
                                 ${renderNameTags(data.groupedNames.helper)}
                             </div>
+                            ${data.groupedNames.sashi.length ? `<div style="flex: 1; min-width: 120px; padding: 10px; border-radius: 10px; background: rgba(255,217,102,0.08); border-left: 4px solid #FFD966;">
+                                <strong style="color:#F1B800; font-size:9px; display:block; margin-bottom:8px; letter-spacing:1px;">💛 SASHI COMMISSION (${data.groupedNames.sashi.length})</strong>
+                                ${renderNameTags(data.groupedNames.sashi)}
+                            </div>` : ''}
+                            ${data.groupedNames.shiv.length ? `<div style="flex: 1; min-width: 120px; padding: 10px; border-radius: 10px; background: rgba(180,167,214,0.08); border-left: 4px solid #B4A7D6;">
+                                <strong style="color:#8E79C0; font-size:9px; display:block; margin-bottom:8px; letter-spacing:1px;">💜 SHIV COMMISSION (${data.groupedNames.shiv.length})</strong>
+                                ${renderNameTags(data.groupedNames.shiv)}
+                            </div>` : ''}
                         </div>
                     </div>
                 </div>`;
@@ -4432,7 +4682,8 @@ ${travelTotalSheetHTML}
                                     <th>Category / Equipment</th>
                                     <th>Operators</th>
                                     <th>Semi-Ops</th>
-                                    <th style="border-radius:0 12px 0 0;">Helpers</th>
+                                    <th>Helpers</th>
+                                    <th style="border-radius:0 12px 0 0;">Commission</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -4445,6 +4696,8 @@ ${travelTotalSheetHTML}
                                         let catBg = 'rgba(174,170,170,0.1)';
                                         if (person.category === 'operator') { catColor = '#F8CBAD'; catBg = 'rgba(248,203,173,0.15)'; }
                                         else if (person.category === 'semi-operator') { catColor = '#8EA9DB'; catBg = 'rgba(142,169,219,0.15)'; }
+                                        else if (person.category === 'sashi') { catColor = '#FFD966'; catBg = 'rgba(255,217,102,0.15)'; }
+                                        else if (person.category === 'shiv')  { catColor = '#B4A7D6'; catBg = 'rgba(180,167,214,0.15)'; }
 
                                         const borderStyle = person.extraAmount > 0 ? `border-left: 4px solid #10b981;` : `border-left: 4px solid ${catColor};`;
                                         const bgColor = person.extraAmount > 0 ? 'rgba(16,185,129,0.1)' : catBg;
@@ -4462,6 +4715,7 @@ ${travelTotalSheetHTML}
                                     const opsHTML = evt.employees.filter(e => e.category === 'operator').map(formatEmp).join('');
                                     const sopsHTML = evt.employees.filter(e => e.category === 'semi-operator').map(formatEmp).join('');
                                     const helpersHTML = evt.employees.filter(e => e.category === 'helper').map(formatEmp).join('');
+                                    const commHTML = evt.employees.filter(e => e.category === 'sashi' || e.category === 'shiv').map(formatEmp).join('');
 
                                     return `
                                         <tr>
@@ -4475,6 +4729,7 @@ ${travelTotalSheetHTML}
                                             <td style="vertical-align: top;">${opsHTML || '-'}</td>
                                             <td style="vertical-align: top;">${sopsHTML || '-'}</td>
                                             <td style="vertical-align: top;">${helpersHTML || '-'}</td>
+                                            <td style="vertical-align: top;">${commHTML || '-'}</td>
                                         </tr>
                                     `;
                                 }).join('')}
@@ -4613,7 +4868,7 @@ ${travelTotalSheetHTML}
                         <h4>📂 ${escapeHtml(title)}</h4>
                         <span class="report-pill">🎯 ${bucket.eventCount} Events</span>
                     </div>
-                    <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+                    <div class="stats-grid" style="grid-template-columns: repeat(6, 1fr);">
                         <div class="stat-card" style="padding:12px;">
                             <h4 style="font-size:1.3em; color:#F8CBAD;">${bucket.operator.size}</h4>
                             <p style="font-size:9px;">Ops</p>
@@ -4625,6 +4880,14 @@ ${travelTotalSheetHTML}
                         <div class="stat-card" style="padding:12px;">
                             <h4 style="font-size:1.3em; color:#AEAAAA;">${bucket.helper.size}</h4>
                             <p style="font-size:9px;">Helpers</p>
+                        </div>
+                        <div class="stat-card" style="padding:12px;">
+                            <h4 style="font-size:1.3em; color:#F1B800;">${(bucket.sashi||new Set()).size}</h4>
+                            <p style="font-size:9px;">💛 Sashi</p>
+                        </div>
+                        <div class="stat-card" style="padding:12px;">
+                            <h4 style="font-size:1.3em; color:#8E79C0;">${(bucket.shiv||new Set()).size}</h4>
+                            <p style="font-size:9px;">💜 Shiv</p>
                         </div>
                         <div class="stat-card" style="padding:12px;">
                             <h4 style="font-size:1.3em; color:var(--accent-primary);">${bucket.venues.size}</h4>
@@ -4867,7 +5130,7 @@ ${travelTotalSheetHTML}
                         <tbody>`;
 
             empYearlyData.forEach(emp => {
-                const catClass = emp.category === 'operator' ? 'badge-operator' : emp.category === 'semi-operator' ? 'badge-semi' : 'badge-helper';
+                const catClass = emp.category === 'operator' ? 'badge-operator' : emp.category === 'semi-operator' ? 'badge-semi' : emp.category === 'sashi' ? 'badge-sashi' : emp.category === 'shiv' ? 'badge-shiv' : 'badge-helper';
                 html += `<tr>
                     <td style="font-weight:700;">${escapeHtml(emp.name)}</td>
                     <td><span class="badge ${catClass}">${escapeHtml(categoryLabel(emp.category))}</span></td>
@@ -4915,7 +5178,7 @@ ${travelTotalSheetHTML}
                 const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
                 html += `<div class="adjustment-card">
                     <div class="adjustment-title" style="display:flex; justify-content:space-between; align-items:center;">
-                        <span>${escapeHtml(emp.name)} <span class="badge badge-${emp.category === 'operator' ? 'operator' : emp.category === 'semi-operator' ? 'semi' : 'helper'}" style="margin-left:8px;">${escapeHtml(categoryLabel(emp.category))}</span></span>
+                        <span>${escapeHtml(emp.name)} <span class="badge badge-${emp.category === 'operator' ? 'operator' : emp.category === 'semi-operator' ? 'semi' : emp.category === 'sashi' ? 'sashi' : emp.category === 'shiv' ? 'shiv' : 'helper'}" style="margin-left:8px;">${escapeHtml(categoryLabel(emp.category))}</span></span>
                         <span style="color:#10b981; font-weight:800;">₹${emp.totalFinal.toLocaleString('en-IN')}</span>
                     </div>
                     <div style="overflow-x:auto;">
@@ -5378,11 +5641,15 @@ function tpLookupRole(name){
 function tpRoleColor(cat){
     if(cat==='operator')return{bg:'#F8CBAD',text:'#000',border:'#E67E22'};
     if(cat==='semi-operator')return{bg:'#8EA9DB',text:'#000',border:'#6B8FC7'};
+    if(cat==='sashi')return{bg:'#FFD966',text:'#000',border:'#F1B800'};
+    if(cat==='shiv') return{bg:'#B4A7D6',text:'#000',border:'#8E79C0'};
     return{bg:'#AEAAAA',text:'#000',border:'#7F8C8D'};
 }
 function tpRoleLabel(cat){
     if(cat==='operator')return'OPERATOR';
     if(cat==='semi-operator')return'SOP';
+    if(cat==='sashi')return'SASHI';
+    if(cat==='shiv') return'SHIV';
     return cat.toUpperCase();
 }
 
@@ -5831,12 +6098,12 @@ function tpPopulateEmployeeSelect(){
     const curVal=sel.value;
     sel.innerHTML='<option value="">-- Select Employee --</option>';
     if(typeof employees!=='undefined'&&employees.length){
-        const ops=['operator','semi-operator','helper'];
+        const ops=['operator','semi-operator','helper','sashi','shiv'];
         ops.forEach(cat=>{
             const grp=employees.filter(e=>e.category===cat);
             if(!grp.length)return;
             const optgroup=document.createElement('optgroup');
-            optgroup.label=cat==='operator'?'Operators':cat==='semi-operator'?'Semi-Operators':'Helpers';
+            optgroup.label=cat==='operator'?'Operators':cat==='semi-operator'?'Semi-Operators':cat==='sashi'?'💛 Sashi (Commission)':cat==='shiv'?'💜 Shiv (Commission)':'Helpers';
             grp.forEach(emp=>{
                 const o=document.createElement('option');
                 o.value=emp.name;o.textContent=emp.name;
@@ -6015,23 +6282,26 @@ document.addEventListener('keydown', function(e) {
 });
 
 </script>
-<!-- ==================== GITHUB GIST CLOUD SYNC (FIXED) ==================== -->
+<!-- ==================== GITHUB GIST CLOUD SYNC ==================== -->
+<!-- Replaces Firebase. Hosted on OneDrive across phone + laptop + desktop. -->
 <script>
 (function(){
   // ===== CONFIG =====
+  // Obfuscated split so casual scrapers don't grab token in plaintext.
+  // Token is still readable to anyone with browser devtools - this is for
+  // a private OneDrive-hosted file shared only with your devices.
   const TOK_PARTS = ["ghp_","V1oSbPdfUJpYdjU9","ouSG3rQYjdmnZv3qYOFg"];
   const EMBEDDED_TOKEN = TOK_PARTS.join("");
   const GIST_DESC = "CARNIVAL_PAYROLL_SYNC_V1";
   const SYNC_KEYS = ["carnival_employees","carnival_rates","carnival_events","carnival_advances","carnival_extras"];
-  const POLL_MS = 15000;
-  const DEBOUNCE_MS = 1200;
+  const POLL_MS = 5000;        // pull interval
+  const DEBOUNCE_MS = 800;     // push debounce
   const GIST_ID_KEY = "carnival_gist_id";
   const TOKEN_KEY = "carnival_gh_token";
   const DEVICE_KEY = "carnival_device_name";
-  const TS_KEY = "carnival_last_push_ts";
   const META_FILE = "_meta.json";
   const BACKUP_PREFIX = "backup_";
-  const BACKUP_KEEP = 30;
+  const BACKUP_KEEP = 30;       // keep the last 30 daily backups
 
   function getDeviceName(){
     let n = localStorage.getItem(DEVICE_KEY);
@@ -6044,28 +6314,30 @@ document.addEventListener('keydown', function(e) {
     localStorage.setItem(DEVICE_KEY, n);
     return n;
   }
-  function setDeviceName(name){ if (name) localStorage.setItem(DEVICE_KEY, name); }
-  function getToken(){ return localStorage.getItem(TOKEN_KEY) || EMBEDDED_TOKEN; }
+  function setDeviceName(name){
+    if (!name) return;
+    localStorage.setItem(DEVICE_KEY, name);
+  }
+
+  function getToken(){
+    return localStorage.getItem(TOKEN_KEY) || EMBEDDED_TOKEN;
+  }
 
   // ===== STATE =====
   let gistId = localStorage.getItem(GIST_ID_KEY) || "";
   let lastEtag = "";
-  let pendingFiles = {};
+  let pendingFiles = {};       // { "carnival_employees.json": { content: "..." } }
   let pushTimer = null;
   let isPushing = false;
   let pushQueued = false;
-  let lastMeta = null;
+  let lastMeta = null;        // { lastUpdated, lastDevice, lastKey }
   let lastUpdatedTimer = null;
-  let knownBackups = [];
-  let lastPushTs = parseInt(localStorage.getItem(TS_KEY) || "0", 10);
-  let isInitialPull = true;
-  let suppressPullUntil = 0;
-
+  let knownBackups = [];      // [{name, date}]  populated from latest pull
+  const incomingMark = {};     // suppress echo loop on cloud→local writes
   const origSet = Storage.prototype.setItem;
   const origRemove = Storage.prototype.removeItem;
-  const incomingMark = {};
 
-  // ===== UI =====
+  // ===== UI BADGE =====
   function ensureBadge(){
     let el = document.getElementById("cloudSyncBadge");
     if (el) return el;
@@ -6074,13 +6346,15 @@ document.addEventListener('keydown', function(e) {
     el.style.cssText = "position:fixed;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#10b981;padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;z-index:99999;font-family:system-ui,sans-serif;cursor:pointer;user-select:none;";
     el.title = "Click to force sync • Right-click for settings";
     el.textContent = "☁ Connecting...";
-    el.addEventListener("click", () => manualCloudSync());
+    el.addEventListener("click", () => { manualCloudSync(); });
     el.addEventListener("contextmenu", (e) => { e.preventDefault(); openSyncSettings(); });
+    // Long-press for mobile (no right-click on touch)
     let pressTimer = null;
     el.addEventListener("touchstart", () => { pressTimer = setTimeout(openSyncSettings, 600); });
     el.addEventListener("touchend", () => { if (pressTimer) clearTimeout(pressTimer); });
     el.addEventListener("touchmove", () => { if (pressTimer) clearTimeout(pressTimer); });
     document.body.appendChild(el);
+    // Settings gear button next to badge
     if (!document.getElementById("cloudSyncGear")) {
       const g = document.createElement("div");
       g.id = "cloudSyncGear";
@@ -6092,6 +6366,7 @@ document.addEventListener('keydown', function(e) {
     }
     return el;
   }
+
   function ensureLastUpdatedBar(){
     let el = document.getElementById("lastUpdatedBar");
     if (el) return el;
@@ -6102,6 +6377,7 @@ document.addEventListener('keydown', function(e) {
     document.body.appendChild(el);
     return el;
   }
+
   function timeAgo(ts){
     const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
     if (s < 5) return "just now";
@@ -6110,53 +6386,116 @@ document.addEventListener('keydown', function(e) {
     if (m < 60) return m + "m ago";
     const h = Math.floor(m / 60);
     if (h < 24) return h + "h ago";
-    return Math.floor(h / 24) + "d ago";
+    const d = Math.floor(h / 24);
+    return d + "d ago";
   }
+
   function renderLastUpdated(){
     const el = ensureLastUpdatedBar();
-    if (!lastMeta || !lastMeta.lastUpdated){ el.textContent = "Last updated: —"; return; }
+    if (!lastMeta || !lastMeta.lastUpdated) {
+      el.textContent = "Last updated: —";
+      return;
+    }
     const me = getDeviceName();
     const dev = lastMeta.lastDevice || "Unknown";
     const here = (dev === me) ? " (this device)" : "";
     el.textContent = "Last updated " + timeAgo(lastMeta.lastUpdated) + " on " + dev + here;
-    if (!lastUpdatedTimer) lastUpdatedTimer = setInterval(renderLastUpdated, 15000);
+    if (!lastUpdatedTimer) {
+      lastUpdatedTimer = setInterval(renderLastUpdated, 15000);
+    }
+
+    // ===== AUTO-BACKUP REMINDER: Check if 7+ days since last cloud sync =====
     checkBackupReminder(lastMeta.lastUpdated);
   }
+
+  // Auto-backup reminder logic
   let backupReminderShown = false;
-  function checkBackupReminder(ts){
+  function checkBackupReminder(lastUpdatedTimestamp) {
     if (backupReminderShown) return;
-    const days = (Date.now() - ts) / 86400000;
-    if (days < 7) return;
-    backupReminderShown = true;
-    if (document.getElementById('backupReminderBar')) return;
-    const bar = document.createElement('div');
-    bar.id = 'backupReminderBar';
-    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(245,158,11,0.4);';
-    bar.innerHTML = '<span>⚠️ DATA RISK: Last cloud sync was ' + Math.floor(days) + ' days ago!</span><div style="display:flex;gap:10px;"><button onclick="manualCloudSync();document.getElementById(\'backupReminderBar\').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:#000;color:#fff;font-weight:800;cursor:pointer;font-size:13px;">Sync Now</button><button onclick="document.getElementById(\'backupReminderBar\').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:rgba(0,0,0,0.2);color:#000;font-weight:700;cursor:pointer;font-size:13px;">Dismiss</button></div>';
-    document.body.appendChild(bar);
-    document.body.style.paddingTop = '52px';
+    const now = Date.now();
+    const daysSinceSync = (now - lastUpdatedTimestamp) / (1000 * 60 * 60 * 24);
+    const SEVEN_DAYS = 7;
+
+    if (daysSinceSync >= SEVEN_DAYS) {
+      backupReminderShown = true;
+      const days = Math.floor(daysSinceSync);
+      // Show a non-intrusive warning bar at the top
+      const existingBar = document.getElementById('backupReminderBar');
+      if (existingBar) return;
+
+      const bar = document.createElement('div');
+      bar.id = 'backupReminderBar';
+      bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(245,158,11,0.4);';
+      bar.innerHTML = `
+        <span>⚠️ DATA RISK: Last cloud sync was ${days} days ago. Your data is not backed up!</span>
+        <div style="display:flex;gap:10px;">
+          <button onclick="manualCloudSync(); document.getElementById('backupReminderBar').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:#000;color:#fff;font-weight:800;cursor:pointer;font-size:13px;">Sync Now</button>
+          <button onclick="document.getElementById('backupReminderBar').remove();" style="padding:8px 18px;border:none;border-radius:8px;background:rgba(0,0,0,0.2);color:#000;font-weight:700;cursor:pointer;font-size:13px;">Dismiss</button>
+        </div>
+      `;
+      document.body.appendChild(bar);
+      // Push content down so bar doesn't overlap
+      document.body.style.paddingTop = '52px';
+    }
   }
 
   function openSyncSettings(){
     const existing = document.getElementById("syncSettingsModal");
-    if (existing){ existing.remove(); return; }
+    if (existing) { existing.remove(); return; }
     const curToken = localStorage.getItem(TOKEN_KEY) || "";
-    const tokenPreview = curToken ? (curToken.slice(0,7)+"..."+curToken.slice(-4)) : "(using built-in token)";
+    const usingCustom = !!curToken;
+    const tokenPreview = usingCustom
+      ? (curToken.slice(0, 7) + "..." + curToken.slice(-4))
+      : "(using built-in token)";
     const modal = document.createElement("div");
     modal.id = "syncSettingsModal";
     modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;";
-    modal.innerHTML = '<div style="background:#1e293b;color:#f8fafc;padding:30px;border-radius:20px;max-width:500px;width:92%;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);max-height:90vh;overflow-y:auto;"><h3 style="margin:0 0 20px;font-size:20px;font-weight:800;">☁ Cloud Sync Settings</h3><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">GitHub Token</div><div style="font-size:13px;color:#cbd5e1;margin-bottom:8px;">Current: <code style="background:#0f172a;padding:3px 8px;border-radius:6px;color:#10b981;">' + tokenPreview + '</code></div><input id="ssTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;font-family:monospace;box-sizing:border-box;" /></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Device Name</div><input id="ssDeviceInput" type="text" value="' + getDeviceName().replace(/"/g,'&quot;') + '" placeholder="Laptop, Desktop, Phone..." style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;box-sizing:border-box;" /></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Gist ID</div><input id="ssGistInput" type="text" value="' + (gistId||'') + '" placeholder="(auto-created on first sync)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:13px;font-family:monospace;box-sizing:border-box;" /></div><div style="margin-bottom:18px;"><div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><span>Cloud Backups</span><span style="color:#10b981;font-weight:600;text-transform:none;letter-spacing:0;">' + knownBackups.length + ' saved</span></div><div id="ssBackupList" style="max-height:180px;overflow-y:auto;background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);"></div></div><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:24px;"><button id="ssClearToken" style="padding:11px 18px;border:none;border-radius:10px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Reset to Built-in</button><button id="ssCancel" style="padding:11px 18px;border:none;border-radius:10px;background:#334155;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button><button id="ssSave" style="padding:11px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Save & Sync</button></div></div>';
+    modal.innerHTML = `
+      <div style="background:#1e293b;color:#f8fafc;padding:30px;border-radius:20px;max-width:500px;width:92%;box-shadow:0 25px 60px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);">
+        <h3 style="margin:0 0 20px;font-size:20px;font-weight:800;">☁ Cloud Sync Settings</h3>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">GitHub Personal Access Token</div>
+          <div style="font-size:13px;color:#cbd5e1;margin-bottom:8px;">Current: <code style="background:#0f172a;padding:3px 8px;border-radius:6px;color:#10b981;">${tokenPreview}</code></div>
+          <input id="ssTokenInput" type="password" placeholder="ghp_xxxxxxxxxxxx (paste new token to rotate)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;font-family:monospace;box-sizing:border-box;" />
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Token needs <b>gist</b> scope. Stored on this device only.</div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">This Device's Name</div>
+          <input id="ssDeviceInput" type="text" value="${getDeviceName().replace(/"/g,'&quot;')}" placeholder="Laptop, Desktop, Phone..." style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:14px;box-sizing:border-box;" />
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Shown in the "last updated" bar so you know which device made the change.</div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:6px;">Gist ID</div>
+          <input id="ssGistInput" type="text" value="${gistId || ''}" placeholder="(auto-created on first sync)" style="width:100%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#0f172a;color:#f8fafc;font-size:13px;font-family:monospace;box-sizing:border-box;" />
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">Set this to share data with another set of devices on the same gist.</div>
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+            <span>Cloud Backups (last ${BACKUP_KEEP} days)</span>
+            <span style="color:#10b981;font-weight:600;text-transform:none;letter-spacing:0;">${knownBackups.length} saved</span>
+          </div>
+          <div id="ssBackupList" style="max-height:180px;overflow-y:auto;background:#0f172a;border-radius:10px;border:1px solid rgba(255,255,255,0.1);"></div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:6px;">A snapshot is saved automatically once a day. Click Restore to roll back. Your current data is always backed up first.</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:24px;">
+          <button id="ssClearToken" style="padding:11px 18px;border:none;border-radius:10px;background:#475569;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Reset to Built-in</button>
+          <button id="ssCancel" style="padding:11px 18px;border:none;border-radius:10px;background:#334155;color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Cancel</button>
+          <button id="ssSave" style="padding:11px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;cursor:pointer;font-size:13px;">Save & Sync</button>
+        </div>
+      </div>
+    `;
     modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
     document.body.appendChild(modal);
+    // Render backup list
     const listEl = document.getElementById("ssBackupList");
-    if (!knownBackups.length){
-      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#64748b;font-size:13px;">No backups yet.</div>';
+    if (knownBackups.length === 0) {
+      listEl.innerHTML = '<div style="padding:18px;text-align:center;color:#64748b;font-size:13px;">No backups yet — one will be saved today.</div>';
     } else {
       listEl.innerHTML = knownBackups.map(b => {
         const isAuto = /^\d{4}-\d{2}-\d{2}$/.test(b.date);
-        const label = isAuto ? b.date : ("Safety: " + new Date(parseInt(b.date.replace('before_restore_',''),10)||0).toLocaleString());
-        const tag = isAuto ? '<span style="color:#10b981;font-size:10px;font-weight:700;margin-left:8px;">AUTO</span>' : '<span style="color:#f59e0b;font-size:10px;font-weight:700;margin-left:8px;">SAFETY</span>';
-        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="font-size:13px;color:#f8fafc;">' + label + tag + '</span><button data-bk="' + b.name.replace(/"/g,'&quot;') + '" class="ssRestoreBtn" style="padding:6px 14px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;cursor:pointer;font-size:12px;">Restore</button></div>';
+        const label = isAuto ? b.date : ("Manual: " + new Date(parseInt(b.date.replace('before_restore_', ''), 10) || 0).toLocaleString());
+        const tag = isAuto ? '<span style="color:#10b981;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">AUTO</span>' : '<span style="color:#f59e0b;font-size:10px;font-weight:700;text-transform:uppercase;margin-left:8px;">SAFETY</span>';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.05);"><span style="font-size:13px;color:#f8fafc;">' + label + tag + '</span><button data-bk="' + b.name.replace(/"/g, '&quot;') + '" class="ssRestoreBtn" style="padding:6px 14px;border:none;border-radius:8px;background:#6366f1;color:#fff;font-weight:700;cursor:pointer;font-size:12px;">Restore</button></div>';
       }).join("");
       listEl.querySelectorAll(".ssRestoreBtn").forEach(btn => {
         btn.addEventListener("click", () => restoreBackup(btn.getAttribute("data-bk")));
@@ -6176,23 +6515,27 @@ document.addEventListener('keydown', function(e) {
       const newDev = document.getElementById("ssDeviceInput").value.trim();
       if (newDev) { setDeviceName(newDev); renderLastUpdated(); }
       if (newTok) {
-        if (!/^gh[ps]_[A-Za-z0-9_]{20,}$/.test(newTok)){
+        if (!/^gh[ps]_[A-Za-z0-9_]{20,}$/.test(newTok)) {
           if (!confirm("That doesn't look like a GitHub token. Save anyway?")) return;
         }
         localStorage.setItem(TOKEN_KEY, newTok);
       }
-      if (newGist !== gistId){
-        if (newGist){ localStorage.setItem(GIST_ID_KEY, newGist); gistId = newGist; }
-        else { localStorage.removeItem(GIST_ID_KEY); gistId = ""; }
+      if (newGist !== gistId) {
+        if (newGist) {
+          localStorage.setItem(GIST_ID_KEY, newGist);
+          gistId = newGist;
+        } else {
+          localStorage.removeItem(GIST_ID_KEY);
+          gistId = "";
+        }
         lastEtag = "";
       }
       modal.remove();
-      setBadge("Saving...", "#f59e0b");
+      setBadge("Saving settings...", "#f59e0b");
       setTimeout(manualCloudSync, 200);
     };
   }
   window.openSyncSettings = openSyncSettings;
-
   function setBadge(text, color){
     const el = ensureBadge();
     el.textContent = "☁ " + text;
@@ -6213,15 +6556,22 @@ document.addEventListener('keydown', function(e) {
 
   async function findOrCreateGist(){
     if (gistId) return gistId;
+    // Search existing gists for our description
     setBadge("Finding gist...", "#f59e0b");
     try {
       const res = await fetch(API + "/gists?per_page=100", { headers: ghHeaders() });
-      if (res.ok){
+      if (res.ok) {
         const list = await res.json();
         const found = list.find(g => g.description === GIST_DESC);
-        if (found){ gistId = found.id; localStorage.setItem(GIST_ID_KEY, gistId); return gistId; }
+        if (found) {
+          gistId = found.id;
+          localStorage.setItem(GIST_ID_KEY, gistId);
+          return gistId;
+        }
       }
     } catch(e){ console.warn("Gist list failed", e); }
+
+    // Create new gist seeded with current local data
     setBadge("Creating gist...", "#f59e0b");
     const files = {};
     SYNC_KEYS.forEach(k => {
@@ -6231,18 +6581,22 @@ document.addEventListener('keydown', function(e) {
     const res = await fetch(API + "/gists", {
       method: "POST",
       headers: ghHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ description: GIST_DESC, public: false, files })
+      body: JSON.stringify({ description: GIST_DESC, public: false, files: files })
     });
-    if (!res.ok) throw new Error("Gist create failed: " + res.status);
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error("Gist create failed: " + res.status + " " + txt);
+    }
     const data = await res.json();
     gistId = data.id;
     localStorage.setItem(GIST_ID_KEY, gistId);
     return gistId;
   }
 
-  // ===== PUSH =====
+  // ===== PUSH (debounced) =====
   function schedulePush(key, value){
     pendingFiles[key + ".json"] = { content: String(value == null ? "" : value) };
+    // Always update meta on every push
     pendingFiles[META_FILE] = { content: JSON.stringify({
       lastUpdated: Date.now(),
       lastDevice: getDeviceName(),
@@ -6254,9 +6608,10 @@ document.addEventListener('keydown', function(e) {
   }
 
   let pushRetryCount = 0;
+
   async function doPush(){
     pushTimer = null;
-    if (isPushing){ pushQueued = true; return; }
+    if (isPushing) { pushQueued = true; return; }
     if (!Object.keys(pendingFiles).length) return;
     isPushing = true;
     const filesToSend = pendingFiles;
@@ -6269,29 +6624,33 @@ document.addEventListener('keydown', function(e) {
         body: JSON.stringify({ files: filesToSend })
       });
       if (!res.ok) throw new Error("Patch failed " + res.status);
+      // Update etag so the next poll doesn't immediately re-pull our own write
       const et = res.headers.get("ETag");
       if (et) lastEtag = et;
-      lastPushTs = Date.now();
-      origSet.call(localStorage, TS_KEY, String(lastPushTs));
-      suppressPullUntil = Date.now() + 5000;
       pushRetryCount = 0;
-      setBadge("Synced ✓", "#10b981");
+      setBadge("Synced", "#10b981");
     } catch(err){
       console.error("Push failed", err);
+      // Re-queue what we tried so it isn't lost
       Object.keys(filesToSend).forEach(f => { if (!pendingFiles[f]) pendingFiles[f] = filesToSend[f]; });
       setBadge("Offline", "#ef4444");
+      // Exponential backoff retry (max 60s)
       pushRetryCount++;
       const delay = Math.min(60000, 2000 * Math.pow(2, pushRetryCount - 1));
-      if (navigator.onLine !== false) setTimeout(doPush, delay);
+      if (navigator.onLine !== false) {
+        setTimeout(doPush, delay);
+      }
     } finally {
       isPushing = false;
-      if (pushQueued){ pushQueued = false; setTimeout(doPush, 100); }
+      if (pushQueued) { pushQueued = false; setTimeout(doPush, 100); }
     }
   }
 
+  // Best-effort flush on tab close / background
   function flushPendingWrites(){
-    if (pushTimer){ clearTimeout(pushTimer); pushTimer = null; }
-    if (Object.keys(pendingFiles).length && gistId){
+    if (pushTimer) { clearTimeout(pushTimer); pushTimer = null; }
+    if (Object.keys(pendingFiles).length && gistId) {
+      // Cannot await; fire and forget
       try {
         fetch(API + "/gists/" + gistId, {
           method: "PATCH",
@@ -6306,64 +6665,68 @@ document.addEventListener('keydown', function(e) {
   window.addEventListener("pagehide", flushPendingWrites);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") flushPendingWrites();
-    else { if (Date.now() - lastPushTs > 30000) pollNow(); }
+    else pollNow();
   });
-  window.addEventListener("online", () => { setBadge("Reconnected...", "#f59e0b"); setTimeout(manualCloudSync, 500); });
-  window.addEventListener("offline", () => { setBadge("Offline", "#ef4444"); });
 
-  // ===== PULL =====
+  // ===== NETWORK ONLINE / OFFLINE =====
+  window.addEventListener("online", () => {
+    setBadge("Reconnected...", "#f59e0b");
+    setTimeout(manualCloudSync, 500);
+  });
+  window.addEventListener("offline", () => {
+    setBadge("Offline", "#ef4444");
+  });
+
+  // ===== PULL (poll) =====
   async function pollNow(){
-    if (Date.now() < suppressPullUntil) return;
     try {
       await findOrCreateGist();
       const headers = ghHeaders();
       if (lastEtag) headers["If-None-Match"] = lastEtag;
       const res = await fetch(API + "/gists/" + gistId, { headers, cache: "no-store" });
-      if (res.status === 304){ setBadge("Synced ✓", "#10b981"); return; }
+      if (res.status === 304) { setBadge("Synced", "#10b981"); return; }
       if (!res.ok) throw new Error("Pull failed " + res.status);
       const et = res.headers.get("ETag");
       if (et) lastEtag = et;
       const data = await res.json();
-
+      let updated = 0;
+      // Collect existing backup filenames
       knownBackups = [];
-      if (data.files){
+      if (data.files) {
         Object.keys(data.files).forEach(fn => {
-          if (fn.indexOf(BACKUP_PREFIX) === 0 && fn.endsWith(".json")){
-            knownBackups.push({ name: fn, date: fn.slice(BACKUP_PREFIX.length, -5) });
+          if (fn.indexOf(BACKUP_PREFIX) === 0 && fn.endsWith(".json")) {
+            const date = fn.slice(BACKUP_PREFIX.length, -5);
+            knownBackups.push({ name: fn, date });
           }
         });
-        knownBackups.sort((a,b) => b.date.localeCompare(a.date));
+        knownBackups.sort((a, b) => b.date.localeCompare(a.date));
       }
-
+      // Read meta if present
       const metaFile = data.files && data.files[META_FILE];
-      let cloudTs = 0;
-      if (metaFile && typeof metaFile.content === "string"){
+      if (metaFile && typeof metaFile.content === "string") {
         try {
           const m = JSON.parse(metaFile.content);
-          if (m && m.lastUpdated){ cloudTs = m.lastUpdated; lastMeta = m; renderLastUpdated(); }
+          if (m && m.lastUpdated) {
+            lastMeta = m;
+            renderLastUpdated();
+          }
         } catch(e){}
       }
-
-      // KEY FIX: only apply cloud data if cloud is newer than our last push
-      const shouldApply = isInitialPull || (cloudTs > lastPushTs + 2000);
-      if (!shouldApply){ setBadge("Synced ✓", "#10b981"); isInitialPull = false; return; }
-
-      let updated = 0;
       SYNC_KEYS.forEach(key => {
         const f = data.files && data.files[key + ".json"];
         if (!f) return;
         let content = f.content;
-        if (f.truncated && f.raw_url){
-          fetch(f.raw_url).then(r => r.text()).then(txt => { if (applyCloudValue(key, txt)) refreshUI(); }).catch(()=>{});
+        // Truncated content (large file): fetch raw
+        if (f.truncated && f.raw_url) {
+          // fire-and-forget refetch on next tick
+          fetch(f.raw_url).then(r => r.text()).then(txt => applyCloudValue(key, txt)).catch(()=>{});
           return;
         }
         if (typeof content !== "string") return;
         if (applyCloudValue(key, content)) updated++;
       });
-
       if (updated) refreshUI();
-      isInitialPull = false;
-      setBadge("Synced ✓", "#10b981");
+      setBadge("Synced", "#10b981");
     } catch(err){
       console.error("Poll failed", err);
       setBadge("Offline", "#ef4444");
@@ -6371,15 +6734,10 @@ document.addEventListener('keydown', function(e) {
   }
 
   function applyCloudValue(key, value){
-    // Never overwrite real local data with empty cloud data
-    if (!value || value === "[]" || value === "null" || value === "undefined"){
-      const local = localStorage.getItem(key);
-      if (local && local !== "[]" && local !== "null") return false;
-    }
     if (localStorage.getItem(key) === value) return false;
     incomingMark[key] = true;
     try { origSet.call(localStorage, key, value); }
-    finally { setTimeout(() => { incomingMark[key] = false; }, 300); }
+    finally { setTimeout(() => { incomingMark[key] = false; }, 200); }
     return true;
   }
 
@@ -6392,12 +6750,12 @@ document.addEventListener('keydown', function(e) {
     try { if (typeof loadEmployees === "function") loadEmployees(); } catch(e){}
     try { if (typeof loadEvents === "function") loadEvents(); } catch(e){}
     try { if (typeof loadAdvances === "function") loadAdvances(); } catch(e){}
-    try { if (typeof loadRateCards === "function") loadRateCards(); } catch(e){}
-    try { if (typeof loadExtrasTable === "function") loadExtrasTable(); } catch(e){}
+    try { if (typeof loadRates === "function") loadRates(); } catch(e){}
+    try { if (typeof loadExtras === "function") loadExtras(); } catch(e){}
     try { if (typeof updateDashboard === "function") updateDashboard(); } catch(e){}
   }
 
-  // ===== INTERCEPT localStorage =====
+  // ===== INTERCEPT localStorage writes =====
   Storage.prototype.setItem = function(key, value){
     origSet.call(this, key, value);
     if (this !== window.localStorage) return;
@@ -6407,23 +6765,26 @@ document.addEventListener('keydown', function(e) {
   };
   Storage.prototype.removeItem = function(key){
     origRemove.call(this, key);
-    if (this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) schedulePush(key, "[]");
+    if (this === window.localStorage && SYNC_KEYS.indexOf(key) !== -1) {
+      schedulePush(key, "[]");
+    }
   };
 
-  // ===== MANUAL SYNC =====
+  // ===== MANUAL SYNC (button hook) =====
   async function manualCloudSync(){
     const status = document.getElementById("syncStatus");
     setBadge("Syncing...", "#f59e0b");
     try {
+      // First push any local pending changes
       if (Object.keys(pendingFiles).length) await doPush();
-      suppressPullUntil = 0;
+      // Then force-pull (ignore etag)
       lastEtag = "";
       await pollNow();
       if (status) status.textContent = "✔ Cloud Synced at " + new Date().toLocaleTimeString();
     } catch(err){
       console.error(err);
       setBadge("Sync Failed", "#ef4444");
-      if (status) status.textContent = "✘ Sync failed — check connection";
+      if (status) status.textContent = "✘ Sync failed — check internet connection";
     }
   }
   window.manualCloudSync = manualCloudSync;
@@ -6431,58 +6792,79 @@ document.addEventListener('keydown', function(e) {
   // ===== DAILY BACKUPS =====
   function todayStr(){
     const d = new Date();
-    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
   }
+
   async function ensureDailyBackup(){
     try {
       const today = todayStr();
       const todayFile = BACKUP_PREFIX + today + ".json";
       if (knownBackups.some(b => b.name === todayFile)) return;
       const snapshot = { date: today, createdAt: Date.now(), device: getDeviceName(), data: {} };
-      SYNC_KEYS.forEach(k => { snapshot.data[k] = localStorage.getItem(k) || "[]"; });
+      SYNC_KEYS.forEach(k => {
+        snapshot.data[k] = localStorage.getItem(k) || "[]";
+      });
       const files = {};
       files[todayFile] = { content: JSON.stringify(snapshot) };
-      const toDelete = knownBackups.filter(b => b.name !== todayFile).sort((a,b) => b.date.localeCompare(a.date)).slice(BACKUP_KEEP - 1);
+      // Prune old backups (keep newest BACKUP_KEEP, plus today)
+      const toDelete = knownBackups
+        .filter(b => b.name !== todayFile)
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .slice(BACKUP_KEEP - 1);
       toDelete.forEach(b => { files[b.name] = null; });
       const res = await fetch(API + "/gists/" + gistId, {
         method: "PATCH",
         headers: ghHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ files })
       });
-      if (res.ok){
+      if (res.ok) {
         knownBackups.unshift({ name: todayFile, date: today });
         knownBackups = knownBackups.filter(b => !toDelete.find(d => d.name === b.name));
+        console.log("Daily backup saved:", todayFile);
       }
-    } catch(err){ console.warn("Backup failed", err); }
+    } catch(err){
+      console.warn("Backup failed", err);
+    }
   }
 
   async function restoreBackup(filename){
-    if (!confirm("Restore from " + filename + "?\n\nThis REPLACES current data on all devices. Today's state will be saved first.")) return;
+    if (!confirm("Restore from " + filename + "?\n\nThis will REPLACE your current data on every device. Today's data will be saved as a backup first.")) return;
     setBadge("Restoring...", "#f59e0b");
     try {
+      // Save current state as an emergency backup
       const stamp = "before_restore_" + Date.now();
       const emergency = { date: stamp, createdAt: Date.now(), device: getDeviceName(), data: {} };
       SYNC_KEYS.forEach(k => { emergency.data[k] = localStorage.getItem(k) || "[]"; });
       const emergencyFile = BACKUP_PREFIX + stamp + ".json";
+      // Fetch the chosen backup
       const res = await fetch(API + "/gists/" + gistId, { headers: ghHeaders(), cache: "no-store" });
       if (!res.ok) throw new Error("Fetch failed " + res.status);
       const data = await res.json();
       const f = data.files && data.files[filename];
       if (!f) throw new Error("Backup file not found");
       let content = f.content;
-      if (f.truncated && f.raw_url) content = await fetch(f.raw_url).then(r => r.text());
+      if (f.truncated && f.raw_url) {
+        content = await fetch(f.raw_url).then(r => r.text());
+      }
       const snap = JSON.parse(content);
       if (!snap || !snap.data) throw new Error("Invalid backup format");
+      // Apply locally + push to cloud
       const filesPatch = {};
       filesPatch[emergencyFile] = { content: JSON.stringify(emergency) };
       SYNC_KEYS.forEach(k => {
         const val = snap.data[k] != null ? String(snap.data[k]) : "[]";
         incomingMark[k] = true;
         try { origSet.call(localStorage, k, val); }
-        finally { setTimeout(() => { incomingMark[k] = false; }, 300); }
+        finally { setTimeout(() => { incomingMark[k] = false; }, 200); }
         filesPatch[k + ".json"] = { content: val };
       });
-      filesPatch[META_FILE] = { content: JSON.stringify({ lastUpdated: Date.now(), lastDevice: getDeviceName(), lastKey: "RESTORE:" + filename }) };
+      filesPatch[META_FILE] = { content: JSON.stringify({
+        lastUpdated: Date.now(),
+        lastDevice: getDeviceName(),
+        lastKey: "RESTORE:" + filename
+      }) };
       const pushRes = await fetch(API + "/gists/" + gistId, {
         method: "PATCH",
         headers: ghHeaders({ "Content-Type": "application/json" }),
@@ -6492,8 +6874,8 @@ document.addEventListener('keydown', function(e) {
       knownBackups.unshift({ name: emergencyFile, date: stamp });
       lastEtag = "";
       refreshUI();
-      setBadge("Restored ✓", "#10b981");
-      alert("Restored from " + filename + "\n\nSafety backup saved as: " + emergencyFile);
+      setBadge("Restored", "#10b981");
+      alert("Restored from " + filename + "\n\nA safety backup of your previous data was saved as:\n" + emergencyFile);
       const modal = document.getElementById("syncSettingsModal");
       if (modal) modal.remove();
     } catch(err){
@@ -6508,16 +6890,21 @@ document.addEventListener('keydown', function(e) {
   async function boot(){
     try {
       await findOrCreateGist();
+      // Initial pull so this device starts in sync with cloud
       await pollNow();
+      // Make today's backup if needed (after we know what already exists)
       ensureDailyBackup();
+      // Background polling loop
       setInterval(pollNow, POLL_MS);
+      // Hourly backup check (in case the app stays open across midnight)
       setInterval(ensureDailyBackup, 60 * 60 * 1000);
+      console.log("GitHub Gist sync ready. Gist:", gistId);
     } catch(err){
       console.error("Sync boot failed", err);
       setBadge("Auth Failed", "#ef4444");
     }
   }
-  if (document.readyState === "loading"){
+  if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => { ensureLastUpdatedBar(); boot(); });
   } else {
     ensureLastUpdatedBar();
