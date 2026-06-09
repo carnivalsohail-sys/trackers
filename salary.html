@@ -1453,17 +1453,17 @@
         let employees = JSON.parse(localStorage.getItem('carnival_employees')) || [];
 
         const DEFAULT_RATE_CARDS = [
-            {code: 'NE.987',       desc: 'Normal PA Sound (2 Spkr)',    operator: 900,  semi: 800,  helper: 700, sashi: 0, shiv: 0},
-            {code: 'ME.11109',     desc: 'PA Sound + Projector',         operator: 1100, semi: 1000, helper: 900, sashi: 0, shiv: 0},
-            {code: 'BE.131210',    desc: 'Big Event (4 Spkr + Projector)', operator: 1300, semi: 1200, helper: 1000, sashi: 0, shiv: 0},
-            {code: 'NSB.986',      desc: 'Night Setup',                  operator: 900,  semi: 800,  helper: 600, sashi: 0, shiv: 0},
-            {code: 'LOCATION.PA.5',       desc: 'Fixed Venue PA',         operator: 1500, semi: 1300, helper: 1100, sashi: 0, shiv: 0},
-            {code: 'LOCATION.PA.7',       desc: 'VIHANG PA 7',            operator: 1800, semi: 1500, helper: 1200, sashi: 0, shiv: 0},
-            {code: 'LOCATION.PA.PR.9',    desc: 'VIHANG PA PR 9',         operator: 2000, semi: 1700, helper: 1400, sashi: 0, shiv: 0},
-            {code: 'LOCATION.DJ.PR.9',    desc: 'VIHANG DJ PR 9',         operator: 2200, semi: 1900, helper: 1600, sashi: 0, shiv: 0},
-            {code: 'LOCATION.PR.7',       desc: 'VIHANG PR 7',            operator: 1800, semi: 1500, helper: 1200, sashi: 0, shiv: 0},
-            {code: 'NP/DP',               desc: 'Packup',                  operator: 500,  semi: 500,  helper: 500, sashi: 0, shiv: 0},
-            {code: 'BNDRY.DJ.9',          desc: 'Boundary Hall DJ',       operator: 900,  semi: 900,  helper: 900, sashi: 0, shiv: 0}
+            {code: 'NE.987',           desc: 'Normal PA Sound (2 Spkr)',        operator: 1000, semi: 900,  helper: 800,  sashi: 0, shiv: 0},
+            {code: 'ME.11109',         desc: 'PA Sound + Projector',             operator: 1200, semi: 1100, helper: 1000, sashi: 0, shiv: 0},
+            {code: 'BE.131210',        desc: 'Big Event (4 Spkr + Projector)',   operator: 1400, semi: 1300, helper: 1100, sashi: 0, shiv: 0},
+            {code: 'NSB.986',          desc: 'Night Setup',                      operator: 1000, semi: 900,  helper: 700,  sashi: 0, shiv: 0},
+            {code: 'LOCATION.PA.5',    desc: 'Fixed Venue PA',                   operator: 1600, semi: 1400, helper: 1200, sashi: 0, shiv: 0},
+            {code: 'LOCATION.PA.7',    desc: 'VIHANG PA 7',                      operator: 1900, semi: 1600, helper: 1300, sashi: 0, shiv: 0},
+            {code: 'LOCATION.PA.PR.9', desc: 'VIHANG PA PR 9',                   operator: 2100, semi: 1800, helper: 1500, sashi: 0, shiv: 0},
+            {code: 'LOCATION.DJ.PR.9', desc: 'VIHANG DJ PR 9',                   operator: 2300, semi: 2000, helper: 1700, sashi: 0, shiv: 0},
+            {code: 'LOCATION.PR.7',    desc: 'VIHANG PR 7',                      operator: 1900, semi: 1600, helper: 1300, sashi: 0, shiv: 0},
+            {code: 'NP/DP',            desc: 'Packup',                            operator: 600,  semi: 600,  helper: 600,  sashi: 0, shiv: 0},
+            {code: 'BNDRY.DJ.9',       desc: 'Boundary Hall DJ',                 operator: 1000, semi: 1000, helper: 1000, sashi: 0, shiv: 0}
         ];
 
         // FORCE load rate cards from HTML defaults — never rely on localStorage alone
@@ -1472,6 +1472,27 @@
             rateCards = JSON.parse(JSON.stringify(DEFAULT_RATE_CARDS));
             localStorage.setItem('carnival_rates', JSON.stringify(rateCards));
         }
+
+        // ONE-TIME MIGRATION: bump all operator/semi/helper rates by +100
+        // Runs AFTER the initial cloud pull (via _postPullMigration) so it
+        // never overwrites valid cloud data with local defaults.
+        window._postPullMigration = function() {
+            // Re-read from localStorage — cloud pull may have updated it
+            rateCards = JSON.parse(localStorage.getItem('carnival_rates') || 'null') || rateCards;
+            employees = JSON.parse(localStorage.getItem('carnival_employees') || '[]');
+
+            if (!localStorage.getItem('carnival_rates_bump_v1')) {
+                rateCards = rateCards.map(r => ({
+                    ...r,
+                    operator: (Number(r.operator) || 0) + 100,
+                    semi:     (Number(r.semi)     || 0) + 100,
+                    helper:   (Number(r.helper)   || 0) + 100,
+                }));
+                localStorage.setItem('carnival_rates', JSON.stringify(rateCards));
+                localStorage.setItem('carnival_rates_bump_v1', 'done');
+                loadRateCards();
+            }
+        };
 
         let events = JSON.parse(localStorage.getItem('carnival_events')) || [];
         let advances = JSON.parse(localStorage.getItem('carnival_advances')) || [];
@@ -3289,173 +3310,152 @@
             const thead = document.getElementById('salaryTableHead');
             const tbody = document.getElementById('salaryTableBody');
 
-            // Sort employees by category: Operators, Semi-Operators, Helpers, Commission
             const sortedEmployees = [...employees].sort((a, b) => {
                 const catOrder = { 'operator': 0, 'semi-operator': 1, 'helper': 2, 'sashi': 3, 'shiv': 4 };
                 return (catOrder[a.category] ?? 5) - (catOrder[b.category] ?? 5);
             });
 
-            // Build Headers with Excel Color Coding
+            // Exact colors from reference Excel file
+            const BORDER  = '1px solid #BFBFBF';
+            const TH      = `padding:6px 8px; font-size:10px; font-weight:700; border:${BORDER}; font-family:Calibri,sans-serif; text-align:center;`;
+            const TD      = `padding:4px 6px; font-size:10px; border:${BORDER}; font-family:Arial,sans-serif;`;
+            const NUM     = TD + ' text-align:center; font-weight:700;';
+            const COMM_BG = '#92D050'; // exact from file FF92D050
+
+            // HEADER ROW
             let headHTML = '<tr>';
-            headHTML += '<th style="background:#7030A0; color:#fff; border: 1px solid #ccc; padding: 6px; font-size: 10px;">CATEGORY</th>';
-            headHTML += '<th style="background:#FF0000; color:#fff; border: 1px solid #ccc; padding: 6px; font-size: 10px;">DATE</th>';
-            headHTML += '<th style="background:#FFFF00; color:#000; border: 1px solid #ccc; padding: 6px; font-size: 10px;">LOCATION</th>';
-            headHTML += '<th style="background:#00B0F0; color:#000; border: 1px solid #ccc; padding: 6px; font-size: 10px;">MATERIAL</th>';
-            headHTML += '<th style="background:#00B0F0; color:#fff; border: 1px solid #ccc; padding: 6px; font-size: 10px;">EXTRAS / REASON</th>';
-
+            headHTML += `<th style="${TH} background:#7030A0; color:#FFFFFF;">CTGRY</th>`;
+            headHTML += `<th style="${TH} background:#FF0000; color:#FFFFFF;">DATE</th>`;
+            headHTML += `<th style="${TH} background:#FFFF00; color:#000000;">LOCATION</th>`;
+            headHTML += `<th style="${TH} background:#00B0F0; color:#000000;">MATERIAL</th>`;
+            headHTML += `<th style="${TH} background:#00B0F0; color:#C00000;">EXTRAS</th>`;
             sortedEmployees.forEach(emp => {
-                let bgColor = 'var(--stat-card-bg)';
-                let textColor = 'var(--text-main)';
-                let borderCol = 'var(--border-color)';
-
-                if (emp.category === 'operator') { bgColor = '#F8CBAD'; textColor = '#000000'; }
-                else if (emp.category === 'semi-operator') { bgColor = '#8EA9DB'; textColor = '#000000'; }
-                else if (emp.category === 'helper') { bgColor = '#AEAAAA'; textColor = '#000000'; }
-                else if (emp.category === 'sashi') { bgColor = '#FFD966'; textColor = '#000000'; }
-                else if (emp.category === 'shiv')  { bgColor = '#B4A7D6'; textColor = '#000000'; }
-
-                headHTML += `<th style="background:${bgColor}; color:${textColor}; border: 1px solid ${borderCol}; font-size:10px; padding:6px; text-align: center;">${escapeHtml(emp.name.toUpperCase())}</th>`;
+                const isComm = emp.category === 'sashi' || emp.category === 'shiv';
+                headHTML += `<th style="${TH} background:${isComm ? COMM_BG : '#FFFFFF'}; color:#000000;">${escapeHtml(emp.name.toUpperCase())}</th>`;
             });
             headHTML += '</tr>';
             thead.innerHTML = headHTML;
 
-            // Build Event Rows
+            // EVENT ROWS
             let bodyHTML = '';
-            const sortedEvents = monthEvents.sort((a,b) => new Date(a.date) - new Date(b.date));
-            sortedEvents.forEach((evt, rowIdx) => {
-                bodyHTML += `<tr>`;
-                bodyHTML += `<td style="color: #ef4444; font-weight: bold; background: var(--input-bg); border: 1px solid var(--border-color); padding: 4px; font-size: 10px;">${evt.category}</td>`;
-                bodyHTML += `<td style="font-size: 10px; padding: 4px; border: 1px solid var(--border-color);">${formatDate(evt.date)}</td>`;
-                bodyHTML += `<td style="font-size: 10px; padding: 4px; border: 1px solid var(--border-color);">${escapeHtml(evt.venue)}</td>`;
-                bodyHTML += `<td style="font-size: 10px; padding: 4px; border: 1px solid var(--border-color);">${escapeHtml(evt.material)}</td>`;
-
+            const sortedEvents = [...monthEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+            sortedEvents.forEach(evt => {
                 let extrasDisplay = evt.extras || '';
                 if (!extrasDisplay) {
-                    const allDetails = [];
+                    const parts = [];
                     evt.employees.forEach(e => {
-                        if (!e.extraDetails || e.extraDetails.length === 0) return;
-                        const linkedEmp = employees.find(emp => emp.id === e.empId);
-                        const empName = linkedEmp ? linkedEmp.name : e.name;
-
+                        if (!e.extraDetails || !e.extraDetails.length) return;
+                        const empName = (employees.find(em => em.id === e.empId) || {name: e.name}).name;
                         e.extraDetails.forEach(d => {
                             const m = d.match(/(.+)\((.+)\)/);
-                            if (m) {
-                                allDetails.push(`${empName.toUpperCase()}: ${m[2]} - ${m[1]}`);
-                            } else {
-                                allDetails.push(`${empName.toUpperCase()}: ${d}`);
-                            }
+                            parts.push(m ? `${empName.toUpperCase()}: ${m[2]} - ${m[1]}` : `${empName.toUpperCase()}: ${d}`);
                         });
                     });
-                    extrasDisplay = allDetails.join(', ');
+                    extrasDisplay = parts.join(', ');
                 }
-                bodyHTML += `<td style="border: 1px solid var(--border-color); padding: 4px; font-size: 10px;">${escapeHtml(extrasDisplay)}</td>`;
-
-                sortedEmployees.forEach((emp, colIdx) => {
+                bodyHTML += '<tr>';
+                bodyHTML += `<td style="${TD} background:#FFFFFF; color:#FF0000; font-weight:700;">${escapeHtml(evt.category)}</td>`;
+                bodyHTML += `<td style="${TD} background:#FFFFFF; color:#000000;">${formatDate(evt.date)}</td>`;
+                bodyHTML += `<td style="${TD} background:#FFFFFF; color:#000000;">${escapeHtml(evt.venue)}</td>`;
+                bodyHTML += `<td style="${TD} background:#FFFFFF; color:#000000;">${escapeHtml(evt.material || '')}</td>`;
+                bodyHTML += `<td style="${TD} background:#FFFFFF; color:#C00000;">${escapeHtml(extrasDisplay)}</td>`;
+                sortedEmployees.forEach(emp => {
                     const empEvt = evt.employees.find(e => e.empId === emp.id);
+                    const isComm = emp.category === 'sashi' || emp.category === 'shiv';
+                    const cellBg = isComm ? COMM_BG : '#FFFFFF';
                     if (empEvt) {
-                        const base = Number(empEvt.baseAmount) || 0;
+                        const base  = Number(empEvt.baseAmount)  || 0;
                         const extra = Number(empEvt.extraAmount) || 0;
-                        const total = base + extra; // Always calculate from base + extra
-
-                        let formula = `=${base}`;
-                        if (extra > 0) {
-                            formula += `+${extra}`;
-                        }
-
-                        let cellStyle = `background:var(--card-bg); font-weight:bold; border: 1px solid var(--border-color); text-align: center; color:var(--text-main); font-size: 10px; padding: 4px;`;
-                        // Highlight cells that have extras
-                        if (extra > 0) {
-                            cellStyle = `background:var(--extras-bg, #E2EFDA); font-weight:bold; border: 1px solid var(--border-color); text-align: center; color:var(--extras-text, #006100); font-size: 10px; padding: 4px;`;
-                        }
-
-                        bodyHTML += `<td class="formula-cell" style="${cellStyle}" data-formula="${formula}" title="Base: ₹${base}${extra > 0 ? ` + Extra: ₹${extra}${empEvt.extraReason ? ` (${empEvt.extraReason})` : ''}` : ''}">${total}</td>`;
+                        const total = base + extra;
+                        const formula = extra > 0 ? `=${base}+${extra}` : `=${base}`;
+                        const cellFg = extra > 0 ? '#006100' : '#000000';
+                        bodyHTML += `<td class="formula-cell" style="${NUM} background:${cellBg}; color:${cellFg};" data-formula="${formula}" title="Base:₹${base}${extra > 0 ? ` + Extra:₹${extra}` : ''}">${total}</td>`;
                     } else {
-                        bodyHTML += `<td style="background:var(--input-bg); border: 1px solid var(--border-color); padding: 4px;"></td>`;
+                        bodyHTML += `<td style="${TD} background:${cellBg};"></td>`;
                     }
                 });
-                bodyHTML += `</tr>`;
+                bodyHTML += '</tr>';
             });
 
             const numEvents = sortedEvents.length;
-            const startRow = 2; // Data starts after header
-            const endRow = startRow + numEvents - 1;
+            const startRow  = 2;
+            const endRow    = startRow + numEvents - 1;
+            const getColLetter = n => { let s=''; while(n>=0){s=String.fromCharCode(n%26+65)+s;n=Math.floor(n/26)-1;} return s; };
+            const emptyLabel = `<td colspan="4" style="border:none; background:#FFFFFF;"></td>`;
 
-            const getColLetter = (n) => {
-                let s = "";
-                while (n >= 0) {
-                    s = String.fromCharCode(n % 26 + 65) + s;
-                    n = Math.floor(n / 26) - 1;
-                }
-                return s;
+            // Summary row styles — exact from reference Excel
+            const ROW_STYLES = {
+                'WORK AMOUNT':      { rowBg:'#FFFF00', labelFg:'#002060', valFg:'#FF0000', bold:true  },
+                '  (incl. EXTRAS)': { rowBg:'',        labelFg:'#002060', valFg:'#000000', bold:false },
+                'TRAVEL':           { rowBg:'',        labelFg:'#002060', valFg:'#000000', bold:false },
+                'SALARY':           { rowBg:'',        labelFg:'#000000', valFg:'#000000', bold:false },
+                'MOBILE':           { rowBg:'',        labelFg:'#000000', valFg:'#000000', bold:false },
+                'PASS':             { rowBg:'',        labelFg:'#000000', valFg:'#000000', bold:false },
+                'BALANCE':          { rowBg:'#FFFF00', labelFg:'#C00000', valFg:'#000000', bold:true  },
+                'ON ACCOUNT':       { rowBg:'',        labelFg:'#C00000', valFg:'#C00000', bold:false },
+                'RENT':             { rowBg:'',        labelFg:'#FF0000', valFg:'#FF0000', bold:false },
+                'LIGHT BILL':       { rowBg:'',        labelFg:'#FF0000', valFg:'#FF0000', bold:false },
+                'FINE':             { rowBg:'',        labelFg:'#FF0000', valFg:'#FF0000', bold:false },
+                'LOAN EMI':         { rowBg:'',        labelFg:'#FF0000', valFg:'#FF0000', bold:false },
+                'FINAL':            { rowBg:'#FFFF00', labelFg:'#000000', valFg:'#000000', bold:true  },
             };
 
-            // Summary Rows with Excel Color Coding
-            const renderSummaryRow = (label, bgClass, valueKey, customFormulaGen) => {
-                let html = `<tr>`;
-                html += `<td colspan="4" style="border: none;"></td>`;
-                html += `<td style="background:var(--stat-card-bg); color:var(--accent-primary); font-weight:bold; text-align:right; border:1px solid var(--border-color); font-size: 10px; padding: 4px;" class="${bgClass}">${label}</td>`;
+            const renderSummaryRow = (label, valueKey, customFormulaGen) => {
+                const s  = ROW_STYLES[label] || { rowBg:'', labelFg:'#000000', valFg:'#000000', bold:false };
+                const bg = s.rowBg || '#FFFFFF';
+                const fw = s.bold ? '700' : '600';
+                const lbl = `padding:5px 8px; font-size:10px; font-weight:${fw}; text-align:right; background:${bg}; color:${s.labelFg}; border:${BORDER}; font-family:Calibri,sans-serif;`;
+                let html = `<tr>${emptyLabel}<td style="${lbl}">${label}</td>`;
                 sortedEmployees.forEach((emp, i) => {
                     const data = salaryData.find(d => d.id === emp.id);
-                    const colLetter = getColLetter(i + 5); // F is index 5
+                    const col  = getColLetter(i + 5);
                     let formula = '';
-                    if (customFormulaGen) {
-                        formula = customFormulaGen(colLetter, i);
-                    } else if (valueKey === 'workAmount') {
-                        formula = `=SUM(${colLetter}${startRow}:${colLetter}${endRow})`;
-                    }
-
-                    let cellClass = bgClass;
-                    let cellStyle = `font-weight:bold; text-align:center; border:1px solid var(--border-color); font-size: 10px; padding: 4px;`;
-
-                    html += `<td style="${cellStyle}" class="${cellClass}" ${formula ? `data-formula="${formula}"` : ''}>${data ? data[valueKey] : 0}</td>`;
+                    if (customFormulaGen) formula = customFormulaGen(col, i);
+                    else if (valueKey === 'workAmount') formula = `=SUM(${col}${startRow}:${col}${endRow})`;
+                    const val    = data ? (data[valueKey] ?? 0) : 0;
+                    const isComm = emp.category === 'sashi' || emp.category === 'shiv';
+                    const cellBg = isComm ? COMM_BG : bg;
+                    const style  = `padding:4px 6px; font-size:10px; font-weight:${fw}; text-align:center; background:${cellBg}; color:${s.valFg}; border:${BORDER}; font-family:Arial,sans-serif;`;
+                    html += `<td style="${style}" ${formula ? `data-formula="${formula}"` : ''}>${val || ''}</td>`;
                 });
-                html += `</tr>`;
+                html += '</tr>';
                 return html;
             };
 
-            bodyHTML += renderSummaryRow('WORK AMOUNT', 'bg-work', 'workAmount');
-            bodyHTML += renderSummaryRow('  (incl. EXTRAS)', 'bg-extras', 'extrasAmount');
-            bodyHTML += renderSummaryRow('TRAVEL', 'bg-travel', 'travelAmount');
-            bodyHTML += renderSummaryRow('SALARY', 'bg-salary', 'salary');
-            bodyHTML += renderSummaryRow('MOBILE', 'bg-salary', 'mobile');
-            bodyHTML += renderSummaryRow('PASS', 'bg-salary', 'pass');
-
-            bodyHTML += renderSummaryRow('BALANCE', 'bg-balance', 'total', (col) => {
-                return `=${col}${endRow+1}+${col}${endRow+3}+${col}${endRow+4}+${col}${endRow+5}+${col}${endRow+6}`;
+            bodyHTML += renderSummaryRow('WORK AMOUNT',      'workAmount');
+            bodyHTML += renderSummaryRow('  (incl. EXTRAS)', 'extrasAmount');
+            bodyHTML += renderSummaryRow('TRAVEL',           'travelAmount');
+            bodyHTML += renderSummaryRow('SALARY',           'salary');
+            bodyHTML += renderSummaryRow('MOBILE',           'mobile');
+            bodyHTML += renderSummaryRow('PASS',             'pass');
+            bodyHTML += renderSummaryRow('BALANCE', 'total', col => `=${col}${endRow+1}+${col}${endRow+3}+${col}${endRow+4}+${col}${endRow+5}+${col}${endRow+6}`);
+            bodyHTML += renderSummaryRow('ON ACCOUNT', 'onAccount');
+            bodyHTML += renderSummaryRow('RENT',      'rent');
+            bodyHTML += renderSummaryRow('LIGHT BILL','lightBill');
+            bodyHTML += renderSummaryRow('FINE',      'fine');
+            bodyHTML += renderSummaryRow('LOAN EMI',  'loanEMI');
+            bodyHTML += renderSummaryRow('FINAL', 'final', col => {
+                const b=endRow+7,a=endRow+8,r=endRow+9,l=endRow+10,f=endRow+11,e=endRow+12;
+                return `=${col}${b}-${col}${a}-${col}${r}-${col}${l}-${col}${f}-${col}${e}`;
             });
 
-            bodyHTML += renderSummaryRow('ON ACCOUNT', 'bg-onacc', 'onAccount');
-            bodyHTML += renderSummaryRow('RENT', 'bg-deduction', 'rent');
-            bodyHTML += renderSummaryRow('LIGHT BILL', 'bg-deduction', 'lightBill');
-            bodyHTML += renderSummaryRow('FINE', 'bg-deduction', 'fine');
-            bodyHTML += renderSummaryRow('LOAN EMI', 'bg-deduction', 'loanEMI');
-
-            // FINAL = BALANCE - On Account - RENT - LIGHT - FINE - LOAN EMI
-            bodyHTML += renderSummaryRow('FINAL', 'bg-final', 'final', (col) => {
-                const balRow  = endRow + 7;
-                const accRow  = endRow + 8;
-                const rentRow = endRow + 9;
-                const lightRow= endRow + 10;
-                const fineRow = endRow + 11;
-                const loanRow = endRow + 12;
-                return `=${col}${balRow}-${col}${accRow}-${col}${rentRow}-${col}${lightRow}-${col}${fineRow}-${col}${loanRow}`;
-            });
-
-            // No of Events Row
-            bodyHTML += `<tr><td colspan="4" style="border: none;"></td><td style="font-weight:bold; text-align:right; color:var(--text-muted); padding:6px; border:1px solid var(--border-color); font-size: 10px;">Number of Events</td>`;
+            // No. of Events row
+            let evtRow = `<tr>${emptyLabel}<td style="padding:5px 8px;font-size:10px;font-weight:600;text-align:right;background:#FFFFFF;color:#595959;border:${BORDER};font-family:Calibri,sans-serif;">No. of Events</td>`;
             sortedEmployees.forEach((emp, i) => {
                 const data = salaryData.find(d => d.id === emp.id);
-                const colLetter = getColLetter(i + 5);
-                const formula = `=COUNT(${colLetter}${startRow}:${colLetter}${endRow})`;
-                bodyHTML += `<td style="font-weight:bold; text-align:center; color:var(--text-main); border:1px solid var(--border-color); font-size: 10px; padding: 4px;" data-formula="${formula}">${data ? data.events : 0}</td>`;
+                const col  = getColLetter(i + 5);
+                const formula = `=COUNT(${col}${startRow}:${col}${endRow})`;
+                const isComm  = emp.category === 'sashi' || emp.category === 'shiv';
+                evtRow += `<td style="padding:4px 6px;font-size:10px;font-weight:600;text-align:center;background:${isComm?COMM_BG:'#FFFFFF'};color:#595959;border:${BORDER};font-family:Arial,sans-serif;" data-formula="${formula}">${data ? data.events : 0}</td>`;
             });
-            bodyHTML += `</tr>`;
+            evtRow += '</tr>';
+            bodyHTML += evtRow;
 
             tbody.innerHTML = bodyHTML;
-
             document.getElementById('salaryResults').style.display = 'block';
 
             const totalPending = salaryData.reduce((sum, d) => sum + d.final, 0);
+
             const pendingEl = document.getElementById('statDisbursed');
             if (pendingEl) pendingEl.textContent = `₹${totalPending}`;
 
@@ -6293,7 +6293,7 @@ document.addEventListener('keydown', function(e) {
   const TOK_PARTS = ["ghp_","V1oSbPdfUJpYdjU9","ouSG3rQYjdmnZv3qYOFg"];
   const EMBEDDED_TOKEN = TOK_PARTS.join("");
   const GIST_DESC = "CARNIVAL_PAYROLL_SYNC_V1";
-  const SYNC_KEYS = ["carnival_employees","carnival_rates","carnival_events","carnival_advances","carnival_extras"];
+  const SYNC_KEYS = ["carnival_employees","carnival_rates","carnival_events","carnival_advances","carnival_extras","carnival_rates_bump_v1"];
   const POLL_MS = 5000;        // pull interval
   const DEBOUNCE_MS = 800;     // push debounce
   const GIST_ID_KEY = "carnival_gist_id";
@@ -6336,6 +6336,11 @@ document.addEventListener('keydown', function(e) {
   const incomingMark = {};     // suppress echo loop on cloud→local writes
   const origSet = Storage.prototype.setItem;
   const origRemove = Storage.prototype.removeItem;
+
+  // STARTUP GUARD — block pushes until initial pull is done
+  // Prevents local defaults / migration from overwriting valid cloud data
+  let initialPullDone = false;
+  let startupQueue = {};  // pending files held back during boot
 
   // ===== UI BADGE =====
   function ensureBadge(){
@@ -6595,13 +6600,23 @@ document.addEventListener('keydown', function(e) {
 
   // ===== PUSH (debounced) =====
   function schedulePush(key, value){
-    pendingFiles[key + ".json"] = { content: String(value == null ? "" : value) };
-    // Always update meta on every push
-    pendingFiles[META_FILE] = { content: JSON.stringify({
+    const fileEntry = { content: String(value == null ? "" : value) };
+    const metaEntry = { content: JSON.stringify({
       lastUpdated: Date.now(),
       lastDevice: getDeviceName(),
       lastKey: key
     }) };
+
+    // If initial pull not done yet, queue locally — don't push to cloud
+    // This prevents local defaults / migrations overwriting valid cloud data
+    if (!initialPullDone) {
+      startupQueue[key + ".json"] = fileEntry;
+      startupQueue[META_FILE] = metaEntry;
+      return;
+    }
+
+    pendingFiles[key + ".json"] = fileEntry;
+    pendingFiles[META_FILE] = metaEntry;
     setBadge("Saving...", "#f59e0b");
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(doPush, DEBOUNCE_MS);
@@ -6750,9 +6765,10 @@ document.addEventListener('keydown', function(e) {
     try { if (typeof loadEmployees === "function") loadEmployees(); } catch(e){}
     try { if (typeof loadEvents === "function") loadEvents(); } catch(e){}
     try { if (typeof loadAdvances === "function") loadAdvances(); } catch(e){}
-    try { if (typeof loadRates === "function") loadRates(); } catch(e){}
+    try { if (typeof loadRateCards === "function") loadRateCards(); } catch(e){}  // was wrongly "loadRates" — fixed
     try { if (typeof loadExtras === "function") loadExtras(); } catch(e){}
     try { if (typeof updateDashboard === "function") updateDashboard(); } catch(e){}
+    try { if (typeof updateEventEmployeeSelect === "function") updateEventEmployeeSelect(); } catch(e){}
   }
 
   // ===== INTERCEPT localStorage writes =====
@@ -6890,18 +6906,37 @@ document.addEventListener('keydown', function(e) {
   async function boot(){
     try {
       await findOrCreateGist();
-      // Initial pull so this device starts in sync with cloud
+      // Initial pull — cloud data is authoritative on fresh device
       await pollNow();
-      // Make today's backup if needed (after we know what already exists)
+
+      // Pull done — unlock pushes
+      initialPullDone = true;
+
+      // Flush anything that was queued during startup (e.g. offline edits
+      // made before cloud was reachable). Cloud data already applied above,
+      // so startupQueue will only contain genuinely newer local writes.
+      if (Object.keys(startupQueue).length) {
+        Object.assign(pendingFiles, startupQueue);
+        startupQueue = {};
+        setTimeout(doPush, 300);
+      }
+
+      // Run one-time migration AFTER cloud pull so we migrate the real data
+      if (typeof window._postPullMigration === "function") {
+        window._postPullMigration();
+      }
+
+      // Make today's backup if needed
       ensureDailyBackup();
       // Background polling loop
       setInterval(pollNow, POLL_MS);
-      // Hourly backup check (in case the app stays open across midnight)
       setInterval(ensureDailyBackup, 60 * 60 * 1000);
       console.log("GitHub Gist sync ready. Gist:", gistId);
     } catch(err){
       console.error("Sync boot failed", err);
       setBadge("Auth Failed", "#ef4444");
+      // Even if sync fails, allow pushes so local edits aren't lost
+      initialPullDone = true;
     }
   }
   if (document.readyState === "loading") {
