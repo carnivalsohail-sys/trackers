@@ -941,14 +941,45 @@ const initialData=[{"eventDate":"2025-04-02","clientName":"UNIVERSAL SOMPO GENER
 
 initialData.forEach(p=>{p.clientName=(p.clientName||'').trim();p.phone=(p.phone||'').trim()});
 let payments=JSON.parse(JSON.stringify(initialData));
-payments.forEach(p=>{
-  p.balance=parseFloat(p.invoiceAmount||0)-parseFloat(p.amountReceived||0);
-  if(isNaN(p.balance))p.balance=0;
-});
+payments.forEach(p=>{ recalcBalance(p); });
 let filteredPayments=[...payments];
 let activeFilterCard='all';
 let sortColumn='eventDate';
 let sortDirection='desc';
+
+// ─── TDS-AWARE BALANCE RECALC ───────────────────────────────────────────────
+// Returns the total TDS amount that has been written off for a payment.
+// Prefers the persisted p.tdsWriteOff field; falls back to parsing legacy
+// "TDS deducted ₹X" notes so older records (written before tdsWriteOff
+// existed) are auto-migrated without losing their settled status.
+function getTdsWriteOff(p){
+  if(p.tdsWriteOff !== undefined && p.tdsWriteOff !== null && p.tdsWriteOff !== ''){
+    const v=parseFloat(p.tdsWriteOff);
+    if(!isNaN(v)) return v;
+  }
+  let total=0;
+  if(p.notes){
+    const re=/TDS deducted ₹?\s*([\d,]+(?:\.\d+)?)/gi;
+    let m;
+    while((m=re.exec(p.notes))!==null){
+      const v=parseFloat(m[1].replace(/,/g,''));
+      if(!isNaN(v)) total+=v;
+    }
+  }
+  return total;
+}
+
+// Recomputes p.balance as invoice - received - tdsWriteOff (never negative),
+// and persists an auto-detected tdsWriteOff so future loads stay consistent.
+function recalcBalance(p){
+  const tds=getTdsWriteOff(p);
+  if((p.tdsWriteOff===undefined||p.tdsWriteOff===null||p.tdsWriteOff==='')&&tds>0){
+    p.tdsWriteOff=tds;
+  }
+  let bal=parseFloat(p.invoiceAmount||0)-parseFloat(p.amountReceived||0)-tds;
+  if(isNaN(bal)||bal<0) bal=0;
+  p.balance=bal;
+}
 
 // ─── STORAGE: SAVE & LOAD ─────────────────────────────────────────────────
 function savePaymentsToStorage(){
@@ -967,8 +998,7 @@ function loadPaymentsFromStorage(){
     loaded.forEach(p => {
       p.clientName = (p.clientName||'').trim();
       p.phone = (p.phone||'').trim();
-      p.balance = parseFloat(p.invoiceAmount||0) - parseFloat(p.amountReceived||0);
-      if(isNaN(p.balance)) p.balance = 0;
+      recalcBalance(p);
       payments.push(p);
     });
     // Use syncRefreshUI so cloud-triggered reloads don't reset search inputs or scroll
@@ -3956,10 +3986,12 @@ window.confirmPayTDS = function(idx, invoiceAmt, balAmt) {
   }
 
   p.amountReceived = parseFloat(p.amountReceived) + amt;
-  // When TDS is deducted, the remaining gap is a tax credit — invoice is fully settled
-  p.balance        = tdsDeducted > 0.01
-                       ? 0
-                       : parseFloat(p.invoiceAmount) - p.amountReceived;
+  // When TDS is deducted, the remaining gap is a tax credit — write it off so
+  // the invoice is treated as fully settled (persisted, survives reloads/sync)
+  if (tdsDeducted > 0.01) {
+    p.tdsWriteOff = (parseFloat(p.tdsWriteOff) || 0) + tdsDeducted;
+  }
+  recalcBalance(p);
   p.status         = calcStatus(p).status;   // ← sync stored status after payment
   const nr = [p.reference, document.getElementById('payDate').value + ' ' + method + (ref ? ' ' + ref : '')].filter(Boolean).join(' | ');
   p.reference = nr;
