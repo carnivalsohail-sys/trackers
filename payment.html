@@ -979,6 +979,9 @@ function recalcBalance(p){
   let bal=parseFloat(p.invoiceAmount||0)-parseFloat(p.amountReceived||0)-tds;
   if(isNaN(bal)||bal<0) bal=0;
   p.balance=bal;
+  // Keep the persisted status field in sync too — some views (ledger, import
+  // preview) read p.status directly instead of calling calcStatus().
+  p.status=calcStatus(p).status;
 }
 
 // ─── STORAGE: SAVE & LOAD ─────────────────────────────────────────────────
