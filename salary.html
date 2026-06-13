@@ -2846,20 +2846,46 @@
         // Advance Functions
         function updateAdvanceEmployeeSelect() {
             const select = document.getElementById('advanceEmployee');
+            const currentVal = select.value;
             select.innerHTML = '<option value="">Select Employee</option>';
-            employees.forEach((emp, index) => {
-                select.innerHTML += `<option value="${index}">${emp.name} (${categoryLabel(emp.category)})</option>`;
+
+            const groups = [
+                { cat: 'operator',      label: 'ALL OPERATORS' },
+                { cat: 'semi-operator', label: 'ALL SEMI OP' },
+                { cat: 'helper',        label: 'ALL HELPERS' },
+                { cat: 'sashi',         label: '💛 SASHI COMMISSION' },
+                { cat: 'shiv',          label: '💜 SHIV COMMISSION' },
+            ];
+
+            groups.forEach(g => {
+                const indices = employees
+                    .map((emp, index) => ({ emp, index }))
+                    .filter(x => x.emp.category === g.cat);
+                if (!indices.length) return;
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = g.label;
+                indices.forEach(x => {
+                    const o = document.createElement('option');
+                    o.value = x.index;
+                    o.textContent = `${x.emp.name} (${categoryLabel(x.emp.category)})`;
+                    optgroup.appendChild(o);
+                });
+                select.appendChild(optgroup);
             });
+
+            // Restore selection if still valid
+            if (currentVal !== '') select.value = currentVal;
+
             // Also populate ledger filter
             const ledgerFilter = document.getElementById('ledgerFilter');
             if (ledgerFilter) {
-                const currentVal = ledgerFilter.value;
+                const currentFilterVal = ledgerFilter.value;
                 ledgerFilter.innerHTML = '<option value="all">-- All Employees --</option>';
                 employees.forEach(emp => {
                     ledgerFilter.innerHTML += `<option value="${emp.id}">${emp.name}</option>`;
                 });
                 // Restore selection if possible
-                if (currentVal && currentVal !== 'all') ledgerFilter.value = currentVal;
+                if (currentFilterVal && currentFilterVal !== 'all') ledgerFilter.value = currentFilterVal;
             }
         }
 
