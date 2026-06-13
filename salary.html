@@ -3007,6 +3007,7 @@
                 const issued = filtered.filter(a => a.type === 'loan_issue').reduce((s, a) => s + (Number(a.amount)||0), 0);
                 const repaid = filtered.filter(a => a.type === 'loan_repay').reduce((s, a) => s + (Number(a.amount)||0), 0);
                 const acc = filtered.filter(a => a.type === 'acc').reduce((s, a) => s + (Number(a.balance)||0), 0);
+                const travelTotal = filtered.filter(a => a.type === 'trv').reduce((s, a) => s + (Number(a.amount)||0), 0);
                 const loanBalance = issued - repaid;
 
                 // Loan amortization info
@@ -3040,8 +3041,21 @@
                         <div style="background:#f3e5f5; padding:8px 12px; border-radius:8px; border-left:4px solid #9c27b0;">
                             <strong style="color:#0d1b2a; font-size:11px;">On Account: ₹${acc.toLocaleString()}</strong>
                         </div>
+                        <div style="background:#e0f7fa; padding:8px 12px; border-radius:8px; border-left:4px solid #00bcd4;">
+                            <strong style="color:#0d1b2a; font-size:11px;">Total Transport: ₹${travelTotal.toLocaleString()}</strong>
+                        </div>
                     </div>
                     ${amortHTML}`;
+            } else if (filterId === 'all' && summaryDiv) {
+                // All-employees view: show overall transport total only
+                const travelTotalAll = filtered.filter(a => a.type === 'trv').reduce((s, a) => s + (Number(a.amount)||0), 0);
+                summaryDiv.style.display = 'block';
+                summaryDiv.innerHTML = `
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <div style="background:#e0f7fa; padding:8px 12px; border-radius:8px; border-left:4px solid #00bcd4;">
+                            <strong style="color:#0d1b2a; font-size:11px;">Total Transport (All Employees): ₹${travelTotalAll.toLocaleString()}</strong>
+                        </div>
+                    </div>`;
             } else if (summaryDiv) {
                 summaryDiv.style.display = 'none';
             }
