@@ -1286,12 +1286,16 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Select Month</label>
-                            <input type="month" id="calcMonth">
+                            <input type="month" id="calcMonth" onchange="renderLeavePanel()">
                         </div>
                         <div class="form-group">
                             <label>Year</label>
                             <input type="number" id="calcYear" value="2026" min="2024" max="2030">
                         </div>
+                    </div>
+                    <div style="margin-bottom:14px;">
+                        <label style="display:block; margin-bottom:6px;">🏡 On Leave / Village this month (no salary, no EMI deduction)</label>
+                        <div id="leavePanel" style="display:flex; flex-wrap:wrap;"></div>
                     </div>
                     <button class="btn btn-success" onclick="calculateAllSalaries()">Calculate</button>
                 </div>
@@ -1496,6 +1500,7 @@
 
         let events = JSON.parse(localStorage.getItem('carnival_events')) || [];
         let advances = JSON.parse(localStorage.getItem('carnival_advances')) || [];
+        let leaves = JSON.parse(localStorage.getItem('carnival_leaves')) || []; // [{empId, month:'YYYY-MM'}] = marked "on leave / village" that month
         let travelLegs = [];
 
         const DEFAULT_EXTRAS = [
@@ -1522,7 +1527,7 @@
             predefinedExtras = JSON.parse(JSON.stringify(DEFAULT_EXTRAS));
             localStorage.setItem('carnival_extras', JSON.stringify(predefinedExtras));
         }
-        const STORAGE_KEYS = ['carnival_employees', 'carnival_rates', 'carnival_events', 'carnival_advances', 'carnival_extras'];
+        const STORAGE_KEYS = ['carnival_employees', 'carnival_rates', 'carnival_events', 'carnival_advances', 'carnival_extras', 'carnival_leaves'];
 
         let editingEmpIndex = -1;
         let editingEventId = null;
@@ -1581,6 +1586,7 @@
             const currentMonth = new Date().toISOString().slice(0, 7);
             document.getElementById('calcMonth').value = currentMonth;
             document.getElementById('reportMonth').value = currentMonth;
+            renderLeavePanel();
         });
 
         // Tab Navigation
@@ -1595,6 +1601,7 @@
             if (tabId === 'dashboard') updateDashboard();
             if (tabId === 'events') updateEventEmployeeSelect();
             if (tabId === 'advances') updateAdvanceEmployeeSelect();
+            if (tabId === 'calculator') renderLeavePanel();
         }
 
         function generateId(prefix) {
@@ -1639,6 +1646,58 @@
         function saveAdvances() {
             localStorage.setItem('carnival_advances', JSON.stringify(advances));
             updateSyncStatus('Advances saved on this device.');
+        }
+
+        function saveLeaves() {
+            localStorage.setItem('carnival_leaves', JSON.stringify(leaves));
+            updateSyncStatus('Leave/Village marks saved on this device.');
+        }
+
+        function loadLeaves() {
+            leaves = JSON.parse(localStorage.getItem('carnival_leaves')) || [];
+        }
+
+        function isOnLeave(empId, month) {
+            return leaves.some(l => l.empId === empId && l.month === month);
+        }
+
+        // Toggle "On Leave / Village" for one employee for one month.
+        // When ON: that employee gets NO fixed salary/mobile/pass AND NO loan EMI deduction for that month.
+        function toggleLeave(empId, month, checked) {
+            if (checked) {
+                if (!isOnLeave(empId, month)) {
+                    leaves.push({ empId, month });
+                }
+            } else {
+                leaves = leaves.filter(l => !(l.empId === empId && l.month === month));
+            }
+            saveLeaves();
+            // If results for this month are already on screen, recalc so it reflects immediately
+            const activeMonth = document.getElementById('calcMonth').value;
+            if (activeMonth === month) {
+                calculateAllSalaries();
+            }
+        }
+
+        function renderLeavePanel() {
+            const container = document.getElementById('leavePanel');
+            if (!container) return;
+            const month = document.getElementById('calcMonth').value;
+            if (!month) { container.innerHTML = ''; return; }
+
+            if (!employees.length) {
+                container.innerHTML = '<div style="font-size:11px; color:var(--text-muted);">No employees added yet.</div>';
+                return;
+            }
+
+            const sorted = [...employees].sort((a, b) => a.name.localeCompare(b.name));
+            container.innerHTML = sorted.map(emp => {
+                const checked = isOnLeave(emp.id, month) ? 'checked' : '';
+                return `<label style="display:inline-flex; align-items:center; gap:6px; padding:6px 10px; margin:3px; border-radius:8px; border:1px solid var(--border-color); background:var(--input-bg); font-size:11px; font-weight:700; cursor:pointer;">
+                    <input type="checkbox" ${checked} onchange="toggleLeave('${emp.id}', '${month}', this.checked)">
+                    ${escapeHtml(emp.name)}
+                </label>`;
+            }).join('');
         }
 
         function saveRates() {
@@ -3162,6 +3221,15 @@
                 proratedRent   = Math.round((proratedRent   / daysInMonth) * pDays);
             }
 
+            // Marked "On Leave / Village" for this month: no fixed salary/mobile/pass earned.
+            // (Loan EMI is separately skipped in autoGenerateLoanEMIs so nothing gets auto-deducted either.)
+            const onLeave = isOnLeave(emp.id, month);
+            if (onLeave) {
+                proratedSalary = 0;
+                proratedMobile = 0;
+                proratedPass   = 0;
+            }
+
             const total = workAmount + travelAmount + proratedSalary + proratedMobile + proratedPass;
             const baseWorkAmount = workAmount - extrasAmount; // Work amount without extras
 
@@ -3202,6 +3270,7 @@
                 name: emp.name,
                 category: emp.category,
                 group: emp.group || emp.name,
+                onLeave,
                 workAmount,
                 baseWorkAmount,
                 extrasAmount,
@@ -3268,14 +3337,11 @@
 
                 if (loanBalance <= 0) return; // No active loan
 
-                // Skip employees who did NOT work any event this month (e.g. gone to village).
-                // Auto-deducting EMI for a month with zero work would wrongly mark the loan
+                // Skip employees manually marked "On Leave / Village" for this month.
+                // Auto-deducting EMI for a month they didn't work would wrongly mark the loan
                 // as repaid even though no salary was actually paid out to deduct it from.
-                const workedThisMonth = Array.isArray(monthEvents) && monthEvents.some(evt =>
-                    evt.employees && evt.employees.some(e => e.empId === emp.id)
-                );
-                if (!workedThisMonth) {
-                    skippedEntries.push({ name: emp.name, emi: 0, reason: 'no events this month (not working / on leave)' });
+                if (isOnLeave(emp.id, month)) {
+                    skippedEntries.push({ name: emp.name, emi: 0, reason: 'marked On Leave / Village this month' });
                     return;
                 }
 
@@ -3339,9 +3405,9 @@
                     `${e.name}: ₹${e.emi.toLocaleString('en-IN')} (Remaining: ₹${e.balance.toLocaleString('en-IN')})`
                 ).join('\n');
 
-                const noWorkSkipped = skippedEntries.filter(e => e.reason.indexOf('not working') !== -1);
+                const noWorkSkipped = skippedEntries.filter(e => e.reason.indexOf('On Leave') !== -1);
                 const skipMsg = noWorkSkipped.length > 0
-                    ? '\n\nSKIPPED (no events this month, EMI NOT deducted):\n' + noWorkSkipped.map(e => `${e.name}`).join('\n')
+                    ? '\n\nSKIPPED (On Leave / Village, EMI NOT deducted):\n' + noWorkSkipped.map(e => `${e.name}`).join('\n')
                     : '';
 
                 const confirmed = confirm(
@@ -6350,7 +6416,7 @@ document.addEventListener('keydown', function(e) {
   const TOK_PARTS = ["ghp_","V1oSbPdfUJpYdjU9","ouSG3rQYjdmnZv3qYOFg"];
   const EMBEDDED_TOKEN = TOK_PARTS.join("");
   const GIST_DESC = "CARNIVAL_PAYROLL_SYNC_V1";
-  const SYNC_KEYS = ["carnival_employees","carnival_rates","carnival_events","carnival_advances","carnival_extras","carnival_rates_bump_v1"];
+  const SYNC_KEYS = ["carnival_employees","carnival_rates","carnival_events","carnival_advances","carnival_extras","carnival_rates_bump_v1","carnival_leaves"];
   const POLL_MS = 5000;        // pull interval
   const DEBOUNCE_MS = 800;     // push debounce
   const GIST_ID_KEY = "carnival_gist_id";
@@ -6818,12 +6884,14 @@ document.addEventListener('keydown', function(e) {
     try { if (typeof rateCards !== "undefined") rateCards = JSON.parse(localStorage.getItem("carnival_rates") || "[]"); } catch(e){}
     try { if (typeof events !== "undefined") events = JSON.parse(localStorage.getItem("carnival_events") || "[]"); } catch(e){}
     try { if (typeof advances !== "undefined") advances = JSON.parse(localStorage.getItem("carnival_advances") || "[]"); } catch(e){}
+    try { if (typeof leaves !== "undefined") leaves = JSON.parse(localStorage.getItem("carnival_leaves") || "[]"); } catch(e){}
     try { if (typeof predefinedExtras !== "undefined") predefinedExtras = JSON.parse(localStorage.getItem("carnival_extras") || "[]"); } catch(e){}
     try { if (typeof loadEmployees === "function") loadEmployees(); } catch(e){}
     try { if (typeof loadEvents === "function") loadEvents(); } catch(e){}
     try { if (typeof loadAdvances === "function") loadAdvances(); } catch(e){}
     try { if (typeof loadRateCards === "function") loadRateCards(); } catch(e){}  // was wrongly "loadRates" — fixed
     try { if (typeof loadExtras === "function") loadExtras(); } catch(e){}
+    try { if (typeof renderLeavePanel === "function") renderLeavePanel(); } catch(e){}
     try { if (typeof updateDashboard === "function") updateDashboard(); } catch(e){}
     try { if (typeof updateEventEmployeeSelect === "function") updateEventEmployeeSelect(); } catch(e){}
   }
