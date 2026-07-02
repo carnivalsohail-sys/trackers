@@ -3243,7 +3243,7 @@
             });
 
             // ===== AUTO EMI: Create missing loan_repay entries for employees with active loans =====
-            autoGenerateLoanEMIs(month);
+            autoGenerateLoanEMIs(month, monthEvents);
 
             const salaryData = employees.map(emp => buildEmployeeMonthTotals(emp, monthEvents, month));
             displayPivotSalaryResults(monthEvents, salaryData);
@@ -3252,7 +3252,7 @@
         // ===== AUTO EMI DEDUCTION =====
         // When salary is calculated, automatically create loan_repay entries
         // for employees who have active loans (loan_balance > 0) but no repayment this month.
-        function autoGenerateLoanEMIs(month) {
+        function autoGenerateLoanEMIs(month, monthEvents) {
             let newEntries = [];
             let skippedEntries = [];
 
@@ -3267,6 +3267,17 @@
                 const loanBalance = loanIssued - loanRepaid;
 
                 if (loanBalance <= 0) return; // No active loan
+
+                // Skip employees who did NOT work any event this month (e.g. gone to village).
+                // Auto-deducting EMI for a month with zero work would wrongly mark the loan
+                // as repaid even though no salary was actually paid out to deduct it from.
+                const workedThisMonth = Array.isArray(monthEvents) && monthEvents.some(evt =>
+                    evt.employees && evt.employees.some(e => e.empId === emp.id)
+                );
+                if (!workedThisMonth) {
+                    skippedEntries.push({ name: emp.name, emi: 0, reason: 'no events this month (not working / on leave)' });
+                    return;
+                }
 
                 // Check if there's already a loan_repay entry this month
                 const existingRepay = advances
@@ -3328,8 +3339,14 @@
                     `${e.name}: ₹${e.emi.toLocaleString('en-IN')} (Remaining: ₹${e.balance.toLocaleString('en-IN')})`
                 ).join('\n');
 
+                const noWorkSkipped = skippedEntries.filter(e => e.reason.indexOf('not working') !== -1);
+                const skipMsg = noWorkSkipped.length > 0
+                    ? '\n\nSKIPPED (no events this month, EMI NOT deducted):\n' + noWorkSkipped.map(e => `${e.name}`).join('\n')
+                    : '';
+
                 const confirmed = confirm(
                     'AUTO EMI DEDUCTIONS GENERATED:\n\n' + msg +
+                    skipMsg +
                     '\n\nThese have been added as loan repayments for this month. Click OK to proceed or Cancel to remove them.'
                 );
 
