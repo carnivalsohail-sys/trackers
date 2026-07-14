@@ -336,6 +336,10 @@
         .employee-chip.shiv { border-color: var(--shiv-bg); background: rgba(180,167,214,0.15); color: var(--text-main); }
         .employee-chip.shiv.selected { background: var(--shiv-bg); color: var(--shiv-text); box-shadow: 0 8px 25px rgba(180,167,214,0.5); }
 
+        /* Rotation System — highlights whose turn is next per category */
+        .employee-chip.next-turn { outline: 2px dashed #10b981; outline-offset: 2px; }
+        .employee-chip .turn-badge { margin-right: 4px; font-size: 11px; }
+
         [data-theme="light"] .employee-select { background: rgba(0,0,0,0.02); }
 
         /* BIG Report Sections */
@@ -2472,26 +2476,72 @@
             });
         }
 
+        // ROTATION SYSTEM: for a category, map empId -> {lastDate, count}
+        // derived from existing event history (no new storage needed).
+        function getRotationStats(category) {
+            const stats = {};
+            events.forEach(evt => {
+                (evt.employees || []).forEach(ee => {
+                    if (ee.category !== category) return;
+                    if (!stats[ee.empId]) stats[ee.empId] = { lastDate: null, count: 0 };
+                    stats[ee.empId].count++;
+                    if (!stats[ee.empId].lastDate || evt.date > stats[ee.empId].lastDate) {
+                        stats[ee.empId].lastDate = evt.date;
+                    }
+                });
+            });
+            return stats;
+        }
+
         function updateEventEmployeeSelect() {
             const container = document.getElementById('eventEmployeeSelect');
             container.innerHTML = '';
 
-            // Sort employees by category
-            const ops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'operator');
-            const sops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'semi-operator');
-            const helpers = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'helper');
+            const rotationStats = {
+                'operator': getRotationStats('operator'),
+                'semi-operator': getRotationStats('semi-operator'),
+                'helper': getRotationStats('helper')
+            };
 
-            const renderGroup = (group, title) => {
+            // Never-assigned employees are treated as most overdue (go first),
+            // then oldest last-assigned date, then fewest total turns as tiebreak.
+            const sortByRotation = (list, cat) => {
+                const stats = rotationStats[cat] || {};
+                return [...list].sort((a, b) => {
+                    const sa = stats[a.emp.id] || { lastDate: null, count: 0 };
+                    const sb = stats[b.emp.id] || { lastDate: null, count: 0 };
+                    if (!sa.lastDate && sb.lastDate) return -1;
+                    if (sa.lastDate && !sb.lastDate) return 1;
+                    if ((sa.lastDate || '') !== (sb.lastDate || '')) return (sa.lastDate || '').localeCompare(sb.lastDate || '');
+                    return sa.count - sb.count;
+                });
+            };
+
+            // Sort employees by category
+            let ops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'operator');
+            let sops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'semi-operator');
+            let helpers = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'helper');
+
+            ops = sortByRotation(ops, 'operator');
+            sops = sortByRotation(sops, 'semi-operator');
+            helpers = sortByRotation(helpers, 'helper');
+
+            const renderGroup = (group, title, cat) => {
                 if (!group.length) return '';
+                const stats = rotationStats[cat] || {};
                 let html = `<div style="width: 100%; font-weight: 800; margin-top: 6px; margin-bottom: 4px; color: var(--accent-primary); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">${title}</div>`;
-                group.forEach(e => {
+                group.forEach((e, gi) => {
                     const catClass = e.emp.category || "helper";
-                    html += `<div class="employee-chip ${catClass}" data-index="${e.i}" onclick="toggleEmployeeChip(this)">${e.emp.name}</div>`;
+                    const s = stats[e.emp.id] || { lastDate: null, count: 0 };
+                    const isNext = gi === 0;
+                    const lastLabel = s.lastDate ? `Last event: ${s.lastDate}` : 'Never assigned yet';
+                    const badge = isNext ? `<span class="turn-badge" title="Next in rotation">⏭️</span>` : '';
+                    html += `<div class="employee-chip ${catClass}${isNext ? ' next-turn' : ''}" data-index="${e.i}" onclick="toggleEmployeeChip(this)" title="${lastLabel} · ${s.count} event(s) total">${badge}${e.emp.name}</div>`;
                 });
                 return html;
             };
 
-            container.innerHTML = renderGroup(ops, 'Operators') + renderGroup(sops, 'Semi-Operators') + renderGroup(helpers, 'Helpers');
+            container.innerHTML = renderGroup(ops, 'Operators', 'operator') + renderGroup(sops, 'Semi-Operators', 'semi-operator') + renderGroup(helpers, 'Helpers', 'helper');
             updateCommissionBox();
             renderEventEmployeeAdjustments();
         }
@@ -6857,7 +6907,9 @@ document.addEventListener('keydown', function(e) {
         // Truncated content (large file): fetch raw
         if (f.truncated && f.raw_url) {
           // fire-and-forget refetch on next tick
-          fetch(f.raw_url).then(r => r.text()).then(txt => applyCloudValue(key, txt)).catch(()=>{});
+          fetch(f.raw_url).then(r => r.text()).then(txt => {
+            if (applyCloudValue(key, txt)) refreshUI();
+          }).catch(()=>{});
           return;
         }
         if (typeof content !== "string") return;
