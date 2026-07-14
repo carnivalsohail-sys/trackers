@@ -816,6 +816,12 @@
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
+                    <h3>🔄 Rotation Priority (Next Turn Order)</h3>
+                    <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Numbers show who's due next in each category. Anyone ticked "On Leave / Village" for this month is hidden until the tick is removed in Salary Calc.</p>
+                    <div id="rotationPriorityPanel" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px;"></div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
                     <h3>📋 Recent Events Ledger</h3>
                     <div id="recentEventsList"></div>
                 </div>
@@ -968,7 +974,7 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Event Date</label>
-                            <input type="date" id="eventDate">
+                            <input type="date" id="eventDate" onchange="updateEventEmployeeSelect()">
                         </div>
                         <div class="form-group">
                             <label>Venue/Location</label>
@@ -1676,6 +1682,9 @@
                 leaves = leaves.filter(l => !(l.empId === empId && l.month === month));
             }
             saveLeaves();
+            // Reflect the change immediately in the rotation picker + dashboard
+            if (typeof updateEventEmployeeSelect === 'function') updateEventEmployeeSelect();
+            if (typeof updateDashboard === 'function') updateDashboard();
             // If results for this month are already on screen, recalc so it reflects immediately
             const activeMonth = document.getElementById('calcMonth').value;
             if (activeMonth === month) {
@@ -2495,7 +2504,21 @@
 
         function updateEventEmployeeSelect() {
             const container = document.getElementById('eventEmployeeSelect');
+
+            // Preserve currently selected chips (by employee index) before rebuilding,
+            // so re-rendering (e.g. when the event date changes) doesn't lose picks.
+            const prevSelected = new Set(
+                Array.from(container.querySelectorAll('.employee-chip.selected'))
+                    .map(chip => chip.dataset.index)
+            );
+
             container.innerHTML = '';
+
+            // Employees ticked "On Leave / Village" for this event's month are hidden
+            // from the rotation entirely — they stay hidden until the tick is removed
+            // in the Salary Calc tab for that month.
+            const dateVal = document.getElementById('eventDate')?.value || '';
+            const month = dateVal ? dateVal.slice(0, 7) : new Date().toISOString().slice(0, 7);
 
             const rotationStats = {
                 'operator': getRotationStats('operator'),
@@ -2517,10 +2540,10 @@
                 });
             };
 
-            // Sort employees by category
-            let ops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'operator');
-            let sops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'semi-operator');
-            let helpers = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'helper');
+            // Sort employees by category, excluding anyone on leave/village this month
+            let ops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'operator' && !isOnLeave(e.emp.id, month));
+            let sops = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'semi-operator' && !isOnLeave(e.emp.id, month));
+            let helpers = employees.map((emp, i) => ({emp, i})).filter(e => e.emp.category === 'helper' && !isOnLeave(e.emp.id, month));
 
             ops = sortByRotation(ops, 'operator');
             sops = sortByRotation(sops, 'semi-operator');
@@ -2536,7 +2559,8 @@
                     const isNext = gi === 0;
                     const lastLabel = s.lastDate ? `Last event: ${s.lastDate}` : 'Never assigned yet';
                     const badge = isNext ? `<span class="turn-badge" title="Next in rotation">⏭️</span>` : '';
-                    html += `<div class="employee-chip ${catClass}${isNext ? ' next-turn' : ''}" data-index="${e.i}" onclick="toggleEmployeeChip(this)" title="${lastLabel} · ${s.count} event(s) total">${badge}${e.emp.name}</div>`;
+                    const selectedClass = prevSelected.has(String(e.i)) ? ' selected' : '';
+                    html += `<div class="employee-chip ${catClass}${isNext ? ' next-turn' : ''}${selectedClass}" data-index="${e.i}" onclick="toggleEmployeeChip(this)" title="${lastLabel} · ${s.count} event(s) total">${badge}${e.emp.name}</div>`;
                 });
                 return html;
             };
@@ -4553,6 +4577,59 @@ ${travelTotalSheetHTML}
             const salaryData = employees.map(emp => buildEmployeeMonthTotals(emp, monthEvents, currentMonthStr));
             const totalPending = salaryData.reduce((sum, d) => sum + d.final, 0);
             document.getElementById('statDisbursed').textContent = '₹' + totalPending.toLocaleString();
+
+            renderRotationPriority();
+        }
+
+        // Numbered 1,2,3,4... rotation order per category, shown directly on the
+        // Dashboard. Anyone ticked "On Leave / Village" for the current month is
+        // left out entirely until that tick is removed in Salary Calc.
+        function renderRotationPriority() {
+            const panel = document.getElementById('rotationPriorityPanel');
+            if (!panel) return;
+
+            const month = new Date().toISOString().slice(0, 7);
+
+            const rotationStats = {
+                'operator': getRotationStats('operator'),
+                'semi-operator': getRotationStats('semi-operator'),
+                'helper': getRotationStats('helper')
+            };
+
+            const buildList = (cat, label) => {
+                const stats = rotationStats[cat] || {};
+                let list = employees
+                    .map((emp, i) => ({ emp, i }))
+                    .filter(e => e.emp.category === cat && !isOnLeave(e.emp.id, month));
+
+                list.sort((a, b) => {
+                    const sa = stats[a.emp.id] || { lastDate: null, count: 0 };
+                    const sb = stats[b.emp.id] || { lastDate: null, count: 0 };
+                    if (!sa.lastDate && sb.lastDate) return -1;
+                    if (sa.lastDate && !sb.lastDate) return 1;
+                    if ((sa.lastDate || '') !== (sb.lastDate || '')) return (sa.lastDate || '').localeCompare(sb.lastDate || '');
+                    return sa.count - sb.count;
+                });
+
+                const heading = `<h4 style="margin:0 0 8px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--accent-primary);">${label}</h4>`;
+
+                if (!list.length) {
+                    return `<div>${heading}<p style="font-size:12px; color:var(--text-muted);">None available (all on leave/village or none added).</p></div>`;
+                }
+
+                const rows = list.map((e, idx) => {
+                    const s = stats[e.emp.id] || { lastDate: null, count: 0 };
+                    const lastLabel = s.lastDate ? s.lastDate : 'Never';
+                    return `<div style="display:flex; justify-content:space-between; gap:8px; padding:4px 0; border-bottom:1px solid var(--border-color); font-size:12px;">
+                        <span><strong>${idx + 1}.</strong> ${escapeHtml(e.emp.name)}</span>
+                        <span style="color:var(--text-muted); white-space:nowrap;">${lastLabel}</span>
+                    </div>`;
+                }).join('');
+
+                return `<div>${heading}${rows}</div>`;
+            };
+
+            panel.innerHTML = buildList('operator', 'Operators') + buildList('semi-operator', 'Semi-Operators') + buildList('helper', 'Helpers');
         }
 
         // Utilities
