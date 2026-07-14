@@ -1184,7 +1184,7 @@ function addEntry() {
   Ps(d);
   toast(ob ? `Opening Balance ${fn(ob)} saved` : crd>0 ? `Credit ${fn(crd)} added` : `Debit ${fn(deb)} added`,'ok');
   ['mdeb','mcr','ms','mdet','mob','mcb'].forEach(id=>document.getElementById(id).value='');
-  renderM(); upChip(); rfDL();
+  renderM(); renderD(); upChip(); rfDL();
 }
 
 function renderM() {
@@ -1323,7 +1323,7 @@ function renderD() {
   const thisM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   const md  = d.filter(r=>r.date.startsWith(thisM));
 
-  document.getElementById('s1').textContent = new Set(d.map(r=>r.staff).filter(Boolean)).size;
+  document.getElementById('s1').textContent = new Set(d.filter(r=>r.staff&&r.debit).map(r=>r.staff)).size;
   document.getElementById('s2').textContent = fn(d.reduce((s,r)=>s+(r.debit||0),0));
   document.getElementById('s3').textContent = fn(d.reduce((s,r)=>s+(r.credit||0),0));
 
@@ -1332,6 +1332,9 @@ function renderD() {
     document.getElementById('s4').textContent = fn(latestBal);
     const latestDate = d.filter(r=>r.ob!=null||r.debit||r.credit).sort((a,b)=>b.date.localeCompare(a.date));
     if (latestDate.length) document.getElementById('s4d').textContent = fd(latestDate[0].date);
+  } else {
+    document.getElementById('s4').textContent = '₹0';
+    document.getElementById('s4d').textContent = '—';
   }
 
   const mDeb = md.reduce((s,r)=>s+(r.debit||0),0);
@@ -1778,6 +1781,9 @@ window.saveParsed = function() {
   }
 
   clearP();
+  renderD();
+  renderL();
+  renderM();
   upChip();
   rfDL();
 };
