@@ -2487,13 +2487,20 @@
 
         // ROTATION SYSTEM: for a category, map empId -> {lastDate, count}
         // derived from existing event history (no new storage needed).
+        // These rate card codes are Shiv-only setups — the operator/semi/helper
+        // amounts on them are just reference figures, not real assigned turns.
+        // Skip them entirely in rotation counting for every category.
+        const ROTATION_EXCLUDE_RATECODES = ['SHIVDJ16', 'SHIVDJ25'];
+
         function getRotationStats(category) {
             const stats = {};
             events.forEach(evt => {
+                if (ROTATION_EXCLUDE_RATECODES.includes(evt.category)) return;
                 (evt.employees || []).forEach(ee => {
                     if (ee.category !== category) return;
-                    if (!stats[ee.empId]) stats[ee.empId] = { lastDate: null, count: 0 };
+                    if (!stats[ee.empId]) stats[ee.empId] = { lastDate: null, count: 0, totalBase: 0 };
                     stats[ee.empId].count++;
+                    stats[ee.empId].totalBase += Number(ee.baseAmount) || 0;
                     if (!stats[ee.empId].lastDate || evt.date > stats[ee.empId].lastDate) {
                         stats[ee.empId].lastDate = evt.date;
                     }
@@ -2531,8 +2538,8 @@
             const sortByRotation = (list, cat) => {
                 const stats = rotationStats[cat] || {};
                 return [...list].sort((a, b) => {
-                    const sa = stats[a.emp.id] || { lastDate: null, count: 0 };
-                    const sb = stats[b.emp.id] || { lastDate: null, count: 0 };
+                    const sa = stats[a.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
+                    const sb = stats[b.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
                     if (!sa.lastDate && sb.lastDate) return -1;
                     if (sa.lastDate && !sb.lastDate) return 1;
                     if ((sa.lastDate || '') !== (sb.lastDate || '')) return (sa.lastDate || '').localeCompare(sb.lastDate || '');
@@ -2555,12 +2562,12 @@
                 let html = `<div style="width: 100%; font-weight: 800; margin-top: 6px; margin-bottom: 4px; color: var(--accent-primary); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">${title}</div>`;
                 group.forEach((e, gi) => {
                     const catClass = e.emp.category || "helper";
-                    const s = stats[e.emp.id] || { lastDate: null, count: 0 };
+                    const s = stats[e.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
                     const isNext = gi === 0;
                     const lastLabel = s.lastDate ? `Last event: ${s.lastDate}` : 'Never assigned yet';
                     const badge = isNext ? `<span class="turn-badge" title="Next in rotation">⏭️</span>` : '';
                     const selectedClass = prevSelected.has(String(e.i)) ? ' selected' : '';
-                    html += `<div class="employee-chip ${catClass}${isNext ? ' next-turn' : ''}${selectedClass}" data-index="${e.i}" onclick="toggleEmployeeChip(this)" title="${lastLabel} · ${s.count} event(s) total">${badge}${e.emp.name}</div>`;
+                    html += `<div class="employee-chip ${catClass}${isNext ? ' next-turn' : ''}${selectedClass}" data-index="${e.i}" onclick="toggleEmployeeChip(this)" title="${lastLabel} · ${s.count} event(s) total · Base earned: ₹${s.totalBase.toLocaleString('en-IN')}">${badge}${e.emp.name}</div>`;
                 });
                 return html;
             };
@@ -4603,8 +4610,8 @@ ${travelTotalSheetHTML}
                     .filter(e => e.emp.category === cat && !isOnLeave(e.emp.id, month));
 
                 list.sort((a, b) => {
-                    const sa = stats[a.emp.id] || { lastDate: null, count: 0 };
-                    const sb = stats[b.emp.id] || { lastDate: null, count: 0 };
+                    const sa = stats[a.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
+                    const sb = stats[b.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
                     if (!sa.lastDate && sb.lastDate) return -1;
                     if (sa.lastDate && !sb.lastDate) return 1;
                     if ((sa.lastDate || '') !== (sb.lastDate || '')) return (sa.lastDate || '').localeCompare(sb.lastDate || '');
@@ -4618,11 +4625,17 @@ ${travelTotalSheetHTML}
                 }
 
                 const rows = list.map((e, idx) => {
-                    const s = stats[e.emp.id] || { lastDate: null, count: 0 };
+                    const s = stats[e.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
                     const lastLabel = s.lastDate ? s.lastDate : 'Never';
-                    return `<div style="display:flex; justify-content:space-between; gap:8px; padding:4px 0; border-bottom:1px solid var(--border-color); font-size:12px;">
-                        <span><strong>${idx + 1}.</strong> ${escapeHtml(e.emp.name)}</span>
-                        <span style="color:var(--text-muted); white-space:nowrap;">${lastLabel}</span>
+                    return `<div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:12px;">
+                        <div style="display:flex; justify-content:space-between; gap:8px;">
+                            <span><strong>${idx + 1}.</strong> ${escapeHtml(e.emp.name)}</span>
+                            <span style="color:var(--text-muted); white-space:nowrap;">${lastLabel}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; gap:8px; margin-top:2px; font-size:11px; color:var(--text-muted);">
+                            <span>${s.count} event${s.count === 1 ? '' : 's'}</span>
+                            <span>Base earned: ₹${s.totalBase.toLocaleString('en-IN')}</span>
+                        </div>
                     </div>`;
                 }).join('');
 
