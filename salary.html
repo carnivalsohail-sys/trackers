@@ -816,8 +816,11 @@
                 </div>
 
                 <div class="card" style="margin-top: 20px;">
-                    <h3>🔄 Rotation Priority (Next Turn Order)</h3>
-                    <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Numbers show who's due next in each category. Anyone ticked "On Leave / Village" for this month is hidden until the tick is removed in Salary Calc.</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <h3 style="margin:0;">🔄 Rotation Priority (Next Turn Order)</h3>
+                        <button class="btn btn-primary" style="background:#25D366; border-color:#25D366; font-size:12px; padding:8px 14px;" onclick="shareRotationWhatsApp()">📲 Share on WhatsApp</button>
+                    </div>
+                    <p style="font-size:11px; color:var(--text-muted); margin:8px 0 10px;">Numbers show who's due next in each category. Anyone ticked "On Leave / Village" for this month is hidden until the tick is removed in Salary Calc.</p>
                     <div id="rotationPriorityPanel" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px;"></div>
                 </div>
 
@@ -4591,6 +4594,27 @@ ${travelTotalSheetHTML}
         // Numbered 1,2,3,4... rotation order per category, shown directly on the
         // Dashboard. Anyone ticked "On Leave / Village" for the current month is
         // left out entirely until that tick is removed in Salary Calc.
+        // Shared helper: returns employees of one category, sorted by rotation
+        // priority, with on-leave/village staff removed. Used by both the
+        // Dashboard panel and the WhatsApp export so they always match.
+        function getRotationOrder(cat, rotationStats, month) {
+            const stats = rotationStats[cat] || {};
+            const list = employees
+                .map((emp, i) => ({ emp, i }))
+                .filter(e => e.emp.category === cat && !isOnLeave(e.emp.id, month));
+
+            list.sort((a, b) => {
+                const sa = stats[a.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
+                const sb = stats[b.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
+                if (!sa.lastDate && sb.lastDate) return -1;
+                if (sa.lastDate && !sb.lastDate) return 1;
+                if ((sa.lastDate || '') !== (sb.lastDate || '')) return (sa.lastDate || '').localeCompare(sb.lastDate || '');
+                return sa.count - sb.count;
+            });
+
+            return list.map(e => ({ emp: e.emp, i: e.i, stat: stats[e.emp.id] || { lastDate: null, count: 0, totalBase: 0 } }));
+        }
+
         function renderRotationPriority() {
             const panel = document.getElementById('rotationPriorityPanel');
             if (!panel) return;
@@ -4604,28 +4628,16 @@ ${travelTotalSheetHTML}
             };
 
             const buildList = (cat, label) => {
-                const stats = rotationStats[cat] || {};
-                let list = employees
-                    .map((emp, i) => ({ emp, i }))
-                    .filter(e => e.emp.category === cat && !isOnLeave(e.emp.id, month));
-
-                list.sort((a, b) => {
-                    const sa = stats[a.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
-                    const sb = stats[b.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
-                    if (!sa.lastDate && sb.lastDate) return -1;
-                    if (sa.lastDate && !sb.lastDate) return 1;
-                    if ((sa.lastDate || '') !== (sb.lastDate || '')) return (sa.lastDate || '').localeCompare(sb.lastDate || '');
-                    return sa.count - sb.count;
-                });
+                const ordered = getRotationOrder(cat, rotationStats, month);
 
                 const heading = `<h4 style="margin:0 0 8px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--accent-primary);">${label}</h4>`;
 
-                if (!list.length) {
+                if (!ordered.length) {
                     return `<div>${heading}<p style="font-size:12px; color:var(--text-muted);">None available (all on leave/village or none added).</p></div>`;
                 }
 
-                const rows = list.map((e, idx) => {
-                    const s = stats[e.emp.id] || { lastDate: null, count: 0, totalBase: 0 };
+                const rows = ordered.map((e, idx) => {
+                    const s = e.stat;
                     const lastLabel = s.lastDate ? s.lastDate : 'Never';
                     return `<div style="padding:6px 0; border-bottom:1px solid var(--border-color); font-size:12px;">
                         <div style="display:flex; justify-content:space-between; gap:8px;">
@@ -4643,6 +4655,53 @@ ${travelTotalSheetHTML}
             };
 
             panel.innerHTML = buildList('operator', 'Operators') + buildList('semi-operator', 'Semi-Operators') + buildList('helper', 'Helpers');
+        }
+
+        // Builds a short, simple WhatsApp-friendly duty order message —
+        // just numbers + names, no jargon, so a coordinator who can't read
+        // much English can still follow it. Includes date + day up top.
+        function buildRotationWhatsAppText() {
+            const month = new Date().toISOString().slice(0, 7);
+            const rotationStats = {
+                'operator': getRotationStats('operator'),
+                'semi-operator': getRotationStats('semi-operator'),
+                'helper': getRotationStats('helper')
+            };
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+            const numEmoji = (n) => {
+                const map = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+                return n <= 10 ? map[n] : `${n}.`;
+            };
+
+            const section = (cat, label, icon) => {
+                const ordered = getRotationOrder(cat, rotationStats, month);
+                let text = `${icon} *${label}*\n`;
+                if (!ordered.length) {
+                    text += `(none available)\n`;
+                } else {
+                    ordered.forEach((e, idx) => {
+                        text += `${numEmoji(idx + 1)} ${e.emp.name}\n`;
+                    });
+                }
+                return text + '\n';
+            };
+
+            let msg = `📋 *DUTY TURN LIST*\n📅 ${dateStr}\n\n`;
+            msg += section('operator', 'Operator', '🔧');
+            msg += section('semi-operator', 'Semi-Operator', '⚙️');
+            msg += section('helper', 'Helper', '🧰');
+            msg += `🏡 On leave/village staff not shown.`;
+
+            return msg;
+        }
+
+        function shareRotationWhatsApp() {
+            const text = buildRotationWhatsAppText();
+            const url = 'https://wa.me/?text=' + encodeURIComponent(text);
+            window.open(url, '_blank');
         }
 
         // Utilities
