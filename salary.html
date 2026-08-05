@@ -1331,6 +1331,10 @@
                                     <option value="">-- Choose Employee --</option>
                                 </select>
                             </div>
+                            <div style="margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                                <input type="checkbox" id="waSimpleMode" checked onchange="generateWAPayslip()" style="width:18px; height:18px; accent-color:#25D366; cursor:pointer;">
+                                <label for="waSimpleMode" style="font-size:12px; color:var(--text-main); font-weight:700; cursor:pointer;">Simple version for workers (event list + big totals, no formulas)</label>
+                            </div>
                             <div id="waMessage" style="display:none;">
                                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                                     <span style="font-size:11px; color:var(--text-muted); font-weight:700;">PREVIEW (click text to select all)</span>
@@ -3337,16 +3341,24 @@
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
             const lastLoanRepay = loanRepayEntries.length > 0 ? loanRepayEntries[0].date : '';
 
-            const eventBreakdown = empEvents.map(evt => {
+            const eventBreakdown = [];
+            const eventBreakdownSimple = [];
+            empEvents.forEach(evt => {
                 const empEvt = evt.employees.find(e => e.empId === emp.id);
                 const base = Number(empEvt?.baseAmount) || 0;
                 const extra = Number(empEvt?.extraAmount) || 0;
                 const totalAmt = base + extra;
+
                 let text = `${formatDate(evt.date)} ${evt.category} ${evt.venue} = ₹${totalAmt}`;
                 if (extra > 0) {
                     text += ` (Base ₹${base} + Extra ₹${extra}${empEvt?.extraReason ? ` - ${empEvt.extraReason}` : ''})`;
                 }
-                return text;
+                eventBreakdown.push(text);
+
+                // Short, mobile-friendly line: date - venue: amount (no jargon, no formulas)
+                let simpleText = `${formatDate(evt.date)} - ${evt.venue}: ₹${totalAmt.toLocaleString('en-IN')}`;
+                if (extra > 0) simpleText += ` (+₹${extra.toLocaleString('en-IN')})`;
+                eventBreakdownSimple.push(simpleText);
             });
 
             return {
@@ -3375,7 +3387,8 @@
                 lastLoanRepay,
                 final: total - onAccount - proratedRent - lightBill - fine - loanEMI,
                 events: empEvents.length,
-                eventBreakdown
+                eventBreakdown,
+                eventBreakdownSimple
             };
         }
 
@@ -4023,22 +4036,48 @@ ${html}
             modal.style.display = 'flex';
         }
 
-        function generateWAPayslip() {
-            const sel = document.getElementById('waEmpSelect');
-            const idx = sel.value;
-            if (idx === '') {
-                document.getElementById('waMessage').style.display = 'none';
-                return;
-            }
-            const data = window.currentSalaryData[parseInt(idx)];
-            const monthVal = document.getElementById('calcMonth').value;
-            let monthLabel = '';
-            if (monthVal) {
-                const md = new Date(monthVal + '-01');
-                monthLabel = md.toLocaleString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+        // Builds the WhatsApp payslip text.
+        // simple = true  -> big-number, minimal-clutter version for workers who can't read well
+        // simple = false -> full itemized version (office record / literate staff)
+        function buildWAPayslipText(data, monthLabel, simple) {
+            const dedTotal = data.onAccount + data.rent + data.lightBill + data.fine + (data.loanEMI || 0);
+
+            if (simple) {
+                let loanLine = '';
+                if ((data.loanBalance || 0) > 0) {
+                    loanLine = `\n🔴 Loan Balance: ₹${data.loanBalance.toLocaleString('en-IN')}\n`;
+                }
+
+                let workLines = '*WORK DONE:* No events this month\n';
+                if (data.eventBreakdownSimple && data.eventBreakdownSimple.length > 0) {
+                    workLines = `*WORK DONE (${data.events} events):*\n`;
+                    data.eventBreakdownSimple.forEach((line, i) => {
+                        workLines += `${i + 1}. ${line}\n`;
+                    });
+                }
+
+                return `🎪 *CARNIVAL ENTERTAINMENTS*
+
+👤 *${data.name.toUpperCase()}*
+📅 ${monthLabel}
+
+${workLines}
+━━━━━━━━━━━━━━━━
+💰 *TOTAL EARNED*
+    *₹${data.total.toLocaleString('en-IN')}*
+
+➖ *TOTAL DEDUCTED*
+    *₹${dedTotal.toLocaleString('en-IN')}*
+━━━━━━━━━━━━━━━━
+
+✅ *FINAL PAY*
+    *₹${data.final.toLocaleString('en-IN')}*
+━━━━━━━━━━━━━━━━
+${loanLine}
+_Carnival Entertainments_`;
             }
 
-            // Build event breakdown lines
+            // ---- Detailed version (office record) ----
             let eventLines = '';
             if (data.eventBreakdown && data.eventBreakdown.length > 0) {
                 eventLines = '\n*Work Details:*\n';
@@ -4049,12 +4088,9 @@ ${html}
                 eventLines = '\n*Work Details:* No events this month\n';
             }
 
-            // Loan data now comes directly from buildEmployeeMonthTotals (data.loanEMI, data.loanIssued, etc.)
-
             const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧', 'sashi': '💛', 'shiv': '💜' };
             const emoji = catEmoji[data.category] || '👤';
 
-            // Build extras breakdown lines
             let extrasLines = '';
             if (data.extrasAmount > 0) {
                 extrasLines = '\n  *Extras Breakdown:*\n';
@@ -4094,8 +4130,6 @@ ${eventLines}
   💡 Light Bill     -₹${data.lightBill.toLocaleString('en-IN')}
   ✋ Fine           -₹${data.fine.toLocaleString('en-IN')}
   🏦 Loan EMI       -₹${(data.loanEMI || 0).toLocaleString('en-IN')}`;
-            
-            let dedTotal = data.onAccount + data.rent + data.lightBill + data.fine + (data.loanEMI || 0);
 
             let loanInfo = '';
             if ((data.loanIssued || 0) > 0) {
@@ -4109,7 +4143,7 @@ ${eventLines}
   📅 Last Deducted  ${data.lastLoanRepay || '-'}
 `;
             }
-            
+
             const msg2 = `${loanInfo}  ─────────────────────
   *Total Deductions* *-₹${dedTotal.toLocaleString('en-IN')}*
 ━━━━━━━━━━━━━━━━━━━━
@@ -4122,7 +4156,26 @@ ${eventLines}
 
 _Generated on ${new Date().toLocaleString('en-IN')}_`;
 
-            document.getElementById('waText').value = msg + '\n' + msg2;
+            return msg + '\n' + msg2;
+        }
+
+        function generateWAPayslip() {
+            const sel = document.getElementById('waEmpSelect');
+            const idx = sel.value;
+            if (idx === '') {
+                document.getElementById('waMessage').style.display = 'none';
+                return;
+            }
+            const data = window.currentSalaryData[parseInt(idx)];
+            const monthVal = document.getElementById('calcMonth').value;
+            let monthLabel = '';
+            if (monthVal) {
+                const md = new Date(monthVal + '-01');
+                monthLabel = md.toLocaleString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
+            }
+
+            const simple = document.getElementById('waSimpleMode').checked;
+            document.getElementById('waText').value = buildWAPayslipText(data, monthLabel, simple);
             document.getElementById('waMessage').style.display = 'block';
         }
 
@@ -4163,31 +4216,14 @@ _Generated on ${new Date().toLocaleString('en-IN')}_`;
                 monthLabel = md.toLocaleString('en-IN', { month: 'long', year: 'numeric' }).toUpperCase();
             }
 
-            // Generate text for first employee and open WhatsApp
+            const simpleToggle = document.getElementById('waSimpleMode');
+            const simple = simpleToggle ? simpleToggle.checked : true;
+
+            // Generate text for each employee and open WhatsApp, staggered
             let delay = 0;
             window.currentSalaryData.forEach((data, i) => {
                 setTimeout(() => {
-                    const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧', 'sashi': '💛', 'shiv': '💜' };
-                    const emoji = catEmoji[data.category] || '👤';
-
-                    let eventLines = '';
-                    if (data.eventBreakdown && data.eventBreakdown.length > 0) {
-                        eventLines = '\n*Work Details:*\n';
-                        data.eventBreakdown.forEach((line, j) => {
-                            eventLines += `  ${j+1}. ${line}\n`;
-                        });
-                    }
-
-                    let extrasLines = '';
-                    if (data.extrasAmount > 0) {
-                        extrasLines = '\n  *Extras Breakdown:*\n';
-                        data.extrasBreakdown.forEach(bd => {
-                            extrasLines += `    📌 ${formatDate(bd.date)} ${bd.venue}: +₹${bd.extraAmount.toLocaleString('en-IN')}${bd.extraReason ? ` (${bd.extraReason})` : ''}\n`;
-                        });
-                    }
-
-                    const dedTotal = data.onAccount + data.rent + data.lightBill + data.fine + (data.loanEMI || 0);
-                    const text = `${emoji} *CARNIVAL ENTERTAINMENTS*\n📋 *MONTHLY PAYSLIP*\n━━━━━━━━━━━━━━━━━━━━\n\n📅 *Period:* ${monthLabel}\n👤 *Employee:* ${data.name.toUpperCase()}\n🏷️ *Category:* ${data.category.toUpperCase()}\n📊 *Events Worked:* ${data.events}\n\n━━━━━━━━━━━━━━━━━━━━\n*EARNINGS*\n━━━━━━━━━━━━━━━━━━━━\n  💰 Base Work      ₹${(data.baseWorkAmount || 0).toLocaleString('en-IN')}\n  ➕ Extras         ₹${(data.extrasAmount || 0).toLocaleString('en-IN')}${extrasLines}\n  🚆 Travel         ₹${data.travelAmount.toLocaleString('en-IN')}\n  💵 Salary         ₹${data.salary.toLocaleString('en-IN')}\n  📱 Mobile         ₹${data.mobile.toLocaleString('en-IN')}\n  🎫 Pass/Travel    ₹${data.pass.toLocaleString('en-IN')}\n${eventLines}\n━━━━━━━━━━━━━━━━━━━━\n*TOTAL EARNINGS*    *₹${data.total.toLocaleString('en-IN')}*\n━━━━━━━━━━━━━━━━━━━━\n\n*DEDUCTIONS*\n━━━━━━━━━━━━━━━━━━━━\n  🏦 On Account     -₹${data.onAccount.toLocaleString('en-IN')}\n  🏠 Rent           -₹${data.rent.toLocaleString('en-IN')}\n  💡 Light Bill     -₹${data.lightBill.toLocaleString('en-IN')}\n  ✋ Fine           -₹${data.fine.toLocaleString('en-IN')}\n  🏦 Loan EMI       -₹${(data.loanEMI || 0).toLocaleString('en-IN')}\n  ─────────────────────\n  *Total Deductions* *-₹${dedTotal.toLocaleString('en-IN')}*\n━━━━━━━━━━━━━━━━━━━━\n\n✅ *NET PAY: ₹${data.final.toLocaleString('en-IN')}*\n━━━━━━━━━━━━━━━━━━━━\n\n_Generated on ${new Date().toLocaleString('en-IN')}_`;
+                    const text = buildWAPayslipText(data, monthLabel, simple);
                     const waURL = 'https://wa.me/?text=' + encodeURIComponent(text);
                     window.open(waURL, '_blank');
                 }, delay);
