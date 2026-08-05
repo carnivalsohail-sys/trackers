@@ -952,19 +952,20 @@ function parseWA(raw, date, source) {
 
     if (/^\[/.test(line)) continue;
 
-    const om = line.match(/opening\s*bal[^0-9]*?(\d[\d,]*)\s*\/?\-?/i);
-    if (om) { R.openBal = +om[1].replace(/,/g,''); continue; }
+    const om = line.match(/opening\s*bal[^0-9]*?(-)?(\d[\d,]*)\s*\/?\-?/i);
+    if (om) { R.openBal = (om[1] ? -1 : 1) * (+om[2].replace(/,/g,'')); continue; }
 
-    const cm = line.match(/closing\s*bal[^0-9]*?(\d[\d,]*)\s*\/?\-?/i);
-    if (cm) { R.closeBal = +cm[1].replace(/,/g,''); continue; }
+    const cm = line.match(/closing\s*bal[^0-9]*?(-)?(\d[\d,]*)\s*\/?\-?/i);
+    if (cm) { R.closeBal = (cm[1] ? -1 : 1) * (+cm[2].replace(/,/g,'')); continue; }
 
-    const arith = line.match(/^([\d,]+)\s*([\-\+])\s*([\d,]+)\s*=\s*([\d,]*)\s*\/?\-?/);
+    const arith = line.match(/^([\d,]+)\s*([\-\+])\s*([\d,]+)\s*=\s*(-)?\s*([\d,]*)\s*\/?\-?/);
     if (arith) {
+      const resultMag = +arith[5].replace(/,/g,'') || null;
       R.arithLines.push({
         a: +arith[1].replace(/,/g,''),
         op: arith[2],
         b: +arith[3].replace(/,/g,''),
-        result: +arith[4].replace(/,/g,'') || null,
+        result: resultMag !== null ? (arith[4] ? -resultMag : resultMag) : null,
         raw: line
       });
       continue;
