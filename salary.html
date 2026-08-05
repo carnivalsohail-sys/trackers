@@ -3350,14 +3350,10 @@
                 const totalAmt = base + extra;
 
                 let text = `${formatDate(evt.date)} ${evt.category} ${evt.venue} = ₹${totalAmt}`;
-                if (extra > 0) {
-                    text += ` (Base ₹${base} + Extra ₹${extra}${empEvt?.extraReason ? ` - ${empEvt.extraReason}` : ''})`;
-                }
                 eventBreakdown.push(text);
 
-                // Short, mobile-friendly line: date - venue: amount (no jargon, no formulas)
+                // Short, mobile-friendly line: date - venue: amount only (no base/extra math)
                 let simpleText = `${formatDate(evt.date)} - ${evt.venue}: ₹${totalAmt.toLocaleString('en-IN')}`;
-                if (extra > 0) simpleText += ` (+₹${extra.toLocaleString('en-IN')})`;
                 eventBreakdownSimple.push(simpleText);
             });
 
@@ -4091,15 +4087,6 @@ _Carnival Entertainments_`;
             const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧', 'sashi': '💛', 'shiv': '💜' };
             const emoji = catEmoji[data.category] || '👤';
 
-            let extrasLines = '';
-            if (data.extrasAmount > 0) {
-                extrasLines = '\n  *Extras Breakdown:*\n';
-                data.extrasBreakdown.forEach(bd => {
-                    extrasLines += `    📌 ${formatDate(bd.date)} ${bd.venue}: +₹${bd.extraAmount.toLocaleString('en-IN')}${bd.extraReason ? ` (${bd.extraReason})` : ''}\n`;
-                });
-                extrasLines += `  ─────────────────\n  🎯 Total Extras: ₹${data.extrasAmount.toLocaleString('en-IN')}\n`;
-            }
-
             const msg = `${emoji} *CARNIVAL ENTERTAINMENTS*
 📋 *MONTHLY PAYSLIP*
 ━━━━━━━━━━━━━━━━━━━━
@@ -4112,8 +4099,7 @@ _Carnival Entertainments_`;
 ━━━━━━━━━━━━━━━━━━━━
 *EARNINGS*
 ━━━━━━━━━━━━━━━━━━━━
-  💰 Base Work      ₹${(data.baseWorkAmount || 0).toLocaleString('en-IN')}
-  ➕ Extras         ₹${(data.extrasAmount || 0).toLocaleString('en-IN')}${extrasLines}
+  💰 Work Amount    ₹${(data.workAmount || 0).toLocaleString('en-IN')}
   🚆 Travel         ₹${data.travelAmount.toLocaleString('en-IN')}
   💵 Salary         ₹${data.salary.toLocaleString('en-IN')}
   📱 Mobile         ₹${data.mobile.toLocaleString('en-IN')}
