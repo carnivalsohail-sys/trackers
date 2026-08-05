@@ -3352,8 +3352,10 @@
                 let text = `${formatDate(evt.date)} ${evt.category} ${evt.venue} = ₹${totalAmt}`;
                 eventBreakdown.push(text);
 
-                // Short, mobile-friendly line: date - venue: amount only (no base/extra math)
+                // Short, mobile-friendly line: date - venue: amount, with a small "+extra" tag
+                // if that event had an extra payment (no "Base X + Extra Y" formula, just the tag)
                 let simpleText = `${formatDate(evt.date)} - ${evt.venue}: ₹${totalAmt.toLocaleString('en-IN')}`;
+                if (extra > 0) simpleText += ` (+₹${extra.toLocaleString('en-IN')} extra)`;
                 eventBreakdownSimple.push(simpleText);
             });
 
@@ -4087,6 +4089,12 @@ _Carnival Entertainments_`;
             const catEmoji = { 'operator': '👷', 'semi-operator': '🔧', 'helper': '👨‍🔧', 'sashi': '💛', 'shiv': '💜' };
             const emoji = catEmoji[data.category] || '👤';
 
+            let extrasSummary = '';
+            if (data.extrasAmount > 0 && data.extrasBreakdown && data.extrasBreakdown.length > 0) {
+                const dateList = data.extrasBreakdown.map(bd => formatDate(bd.date)).join(', ');
+                extrasSummary = `\n     ➕ incl. Extras ₹${data.extrasAmount.toLocaleString('en-IN')} (${dateList})`;
+            }
+
             const msg = `${emoji} *CARNIVAL ENTERTAINMENTS*
 📋 *MONTHLY PAYSLIP*
 ━━━━━━━━━━━━━━━━━━━━
@@ -4099,7 +4107,7 @@ _Carnival Entertainments_`;
 ━━━━━━━━━━━━━━━━━━━━
 *EARNINGS*
 ━━━━━━━━━━━━━━━━━━━━
-  💰 Work Amount    ₹${(data.workAmount || 0).toLocaleString('en-IN')}
+  💰 Work Amount    ₹${(data.workAmount || 0).toLocaleString('en-IN')}${extrasSummary}
   🚆 Travel         ₹${data.travelAmount.toLocaleString('en-IN')}
   💵 Salary         ₹${data.salary.toLocaleString('en-IN')}
   📱 Mobile         ₹${data.mobile.toLocaleString('en-IN')}
@@ -7380,3 +7388,4 @@ document.addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
+
