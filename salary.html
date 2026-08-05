@@ -6624,6 +6624,7 @@ document.addEventListener('keydown', function(e) {
   const META_FILE = "_meta.json";
   const BACKUP_PREFIX = "backup_";
   const BACKUP_KEEP = 30;       // keep the last 30 daily backups
+  const DIRTY_KEY = "carnival_sync_dirty_keys"; // durable marker: local writes not yet confirmed pushed
 
   function getDeviceName(){
     let n = localStorage.getItem(DEVICE_KEY);
@@ -6920,8 +6921,38 @@ document.addEventListener('keydown', function(e) {
     return gistId;
   }
 
+  // ===== DIRTY-KEY TRACKING (survives refresh/close) =====
+  // The debounce timer and pendingFiles above are only in memory, so if the
+  // tab is refreshed or closed before doPush() finishes, that pending write
+  // is silently lost — and the next boot() treats cloud as authoritative,
+  // clobbering the newer local edit with stale cloud data. To prevent that,
+  // every write is also marked "dirty" directly in localStorage (synchronous,
+  // survives refresh), and cleared only once actually confirmed pushed.
+  function markDirty(key){
+    try {
+      const dirty = JSON.parse(localStorage.getItem(DIRTY_KEY) || "[]");
+      if (dirty.indexOf(key) === -1) {
+        dirty.push(key);
+        origSet.call(localStorage, DIRTY_KEY, JSON.stringify(dirty));
+      }
+    } catch(e){
+      origSet.call(localStorage, DIRTY_KEY, JSON.stringify([key]));
+    }
+  }
+
+  function clearDirty(keys){
+    try {
+      let dirty = JSON.parse(localStorage.getItem(DIRTY_KEY) || "[]");
+      dirty = dirty.filter(k => keys.indexOf(k) === -1);
+      if (dirty.length) origSet.call(localStorage, DIRTY_KEY, JSON.stringify(dirty));
+      else origRemove.call(localStorage, DIRTY_KEY);
+    } catch(e){}
+  }
+
   // ===== PUSH (debounced) =====
   function schedulePush(key, value){
+    markDirty(key);
+
     const fileEntry = { content: String(value == null ? "" : value) };
     const metaEntry = { content: JSON.stringify({
       lastUpdated: Date.now(),
@@ -6966,6 +6997,11 @@ document.addEventListener('keydown', function(e) {
       if (et) lastEtag = et;
       pushRetryCount = 0;
       setBadge("Synced", "#10b981");
+      // Confirmed pushed — safe to clear dirty markers for these keys
+      const pushedKeys = Object.keys(filesToSend)
+        .filter(f => f.endsWith(".json") && f !== META_FILE)
+        .map(f => f.slice(0, -5));
+      clearDirty(pushedKeys);
     } catch(err){
       console.error("Push failed", err);
       // Re-queue what we tried so it isn't lost
@@ -7228,10 +7264,57 @@ document.addEventListener('keydown', function(e) {
   }
   window.restoreBackup = restoreBackup;
 
+  // Push any writes that were marked dirty in a previous session but never
+  // got confirmed as pushed (e.g. tab was refreshed/closed during the
+  // debounce window or the push failed). Must run BEFORE the initial pull,
+  // otherwise pollNow() would treat stale cloud data as authoritative and
+  // overwrite the newer local edit — this was the "edit disappears on
+  // refresh" bug.
+  async function flushDirtyKeysBeforePull(){
+    let dirty = [];
+    try { dirty = JSON.parse(localStorage.getItem(DIRTY_KEY) || "[]"); } catch(e){}
+    dirty = dirty.filter(k => SYNC_KEYS.indexOf(k) !== -1);
+    if (!dirty.length) return;
+
+    const files = {};
+    dirty.forEach(key => {
+      files[key + ".json"] = { content: localStorage.getItem(key) || "[]" };
+    });
+    files[META_FILE] = { content: JSON.stringify({
+      lastUpdated: Date.now(),
+      lastDevice: getDeviceName(),
+      lastKey: "STARTUP_FLUSH"
+    }) };
+
+    try {
+      const res = await fetch(API + "/gists/" + gistId, {
+        method: "PATCH",
+        headers: ghHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ files })
+      });
+      if (res.ok) {
+        const et = res.headers.get("ETag");
+        if (et) lastEtag = et;
+        clearDirty(dirty);
+      } else {
+        throw new Error("Startup flush failed " + res.status);
+      }
+    } catch(err){
+      console.warn("Startup flush of unsynced local edits failed, will retry via normal push queue", err);
+      // Keep dirty markers in place, and also queue for the normal retry
+      // path once pushes are unlocked below.
+      dirty.forEach(key => {
+        startupQueue[key + ".json"] = { content: localStorage.getItem(key) || "[]" };
+      });
+    }
+  }
+
   // ===== BOOT =====
   async function boot(){
     try {
       await findOrCreateGist();
+      // Push any local edits that never made it to the cloud last session
+      await flushDirtyKeysBeforePull();
       // Initial pull — cloud data is authoritative on fresh device
       await pollNow();
 
