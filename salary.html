@@ -1785,15 +1785,23 @@
                 return {...adv, empId: linkedEmp.id};
             });
 
-            employees = employees.map(emp => {
-                if (Number(emp.lightBill || 0) > 0) return emp;
-                const legacyLightBill = advances
-                    .filter(adv => adv.empId === emp.id && Number(adv.emi || 0) > 0)
-                    .reduce((sum, adv) => sum + Number(adv.emi || 0), 0);
-                if (!legacyLightBill) return emp;
-                changed = true;
-                return {...emp, lightBill: legacyLightBill};
-            });
+            // One-time-only: pull lightBill forward from old "advance EMI" records.
+            // This must NEVER run again after the first time, or it will keep
+            // stomping any Light Bill value you deliberately edit back down to 0 or
+            // change later -- it would silently revert to the old legacy number on
+            // every single page load, forever.
+            if (!localStorage.getItem('carnival_lightbill_migrated')) {
+                employees = employees.map(emp => {
+                    if (Number(emp.lightBill || 0) > 0) return emp;
+                    const legacyLightBill = advances
+                        .filter(adv => adv.empId === emp.id && Number(adv.emi || 0) > 0)
+                        .reduce((sum, adv) => sum + Number(adv.emi || 0), 0);
+                    if (!legacyLightBill) return emp;
+                    changed = true;
+                    return {...emp, lightBill: legacyLightBill};
+                });
+                localStorage.setItem('carnival_lightbill_migrated', '1');
+            }
 
             if (changed) {
                 localStorage.setItem('carnival_employees', JSON.stringify(employees));
@@ -7388,4 +7396,3 @@ document.addEventListener('keydown', function(e) {
 </script>
 </body>
 </html>
-
